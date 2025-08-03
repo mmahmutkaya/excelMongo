@@ -15,6 +15,10 @@ app.use((req, res, next) => {
   next()
 })
 
+app.get('/',(req,res) => {
+  res.json({mssg:'Welocome mahmut world'})
+})
+
 // routes
 app.use('/api/workouts', workoutRoutes)
 
