@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const Schema = mongoose.Schema
 
-const projeSchema = new Schema({
+const pozSchema = new Schema({
   pozName: {
     type: String,
     required: true
@@ -11,6 +11,6 @@ const projeSchema = new Schema({
     type: String,
     required: true
   }
-}, { timestamps: true, collection: 'projeler' })
+}, { timestamps: true, collection: 'pozlar' })
 
-module.exports = mongoose.model('Proje', projeSchema)
+module.exports = mongoose.model('Poz', pozSchema)
