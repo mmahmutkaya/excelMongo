@@ -2,7 +2,7 @@ require('dotenv').config()
 
 const express = require('express')
 const mongoose = require('mongoose')
-const workoutRoutes = require('./routes/workouts')
+const projeRoutes = require('./routes/projeler')
 
 // express app
 const app = express()
@@ -15,12 +15,8 @@ app.use((req, res, next) => {
   next()
 })
 
-app.get('/',(req,res) => {
-  res.json({mssg:'Welocome mahmut world'})
-})
-
 // routes
-app.use('/api/workouts', workoutRoutes)
+app.use('/api/projeler', projeRoutes)
 
 // connect to db
 mongoose.connect(process.env.MONGO_URI)
@@ -33,16 +29,4 @@ mongoose.connect(process.env.MONGO_URI)
   })
   .catch((err) => {
     console.log(err)
-  })
-
-
-
-// index.js
-// // const express = require("express");
-// const app = express();
-
-// app.get("/", (req, res) => res.send("Express on Vercel"));
-
-// app.listen(3000, () => console.log("Server ready on port 3000."));
-
-// module.exports = app;
+  }) 
