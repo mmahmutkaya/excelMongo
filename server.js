@@ -18,6 +18,8 @@ app.use((req, res, next) => {
 // routes
 app.use('/api/pozlar', pozRoutes)
 
+// mongoose.set('strictQuery', true)
+
 // connect to db
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
