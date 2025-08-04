@@ -8,7 +8,8 @@ var ObjectId = require('mongodb').ObjectId;
 // get all pozlar
 const getPozlar = async (req, res) => {
 
-  const _projeId = ObjectId(req.header('projeId'))
+  // const _projeId = ObjectId(req.header('projeId'))
+  const _projeId = ObjectId("688a206443a0c8eaeadd8140")
 
   const proje = await Proje.aggregate([
     {
