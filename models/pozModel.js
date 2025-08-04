@@ -11,6 +11,6 @@ const projeSchema = new Schema({
     type: String,
     required: true
   }
-}, { timestamps: true })
+}, { timestamps: true, collection: 'projeler' })
 
 module.exports = mongoose.model('Proje', projeSchema)
