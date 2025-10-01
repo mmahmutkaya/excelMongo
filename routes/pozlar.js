@@ -1,13 +1,7 @@
-const express = require('express')
-const {
-  getPozlar, 
-  getPoz, 
-  createPoz, 
-  deletePoz, 
-  updatePoz
-} = require('../controllers/pozController')
+import { Router } from 'express'
+import { getPozlar, getPoz, createPoz, deletePoz, updatePoz } from '../controllers/pozController'
 
-const router = express.Router()
+const router = Router()
 
 // GET all pozlar
 router.get('/', getPozlar)
@@ -24,4 +18,4 @@ router.delete('/:id', deletePoz)
 // UPDATE a poz
 router.patch('/:id', updatePoz)
 
-module.exports = router
+export default router
