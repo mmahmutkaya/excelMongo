@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
+const validator = require('validator')
 
 const Schema = mongoose.Schema
 
@@ -18,10 +19,21 @@ const userSchema = new Schema({
 // static signup method
 userSchema.statics.signup = async function(email, password) {
 
+  // validation
+  if (!email || !password) {
+    throw Error('Tüm alanlar doldurulmalı')
+  }
+  if (!validator.isEmail(email)) {
+    throw Error('Email doğru girilmemiş')
+  }
+  if (!validator.isStrongPassword(password)) {
+    throw Error('Şifre güvenliği için 8 hane, büyük harf, küçük harf ve karakter kullanınız')
+  }
+
   const exists = await this.findOne({ email })
 
   if (exists) {
-    throw Error('Email already in use')
+    throw Error('Bu email adresi zaten mevcut, şifrenizi unuttuysanız yeniden oluşturabilirsiniz..')
   }
 
   const salt = await bcrypt.genSalt(10)

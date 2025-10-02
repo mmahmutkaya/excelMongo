@@ -115,7 +115,7 @@ const getPoz = async (req, res) => {
   const { id } = req.params
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(404).json({ error: 'No such poz' })
+    return res.status(404).json({ error: 'Mongo ObjectId türü doğru değil' })
   }
 
   const poz = await Poz.findById(id)
