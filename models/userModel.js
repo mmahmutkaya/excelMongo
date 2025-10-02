@@ -21,25 +21,45 @@ userSchema.statics.signup = async function(email, password) {
 
   // validation
   if (!email || !password) {
-    throw Error('Tüm alanlar doldurulmalı')
+    throw Error('Tüm alanlar doldurulmalıdır.')
   }
   if (!validator.isEmail(email)) {
-    throw Error('Email doğru girilmemiş')
+    throw Error('Bu email adresi kayıtlı değil.')
   }
   if (!validator.isStrongPassword(password)) {
-    throw Error('Şifre güvenliği için 8 hane, büyük harf, küçük harf ve karakter kullanınız')
+    throw Error('Şifre güvenliği için 8 hane,büyük harf, küçük harf ve karakter kullanınız')
   }
 
   const exists = await this.findOne({ email })
 
   if (exists) {
-    throw Error('Bu email adresi zaten mevcut, şifrenizi unuttuysanız yeniden oluşturabilirsiniz..')
+    throw Error('Email already in use')
   }
 
   const salt = await bcrypt.genSalt(10)
   const hash = await bcrypt.hash(password, salt)
 
   const user = await this.create({ email, password: hash })
+
+  return user
+}
+
+// static login method
+userSchema.statics.login = async function(email, password) {
+
+  if (!email || !password) {
+    throw Error('Tüm alanlar doldurulmalıdır.')
+  }
+
+  const user = await this.findOne({ email })
+  if (!user) {
+    throw Error('Email adresini kontrol ediniz')
+  }
+
+  const match = await bcrypt.compare(password, user.password)
+  if (!match) {
+    throw Error('Hatalı şifre')
+  }
 
   return user
 }
