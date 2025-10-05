@@ -17,51 +17,105 @@ const userSchema = new Schema({
 })
 
 // static signup method
-userSchema.statics.signup = async function(email, password) {
+userSchema.statics.signup = async function (email, password) {
 
-  // validation
-  if (!email || !password) {
-    throw Error('Tüm alanlar doldurulmalıdır.')
+
+  const errorObject = {}
+  // errorObject.emailError = null
+  // errorObject.passwordError = null
+
+
+  // emailError
+  if (!email && !errorObject.emailError) {
+    errorObject.emailError = "Boş bırakılamaz."
   }
-  if (!validator.isEmail(email)) {
-    throw Error('Bu email adresi kayıtlı değil.')
+  if (!validator.isEmail(email) && !errorObject.emailError) {
+    errorObject.emailError = 'Email adresini doğru giriniz.'
+  }
+  const exists = await this.findOne({ email })
+  if (exists && !errorObject.emailError) {
+    errorObject.emailError = "Bu email adresi sistemde kayıtlı."
+  }
+
+
+
+  // passwordError
+  if (!password && !errorObject.passwordError) {
+    errorObject.passwordError = "Boş bırakılamaz."
   }
   if (!validator.isStrongPassword(password)) {
-    throw Error('Şifre güvenliği için 8 hane,büyük harf, küçük harf ve karakter kullanınız')
+    errorObject.passwordError = '8 hane, büyük harf, küçük harf ve karakter'
   }
 
-  const exists = await this.findOne({ email })
 
-  if (exists) {
-    throw Error('Email already in use')
+  // hata kontrol
+  if (Object.keys(errorObject).length) {
+    return ({ errorObject })
   }
+
 
   const salt = await bcrypt.genSalt(10)
   const hash = await bcrypt.hash(password, salt)
 
   const user = await this.create({ email, password: hash })
 
-  return user
+  return { user }
 }
 
 // static login method
-userSchema.statics.login = async function(email, password) {
+userSchema.statics.login = async function (email, password) {
 
-  if (!email || !password) {
-    throw Error('Tüm alanlar doldurulmalıdır.')
+
+  const errorObject = {}
+
+  //  errorObject kontrol-1 - gelen veriler uygun mu?
+
+  // emailError - 1
+  if (!email && !errorObject.emailError) {
+    errorObject.emailError = "Boş bırakılamaz."
+  }
+  if (!validator.isEmail(email) && !errorObject.emailError) {
+    errorObject.emailError = 'Email adresini doğru giriniz.'
   }
 
+  // passwordError - 1
+  if (!password && !errorObject.passwordError) {
+    errorObject.passwordError = "Boş bırakılamaz."
+  }
+
+  // hata kontrol - 1
+  if (Object.keys(errorObject).length) {
+    return ({ errorObject })
+  }
+
+
+
+  // errorObject kontrol - 2 - user var mı ?
+  // emailError
   const user = await this.findOne({ email })
-  if (!user) {
-    throw Error('Email adresini kontrol ediniz')
+  if (!user && !errorObject.emailError) {
+    errorObject.emailError = 'Bu email adresi sistemde kayıtlı değil.'
   }
 
+  // hata kontrol - 2
+  if (Object.keys(errorObject).length) {
+    return ({ errorObject })
+  }
+
+
+  //  // errorObject kontrol - 3 - password doğru mu?
   const match = await bcrypt.compare(password, user.password)
   if (!match) {
-    throw Error('Hatalı şifre')
+    errorObject.passwordError = 'Hatalı şifre'
+  }
+  // hata kontrol - 3
+  if (Object.keys(errorObject).length) {
+    return ({ errorObject })
   }
 
-  return user
+
+  // hata yok demekki 
+  return { user }
 }
 
 module.exports = mongoose.model('User', userSchema)
