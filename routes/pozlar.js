@@ -7,12 +7,15 @@ const {
   updatePoz
 } = require('../controllers/pozController')
 
-const requireAuth = require('../middleware/requireAuth')
+const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
 
 const router = express.Router()
 
-// require auth for all workout routes
-router.use(requireAuth)
+
+
+router.use(requireAuthAndNecessary)
+
+
 
 // GET all pozlar
 router.get('/', getPozlar)

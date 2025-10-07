@@ -1,29 +1,46 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
 const validator = require('validator')
+const jwt = require('jsonwebtoken')
 
 const Schema = mongoose.Schema
 
-const userSchema = new Schema({
-  email: {
-    type: String,
-    required: true,
-    unique: true
+const userSchema = new Schema(
+  {
+    email: {
+      type: String,
+      required: true,
+      unique: true
+    },
+    password: {
+      type: String,
+      required: true
+    },
+    mailConfirmationKod: {
+      type: String
+    },
+    mailTeyit: {
+      type: Boolean
+    },
+    isim: {
+      type: String
+    },
+    soyisim: {
+      type: String
+    }
   },
-  password: {
-    type: String,
-    required: true
+  {
+    versionKey: false
   }
-})
+)
+
+
 
 // static signup method
 userSchema.statics.signup = async function (email, password) {
 
 
   const errorObject = {}
-  // errorObject.emailError = null
-  // errorObject.passwordError = null
-
 
   // emailError
   if (!email && !errorObject.emailError) {
@@ -59,8 +76,21 @@ userSchema.statics.signup = async function (email, password) {
 
   const user = await this.create({ email, password: hash })
 
-  return { user }
+  // kullanıcı kaydedildi ise
+  let user2 = JSON.parse(JSON.stringify(user))
+
+  delete user2.password
+
+  const token = jwt.sign({ email: user2.email }, process.env.SECRET, { expiresIn: '3d' })
+  user2.token = token
+
+  // hata yok demekki 
+  return { user: user2 }
+
 }
+
+
+
 
 // static login method
 userSchema.statics.login = async function (email, password) {
@@ -92,7 +122,7 @@ userSchema.statics.login = async function (email, password) {
 
   // errorObject kontrol - 2 - user var mı ?
   // emailError
-  const user = await this.findOne({ email })
+  let user = await this.findOne({ email })
   if (!user && !errorObject.emailError) {
     errorObject.emailError = 'Bu email adresi sistemde kayıtlı değil.'
   }
@@ -103,7 +133,7 @@ userSchema.statics.login = async function (email, password) {
   }
 
 
-  //  // errorObject kontrol - 3 - password doğru mu?
+  // errorObject kontrol - 3 - password doğru mu?
   const match = await bcrypt.compare(password, user.password)
   if (!match) {
     errorObject.passwordError = 'Hatalı şifre'
@@ -113,9 +143,17 @@ userSchema.statics.login = async function (email, password) {
     return ({ errorObject })
   }
 
+  // password eşleşti
+  let user2 = JSON.parse(JSON.stringify(user))
+
+  delete user2.password
+  delete user2.mailConfirmationKod
+
+  const token = jwt.sign({ email: user2.email }, process.env.SECRET, { expiresIn: '3d' })
+  user2.token = token
 
   // hata yok demekki 
-  return { user }
+  return { user: user2 }
 }
 
 module.exports = mongoose.model('User', userSchema)
