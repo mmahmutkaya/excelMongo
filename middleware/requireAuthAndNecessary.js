@@ -6,46 +6,42 @@ const requireAuthAndNecessary = async (req, res, next) => {
   // verify user is authenticated
   const { email: req_email, token } = req.headers
 
-  if (!req_email) {
-    res.status(401).json({ error: 'Header without email' })
-    return
-  }
-
-  if (!token) {
-    res.status(401).json({ error: 'Header without token' })
-    return
-  }
+  const hataBase = "BACKEND - requireAuthAndNecessary - "
 
   try {
+
+    if (!req_email) {
+      throw new Error('Request HEADER, "email" eksik')
+    }
+
+    if (!token) {
+      throw new Error('BACKEND - Request HEADER da "token" yok')
+    }
 
     const { email } = jwt.verify(token, process.env.SECRET)
 
     if (email !== req_email) {
-      res.status(401).json({ error: 'Token is not valid' })
-      return
+      throw new Error('BACKEND - Request HEADER "token" geçerli değil')
     }
 
     let user = await User.findOne({ email })
 
     if (!user.mailTeyit) {
-      res.status(401).json({ error: 'Email adresi teyit edilmemiş' })
-      return
+      throw new Error('BACKEND - Kullanıcı email adresi teyit edilmemiş')
     }
 
     if (!user.isim) {
-      res.status(401).json({ error: 'İsim girilmemiş' })
-      return
+      throw new Error('BACKEND - Kullanıcı "isim" kayıtlı değil')
     }
 
     if (!user.soyisim) {
-      res.status(401).json({ error: 'Soyisim girilmemiş' })
-      return
+      throw new Error('BACKEND - Kullanıcı "soyisim" kayıtlı değil')
     }
 
     next()
 
   } catch (error) {
-    res.status(401).json({ error: 'Not authorized or incomplete data' })
+    res.status(401).json({ error: hataBase + error.message })
     return
   }
 }

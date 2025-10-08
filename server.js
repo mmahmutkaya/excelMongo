@@ -2,8 +2,10 @@ require('dotenv').config()
 
 const express = require('express')
 const mongoose = require('mongoose')
+
 const pozRoutes = require('./routes/pozlar')
 const userRoutes = require('./routes/user')
+const firmaRoutes = require('./routes/firmalar')
 
 
 
@@ -22,6 +24,8 @@ app.use((req, res, next) => {
 // routes
 app.use('/api/pozlar', pozRoutes)
 app.use('/api/user', userRoutes)
+app.use('/api/firmalar', firmaRoutes)
+
 
 // mongoose.set('strictQuery', true)
 
