@@ -54,7 +54,8 @@ const createFirma = async (req, res) => {
 
   try {
 
-    const { email: userEmail } = req.headers
+    // const { email: userEmail } = req.headers
+    const appUser = JSON.parse(req.user)
     const { firmaName } = req.body
 
     let errorObject = {}
@@ -79,10 +80,10 @@ const createFirma = async (req, res) => {
     }
 
 
-    const firmalar_byUser = await Firma.find({ name: firmaName, "yetkiliKisiler.email": userEmail })
+    const firmalar_byUser = await Firma.find({ name: firmaName, "yetkiliKisiler.email": appUser.email })
     let isExist
     firmalar_byUser.map(firma => {
-      firma.yetkiliKisiler.find(oneKisi => oneKisi.email == userEmail && oneKisi.yetki == "owner") ? isExist = true : null
+      firma.yetkiliKisiler.find(oneKisi => oneKisi.email == appUser.email && oneKisi.yetki == "owner") ? isExist = true : null
     })
     if (isExist && !errorObject.firmaNameError) {
       errorObject.firmaNameError = "Bu isimde firmanız mevcut"
@@ -193,8 +194,8 @@ const createFirma = async (req, res) => {
       paraBirimleri,
       pozMetrajTipleri,
       pozBirimleri,
-      yetkiliKisiler: [{ email: userEmail, yetki: "owner" }],
-      createdBy: userEmail,
+      yetkiliKisiler: [{ email: appUser.email, isim: appUser.isim, soyisim: appUser.soyisim }],
+      createdBy: appUser.email,
       createdAt: currentTime,
       isDeleted: false
     }
@@ -205,7 +206,7 @@ const createFirma = async (req, res) => {
     newFirma = {
       _id: resultNewFirma._id,
       name: firmaName,
-      yetkiliKisiler: [{ email: userEmail, yetki: "owner" }]
+      yetkiliKisiler: [{ email: appUser.email }]
     }
 
     res.status(200).json({ newFirma })
