@@ -9,7 +9,7 @@ const projeSchema = new Schema(
     wbs: Array,
     lbs: Array,
     paraBirimleri: Array,
-    isPaketBasliklar: Array,
+    isPaketBasliklari: Array,
     isPaketleri: Array,
     // pozMetrajTipleri,
     // pozBirimleri,
@@ -18,7 +18,6 @@ const projeSchema = new Schema(
     // // createdBy: userEmail,
     // createdAt: currentTime,
     // isDeleted: false
-
   },
   {
     timestamps: true,

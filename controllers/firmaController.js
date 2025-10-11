@@ -50,7 +50,7 @@ const createFirma = async (req, res) => {
 
   const hataBase = "BACKEND - createFirma - "
 
-  const currentTime = new Date()
+  const simdikiZaman = new Date()
 
   const {
     email: userEmail,
@@ -89,7 +89,7 @@ const createFirma = async (req, res) => {
     const firmalar_byUser = await Firma.find({ name: firmaName, "yetkiliKisiler.email": userEmail })
     let isExist
     firmalar_byUser.map(firma => {
-      firma.yetkiliKisiler.find(oneKisi => oneKisi.email == userEmail && oneKisi.yetki == "owner") ? isExist = true : null
+      firma.yetkiliKisiler.find(oneKisi => oneKisi.email == userEmail && oneKisi.yetkiler.find(x => x.name === "owner")) ? isExist = true : null
     })
     if (isExist && !errorObject.firmaNameError) {
       errorObject.firmaNameError = "Bu isimde firmanız mevcut"
@@ -195,17 +195,19 @@ const createFirma = async (req, res) => {
 
     let newFirma = {
       name: firmaName,
-      // wbs: [], // henüz herhangi bir başlık yok fakat yok ama bu property şimdi olmazsa ilk wbs kaydında bir hata yaşıyoruz
-      // lbs: [], // henüz herhangi bir başlık yok fakat yok ama bu property şimdi olmazsa ilk wbs kaydında bir hata yaşıyoruz
+      wbs: [],
+      lbs: [],
       paraBirimleri,
       pozMetrajTipleri,
       pozBirimleri,
-      yetkiliKisiler: [{ email: userEmail, isim: userIsim, soyisim: userSoyisim }],
-      yetkiler: { owners: [{ email: userEmail }] },
+      yetkiliKisiler: [{
+        email: userEmail,
+        isim: userIsim,
+        soyisim: userSoyisim,
+        yetkiler: [{ name: "owner", createdAt: simdikiZaman, createdBy: userEmail }]
+      }],
       createdBy: userEmail,
-      createdAt: currentTime,
-
-
+      createdAt: simdikiZaman,
       isDeleted: false
     }
 
@@ -225,7 +227,6 @@ const createFirma = async (req, res) => {
   }
 
 }
-
 
 
 module.exports = {
