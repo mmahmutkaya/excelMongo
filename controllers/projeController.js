@@ -6,94 +6,102 @@ var ObjectId = require('mongodb').ObjectId;
 
 
 
-const getProjeler_byFirma = async (req, res) => {
+// const getProjeler_byFirma = async (req, res) => {
 
-  const hataBase = "BACKEND - getProjeler_byFirma - "
+//   const hataBase = "BACKEND - getProjeler_byFirma - "
+
+//   try {
+
+//     const { firmaId } = req.headers
+//     const _firmaId = new ObjectId(firmaId)
+
+//     const firmalar = await Firma.find({ _firmaId }, { name: 1, yetkiliKisiler: 1 })
+
+//     res.status(200).json({ firmalar })
+
+//   } catch (error) {
+//     res.status(400).json({ error: hataBase + error.message })
+//   }
+
+// }
+
+
+
+// const getFirma = async (req, res) => {
+
+//   const hataBase = "BACKEND - getFirma - "
+
+//   const _firmaId = new ObjectId(req.params.id)
+
+//   try {
+
+//     const firma = await Firma.findOne({ _id: _firmaId })
+
+//     res.status(200).json({ firma })
+
+//   } catch (error) {
+//     res.status(400).json({ error: hataBase + error.message })
+//   }
+
+// }
+
+
+
+
+const createProje = async (req, res) => {
+
+  const hataBase = "BACKEND - createProje - "
 
   try {
 
-    const { firmaId } = req.headers
+
+    throw new Error("SOrguya gelen firmaId türü doğru değil.")
+
+    const {
+      email: userEmail,
+      isim: userIsim,
+      soyisim: userSoyisim
+    } = JSON.parse(req.user)
+
+    const { firmaId, projeName } = req.body
     const _firmaId = new ObjectId(firmaId)
+    if (!mongoose.Types.ObjectId.isValid(_firmaId)) {
+      throw new Error("SOrguya gelen firmaId türü doğru değil.")
+    }
 
-    const firmalar = await Firma.find({ _firmaId }, { name: 1, yetkiliKisiler: 1 })
-
-    res.status(200).json({ firmalar })
-
-  } catch (error) {
-    res.status(400).json({ error: hataBase + error.message })
-  }
-
-}
+    const currentTime = new Date()
 
 
 
-const getFirma = async (req, res) => {
-
-  const hataBase = "BACKEND - getFirma - "
-
-  const _firmaId = new ObjectId(req.params.id)
-
-  try {
-
-    const firma = await Firma.findOne({ _id: _firmaId })
-
-    res.status(200).json({ firma })
-
-  } catch (error) {
-    res.status(400).json({ error: hataBase + error.message })
-  }
-
-}
-
-
-
-
-const createFirma = async (req, res) => {
-
-  const hataBase = "BACKEND - createFirma - "
-
-  const currentTime = new Date()
-
-  try {
-
-    const { email: userEmail } = req.headers
-    const { firmaName } = req.body
 
     let errorObject = {}
 
-    if (typeof firmaName != "string" && !errorObject.firmaNameError) {
-      errorObject.firmaNameError = "Firma adı verisi 'yazı' türünde değil"
+    if (typeof projeName != "string" && !errorObject.projeNameError) {
+      errorObject.projeNameError = "Proje adı verisi 'yazı' türünde değil"
     }
 
-    if (firmaName.length == 0 && !errorObject.firmaNameError) {
-      errorObject.firmaNameError = "Firma adı girilmemiş"
+    if (projeName.length == 0 && !errorObject.projeNameError) {
+      errorObject.projeNameError = "Proje adı girilmemiş"
     }
 
-    if (firmaName.length < 3 && !errorObject.firmaNameError) {
-      errorObject.firmaNameError = "Firma adı çok kısa"
-
+    if (projeName.length < 3 && !errorObject.projeNameError) {
+      errorObject.projeNameError = "Proje adı çok kısa"
     }
 
     // ARA VALIDATE KONTROL - VALIDATE HATA VARSA BOŞUNA DEVAM EDİP AŞAĞIDAKİ SORGUYU YAPMASIN
     if (Object.keys(errorObject).length > 0) {
-      res.status(200).json({ errorObject })
-      return
+      return res.status(200).json({ errorObject })
     }
 
 
-    const firmalar_byUser = await Firma.find({ name: firmaName, "yetkiliKisiler.email": userEmail })
-    let isExist
-    firmalar_byUser.map(firma => {
-      firma.yetkiliKisiler.find(oneKisi => oneKisi.email == userEmail && oneKisi.yetki == "owner") ? isExist = true : null
-    })
-    if (isExist && !errorObject.firmaNameError) {
-      errorObject.firmaNameError = "Bu isimde firmanız mevcut"
+    const isExist = await collection_Projeler.findOne({ name: projeName, _firmaId })
+    if (isExist && !errorObject.projeNameError) {
+      errorObject.projeNameError = "Firmanın bu isimde projesi mevcut"
     }
 
     // VALIDATE KONTROL
     if (Object.keys(errorObject).length > 0) {
-      res.status(200).json({ errorObject })
-      return
+      return res.status(200).json({ errorObject })
     }
 
 
@@ -107,16 +115,10 @@ const createFirma = async (req, res) => {
 
     // const pozBasliklari = [
     //   { _id: new BSON.ObjectId(), platform: "web", sira: 1, referans: "pozNo", goster: true, sabit: true, genislik: 7, paddingInfo: "0px 1rem 0px 0px", yatayHiza: "center", name: "Poz No", dataType: "metin" },
-    //   { _id: new BSON.ObjectId(), platform: "web", sira: 2, referans: "name", goster: true, sabit: true, genislik: 20, paddingInfo: "0px 1rem 0px 0px", yatayHiza: "center", name: "Poz İsmi", dataType: "metin" },
+    //   { _id: new BSON.ObjectId(), platform: "web", sira: 2, referans: "pozName", goster: true, sabit: true, genislik: 20, paddingInfo: "0px 1rem 0px 0px", yatayHiza: "center", name: "Poz İsmi", dataType: "metin" },
     // ]
 
 
-    // const metrajYapabilenler = [
-    //   {
-    //     "harf": "A",
-    //     _userId
-    //   }
-    // ]
 
     const pozBirimleri = [
       { id: "mt", name: "mt" },
@@ -136,17 +138,22 @@ const createFirma = async (req, res) => {
 
 
     // const mahalBasliklari = [
-    //   { _id: new BSON.ObjectId(), sira: 1, referans: "kod", goster: true, sabit: true, genislik: 7, paddingInfo: "0px 1rem 0px 0px", yatayHiza: "center", name: "Mahal Kod", dataType: "metin" },
-    //   { _id: new BSON.ObjectId(), sira: 2, referans: "name", goster: true, sabit: true, genislik: 20, paddingInfo: "0px 1rem 0px 0px", yatayHiza: "center", name: "Mahal İsmi", dataType: "metin" },
+    //   { _id: new BSON.ObjectId(), sira: 1, referans: "mahalNo", goster: true, sabit: true, genislik: 7, paddingInfo: "0px 1rem 0px 0px", yatayHiza: "center", name: "Mahal Kod", dataType: "metin" },
+    //   { _id: new BSON.ObjectId(), sira: 2, referans: "mahalName", goster: true, sabit: true, genislik: 20, paddingInfo: "0px 1rem 0px 0px", yatayHiza: "center", name: "Mahal İsmi", dataType: "metin" },
     // ]
 
 
-    const paraBirimleri = [
-      { id: "TRY", name: "Türk Lirası", isActive: false },
-      { id: "USD", name: "Amerikan Doları", isActive: false },
-      { id: "EUR", name: "Euro", isActive: false },
-      { id: "UZS", name: "Özbekistan Sum", isActive: false }
-    ]
+    // const mahalBirimleri = [
+    //   { id: "mt", name: "mt" },
+    //   { id: "m2", name: "m2" },
+    //   { id: "m3", name: "m3" },
+    //   { id: "ad", name: "ad" },
+    //   { id: "set", name: "set" },
+    //   { id: "tl", name: "TL" },
+    //   { id: "usd", name: "USD" },
+    //   { id: "eur", name: "EUR" },
+    //   { id: "tarih", name: "TARİH" },
+    // ]
 
 
     // const veriTurleri = [
@@ -188,32 +195,45 @@ const createFirma = async (req, res) => {
     // ]
 
 
-    let newFirma = {
-      name: firmaName,
+    let newProje = {
+      _firmaId,
+      name: projeName,
       // wbs: [], // henüz herhangi bir başlık yok fakat yok ama bu property şimdi olmazsa ilk wbs kaydında bir hata yaşıyoruz
       // lbs: [], // henüz herhangi bir başlık yok fakat yok ama bu property şimdi olmazsa ilk wbs kaydında bir hata yaşıyoruz
-      paraBirimleri,
+      paraBirimleri: [],
+      isPaketBasliklari: [],
+      isPaketleri: [],
+      // pozBasliklari,
+      // mahalBasliklari,
       pozMetrajTipleri,
       pozBirimleri,
-      yetkiliKisiler: [{ email: userEmail, yetki: "owner" }],
+      yetkiliKisiler: [{
+        email: userEmail,
+        isim: userIsim,
+        soyisim: userSoyisim,
+        yetkiler: [{ name: "owner", createdAt: simdikiZaman, createdBy: userEmail }]
+      }],
+      yetkiliFirmalar: [{ _firmaId, yetkiler: { name: "owner" } }],
       createdBy: userEmail,
       createdAt: currentTime,
       isDeleted: false
     }
 
-    const resultNewFirma = await Firma.create(newFirma)
+    const result_newProje = await collection_Projeler.insertOne(newProje)
 
-    // tüm firma verilerini göndermek yerine ihtiyaç duyulan veriler gönderiliyor
-    newFirma = {
-      _id: resultNewFirma._id,
-      name: firmaName,
-      yetkiliKisiler: [{ email: userEmail, yetki: "owner" }]
+    // tüm proje verileri gönderilmiyor, gerekli veriler gönderiliyor
+    newProje = {
+      _id: result_newProje.insertedId,
+      _firmaId,
+      name: projeName,
+      yetkiliFirmalar: [{ _firmaId, yetki: "owner" }]
     }
 
-    res.status(200).json({ newFirma })
+    return newProje;
 
   } catch (error) {
-    res.status(400).json({ error: hataBase + error.message })
+    res.status(401).json({ error: hataBase + error.message })
+    return
   }
 
 }
@@ -221,5 +241,5 @@ const createFirma = async (req, res) => {
 
 
 module.exports = {
-  getProjeler_byFirma, createFirma, getFirma
+  createProje
 }

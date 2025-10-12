@@ -1,6 +1,9 @@
 const jwt = require('jsonwebtoken')
 
 const requireAuth = async (req, res, next) => {
+
+  const hataBase = "BACKEND - requireAuthAndNecessary - "
+
   // verify user is authenticated
   const { email: req_email, token } = req.headers
 
@@ -25,7 +28,7 @@ const requireAuth = async (req, res, next) => {
     }
 
   } catch (error) {
-    res.status(401).json({ error: 'Request is not authorized' })
+    return res.status(401).json({ error: hataBase + error.message, errorObject: error })
   }
 }
 

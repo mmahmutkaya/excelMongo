@@ -6,6 +6,7 @@ const mongoose = require('mongoose')
 const pozRoutes = require('./routes/pozlar')
 const userRoutes = require('./routes/user')
 const firmaRoutes = require('./routes/firmalar')
+const projeRoutes = require('./routes/projeler')
 
 
 
@@ -25,6 +26,7 @@ app.use((req, res, next) => {
 app.use('/api/pozlar', pozRoutes)
 app.use('/api/user', userRoutes)
 app.use('/api/firmalar', firmaRoutes)
+app.use('/api/projeler', projeRoutes)
 
 
 // mongoose.set('strictQuery', true)
