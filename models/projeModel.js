@@ -11,13 +11,13 @@ const projeSchema = new Schema(
     paraBirimleri: Array,
     isPaketBasliklari: Array,
     isPaketleri: Array,
-    // pozMetrajTipleri,
-    // pozBirimleri,
-    // // yetkiliKisiler: [{ email: userEmail, yetki: "owner" }],
-    // yetkiliFirmalar: [{ _firmaId, yetki: "owner" }],
-    // // createdBy: userEmail,
-    // createdAt: currentTime,
-    // isDeleted: false
+    pozMetrajTipleri:Array,
+    pozBirimleri:Array,
+    yetkiliKisiler: Array,
+    yetkiliFirmalar: Array,
+    createdBy: String,
+    createdAt: Date,
+    isDeleted: Boolean
   },
   {
     timestamps: true,

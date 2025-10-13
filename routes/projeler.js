@@ -1,6 +1,6 @@
 const express = require('express')
 const {
-  createProje
+  getProjeler_byFirma, createProje
 } = require('../controllers/projeController')
 
 const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
@@ -11,8 +11,8 @@ const router = express.Router()
 router.use(requireAuthAndNecessary)
 
 
-// // GET all projelar names
-// router.get('/', getProjeler)
+// GET all getProjeler_byFirma
+router.get('/byfirma', getProjeler_byFirma)
 
 // // // GET a single proje
 // router.get('/:id', getProje)

@@ -1,4 +1,4 @@
-const Proje = require('../models/firmaModel')
+const Proje = require('../models/projeModel')
 
 
 const mongoose = require('mongoose')
@@ -6,24 +6,31 @@ var ObjectId = require('mongodb').ObjectId;
 
 
 
-// const getProjeler_byFirma = async (req, res) => {
+const getProjeler_byFirma = async (req, res) => {
 
-//   const hataBase = "BACKEND - getProjeler_byFirma - "
+  const hataBase = "BACKEND - getProjeler_byFirma - "
 
-//   try {
+  try {
 
-//     const { firmaId } = req.headers
-//     const _firmaId = new ObjectId(firmaId)
+    const { firmaId } = req.body
+    if (!firmaId) {
+      throw new Error("Sorguya 'firmaId' gönderilmemiş.")
+    }
 
-//     const firmalar = await Firma.find({ _firmaId }, { name: 1, yetkiliKisiler: 1 })
+    const _firmaId = new ObjectId(firmaId)
+    if (!mongoose.Types.ObjectId.isValid(_firmaId)) {
+      throw new Error("Sorguya gelen 'firmaId' türü doğru değil.")
+    }
 
-//     res.status(200).json({ firmalar })
+    const projeler = await Proje.find({ _firmaId }, { name: 1, yetkiliKisiler: 1, yetkiliFirmalar: 1 })
 
-//   } catch (error) {
-//     res.status(400).json({ error: hataBase + error.message })
-//   }
+    res.status(200).json({ projeler })
 
-// }
+  } catch (error) {
+    res.status(400).json({ error: hataBase + error.message })
+  }
+
+}
 
 
 
@@ -54,9 +61,6 @@ const createProje = async (req, res) => {
 
   try {
 
-
-    throw new Error("SOrguya gelen firmaId türü doğru değil.")
-
     const {
       email: userEmail,
       isim: userIsim,
@@ -64,14 +68,19 @@ const createProje = async (req, res) => {
     } = JSON.parse(req.user)
 
     const { firmaId, projeName } = req.body
+    if (!firmaId) {
+      throw new Error("Sorguya 'firmaId' gönderilmemiş.")
+    }
+    if (!projeName) {
+      throw new Error("Sorguya 'projeName' gönderilmemiş.")
+    }
+
     const _firmaId = new ObjectId(firmaId)
     if (!mongoose.Types.ObjectId.isValid(_firmaId)) {
-      throw new Error("SOrguya gelen firmaId türü doğru değil.")
+      throw new Error("Sorguya gelen firmaId türü doğru değil.")
     }
 
     const currentTime = new Date()
-
-
 
 
     let errorObject = {}
@@ -94,7 +103,9 @@ const createProje = async (req, res) => {
     }
 
 
-    const isExist = await collection_Projeler.findOne({ name: projeName, _firmaId })
+    const isExist = await Proje.findOne({ name: projeName, _firmaId })
+    return res.status(200).json({ isExist })
+
     if (isExist && !errorObject.projeNameError) {
       errorObject.projeNameError = "Firmanın bu isimde projesi mevcut"
     }
@@ -194,12 +205,19 @@ const createProje = async (req, res) => {
     //   }
     // ]
 
+    const yetkiliKisiler = [{
+      email: userEmail,
+      isim: userIsim,
+      soyisim: userSoyisim,
+      yetkiler: [{ name: "owner", createdAt: currentTime, createdBy: userEmail }]
+    }]
+
 
     let newProje = {
       _firmaId,
       name: projeName,
-      // wbs: [], // henüz herhangi bir başlık yok fakat yok ama bu property şimdi olmazsa ilk wbs kaydında bir hata yaşıyoruz
-      // lbs: [], // henüz herhangi bir başlık yok fakat yok ama bu property şimdi olmazsa ilk wbs kaydında bir hata yaşıyoruz
+      wbs: [],
+      lbs: [],
       paraBirimleri: [],
       isPaketBasliklari: [],
       isPaketleri: [],
@@ -207,33 +225,28 @@ const createProje = async (req, res) => {
       // mahalBasliklari,
       pozMetrajTipleri,
       pozBirimleri,
-      yetkiliKisiler: [{
-        email: userEmail,
-        isim: userIsim,
-        soyisim: userSoyisim,
-        yetkiler: [{ name: "owner", createdAt: simdikiZaman, createdBy: userEmail }]
-      }],
-      yetkiliFirmalar: [{ _firmaId, yetkiler: { name: "owner" } }],
+      yetkiliKisiler,
+      yetkiliFirmalar: [{ _firmaId, yetkiler: { name: "owner", createdAt: currentTime, createdBy: userEmail } }],
       createdBy: userEmail,
       createdAt: currentTime,
       isDeleted: false
     }
 
-    const result_newProje = await collection_Projeler.insertOne(newProje)
+    const result_newProje = await Proje.create(newProje)
 
     // tüm proje verileri gönderilmiyor, gerekli veriler gönderiliyor
     newProje = {
       _id: result_newProje.insertedId,
       _firmaId,
-      name: projeName,
-      yetkiliFirmalar: [{ _firmaId, yetki: "owner" }]
+      yetkiliKisiler,
+      yetkiliFirmalar,
+      name: projeName
     }
 
-    return newProje;
+    return res.status(401).json({ newProje })
 
   } catch (error) {
-    res.status(401).json({ error: hataBase + error.message })
-    return
+    return res.status(401).json({ error: hataBase + error.message })
   }
 
 }
@@ -241,5 +254,5 @@ const createProje = async (req, res) => {
 
 
 module.exports = {
-  createProje
+  getProjeler_byFirma, createProje
 }

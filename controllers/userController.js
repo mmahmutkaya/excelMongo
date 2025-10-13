@@ -135,7 +135,7 @@ const confirmMailCode = async (req, res) => {
       delete user2.password
       delete user2.mailConfirmationKod
 
-      const token = jwt.sign({ email: user2.email }, process.env.SECRET, { expiresIn: '3d' })
+      const token = jwt.sign({ email: user2.email }, process.env.SECRET, { expiresIn: '7d' })
       user2.token = token
       user2.mailTeyit = true
 
@@ -205,7 +205,7 @@ const saveNecessaryUserData = async (req, res) => {
       delete user2.password
       delete user2.mailConfirmationKod
 
-      const token = jwt.sign({ email: user2.email }, process.env.SECRET, { expiresIn: '3d' })
+      const token = jwt.sign({ email: user2.email }, process.env.SECRET, { expiresIn: '7d' })
       user2.token = token
       user2.mailTeyit = true
 
