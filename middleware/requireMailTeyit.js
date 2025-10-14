@@ -3,7 +3,9 @@ const User = require('../models/userModel')
 
 
 const requireMailTeyit = async (req, res, next) => {
-  // verify user is authenticated
+
+  const hataBase = "BACKEND - (requireMailTeyit) - "
+
   const { email } = req.headers
 
   try {
@@ -17,7 +19,7 @@ const requireMailTeyit = async (req, res, next) => {
     }
 
   } catch (error) {
-    res.status(401).json({ error: 'Email adresi teyit edilmemiş' })
+    return res.status(401).json({ error: hataBase + error })
   }
 }
 

@@ -4,7 +4,7 @@ const User = require('../models/userModel')
 
 const requireAuthAndNecessary = async (req, res, next) => {
 
-  const hataBase = "BACKEND - requireAuthAndNecessary - "
+  const hataBase = "BACKEND - (requireAuthAndNecessary) - "
 
   // verify user is authenticated
   const { email: req_email, token } = req.headers

@@ -7,7 +7,7 @@ var ObjectId = require('mongodb').ObjectId;
 
 const getFirmalar = async (req, res) => {
 
-  const hataBase = "BACKEND - getFirmalar - "
+  const hataBase = "BACKEND - (getFirmalar) - "
 
   try {
 
@@ -18,7 +18,7 @@ const getFirmalar = async (req, res) => {
     res.status(200).json({ firmalar })
 
   } catch (error) {
-    res.status(400).json({ error: hataBase + error.message })
+    res.status(400).json({ error: hataBase + error })
   }
 
 }
@@ -27,7 +27,7 @@ const getFirmalar = async (req, res) => {
 
 const getFirma = async (req, res) => {
 
-  const hataBase = "BACKEND - getFirma - "
+  const hataBase = "BACKEND - (getFirma) - "
 
   const _firmaId = new ObjectId(req.params.id)
 
@@ -38,7 +38,7 @@ const getFirma = async (req, res) => {
     return res.status(200).json({ firma })
 
   } catch (error) {
-    res.status(400).json({ error: hataBase + error.message })
+    res.status(400).json({ error: hataBase + error })
   }
 
 }
@@ -48,7 +48,7 @@ const getFirma = async (req, res) => {
 
 const createFirma = async (req, res) => {
 
-  const hataBase = "BACKEND - createFirma - "
+  const hataBase = "BACKEND - (createFirma) - "
 
   const simdikiZaman = new Date()
 
@@ -223,7 +223,7 @@ const createFirma = async (req, res) => {
     res.status(200).json({ newFirma })
 
   } catch (error) {
-    res.status(400).json({ error: hataBase + error.message })
+    res.status(400).json({ error: hataBase + error })
   }
 
 }

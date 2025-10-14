@@ -8,8 +8,7 @@ var ObjectId = require('mongodb').ObjectId;
 
 const getProjeler_byFirma = async (req, res) => {
 
-  const hataBase = "BACKEND - getProjeler_byFirma - "
-
+  const hataBase = "BACKEND - (getProjeler_byFirma) - "
 
   try {
 
@@ -28,7 +27,7 @@ const getProjeler_byFirma = async (req, res) => {
     res.status(200).json({ projeler })
 
   } catch (error) {
-    res.status(400).json({ error: hataBase + error.message })
+    res.status(400).json({ error: hataBase + error })
   }
 
 }
@@ -37,18 +36,18 @@ const getProjeler_byFirma = async (req, res) => {
 
 const getProje = async (req, res) => {
 
-  const hataBase = "BACKEND - getProje - "
+  const hataBase = "BACKEND - (getProje) - "
 
-  const _projeId = new ObjectId(req.params.id)
+  const projeId = req.params.id
 
   try {
 
-    const proje = await Proje.findOne({ _id: _projeId })
+    const proje = await Proje.findOne({ _id: projeId })
 
     res.status(200).json({ proje })
 
   } catch (error) {
-    res.status(400).json({ error: hataBase + error.message })
+    res.status(400).json({ error: hataBase + error })
   }
 
 }
@@ -58,7 +57,7 @@ const getProje = async (req, res) => {
 
 const createProje = async (req, res) => {
 
-  const hataBase = "BACKEND - createProje - "
+  const hataBase = "BACKEND - (createProje) - "
 
   try {
 
@@ -124,8 +123,8 @@ const createProje = async (req, res) => {
 
 
     // const pozBasliklari = [
-    //   { _id: new BSON.ObjectId(), platform: "web", sira: 1, referans: "pozNo", goster: true, sabit: true, genislik: 7, paddingInfo: "0px 1rem 0px 0px", yatayHiza: "center", name: "Poz No", dataType: "metin" },
-    //   { _id: new BSON.ObjectId(), platform: "web", sira: 2, referans: "pozName", goster: true, sabit: true, genislik: 20, paddingInfo: "0px 1rem 0px 0px", yatayHiza: "center", name: "Poz İsmi", dataType: "metin" },
+    //   { _id: new ObjectId(), platform: "web", sira: 1, referans: "pozNo", goster: true, sabit: true, genislik: 7, paddingInfo: "0px 1rem 0px 0px", yatayHiza: "center", name: "Poz No", dataType: "metin" },
+    //   { _id: new ObjectId(), platform: "web", sira: 2, referans: "pozName", goster: true, sabit: true, genislik: 20, paddingInfo: "0px 1rem 0px 0px", yatayHiza: "center", name: "Poz İsmi", dataType: "metin" },
     // ]
 
 
@@ -148,8 +147,8 @@ const createProje = async (req, res) => {
 
 
     // const mahalBasliklari = [
-    //   { _id: new BSON.ObjectId(), sira: 1, referans: "mahalNo", goster: true, sabit: true, genislik: 7, paddingInfo: "0px 1rem 0px 0px", yatayHiza: "center", name: "Mahal Kod", dataType: "metin" },
-    //   { _id: new BSON.ObjectId(), sira: 2, referans: "mahalName", goster: true, sabit: true, genislik: 20, paddingInfo: "0px 1rem 0px 0px", yatayHiza: "center", name: "Mahal İsmi", dataType: "metin" },
+    //   { _id: new ObjectId(), sira: 1, referans: "mahalNo", goster: true, sabit: true, genislik: 7, paddingInfo: "0px 1rem 0px 0px", yatayHiza: "center", name: "Mahal Kod", dataType: "metin" },
+    //   { _id: new ObjectId(), sira: 2, referans: "mahalName", goster: true, sabit: true, genislik: 20, paddingInfo: "0px 1rem 0px 0px", yatayHiza: "center", name: "Mahal İsmi", dataType: "metin" },
     // ]
 
 
@@ -249,7 +248,7 @@ const createProje = async (req, res) => {
     return res.status(200).json({ newProje })
 
   } catch (error) {
-    return res.status(401).json({ error: hataBase + error.message })
+    return res.status(401).json({ error: hataBase + error })
   }
 
 }
@@ -259,11 +258,9 @@ const createProje = async (req, res) => {
 
 
 
-
-
 const createWbs = async (req, res) => {
 
-  const hataBase = "BACKEND - createWbs - "
+  const hataBase = "BACKEND - (createWbs) - "
 
   const { projeId, upWbsId, newWbsName, newWbsCodeName } = req.body
 
@@ -271,18 +268,11 @@ const createWbs = async (req, res) => {
 
 
     if (!projeId) {
-      throw new Error("Sorguya 'projeId' gönderilmemiş.")
+      throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-
-    const _projeId = new ObjectId(projeId)
-    if (!mongoose.Types.ObjectId.isValid(_projeId)) {
-      throw new Error("Sorguya gelen 'projeId' türü doğru değil.")
-    }
-
-
-    if (!(upWbsId === "0" || typeof upWbsId === "object")) {
-      throw new Error("--upWbsId-- sorguya, gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    if (!upWbsId) {
+      throw new Error("'upWbsId' sorguya, gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
 
@@ -322,22 +312,19 @@ const createWbs = async (req, res) => {
       return res.status(200).json({ errorObject })
     }
 
-    // burada kaldık
+
+    const proje = await Proje.findOne({ _id: projeId, isDeleted: false })
+    if (!proje) {
+      throw new Error("talep edilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
 
 
-    const collection_projeler = context.services.get("mongodb-atlas").db("rapor724_v2").collection("projeler")
-    const proje = await collection_projeler.findOne({ _id: _projeId, isDeleted: false })
-    if (!proje) throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // _projeId ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-
-
-
-
-    // 1/3.seçenek - yukarıda bitmemiş
+    // 1/3.seçenek
     //ilk defa wbs kaydı yapılacaksa, yani henüz "proje.wbs" yoksa
     if (!proje.wbs || proje.wbs.length === 0) {
 
       const newWbsItem = {
-        _id: BSON.ObjectId(),
+        _id: new ObjectId(),
         code: "1",
         name: newWbsName,
         codeName: newWbsCodeName,
@@ -347,18 +334,17 @@ const createWbs = async (req, res) => {
 
       try {
 
-        const result = await collection_projeler.updateOne(
-          { _id: _projeId },
+        const result = await Proje.updateOne(
+          { _id: projeId },
           [
             { $set: { wbs: [newWbsItem] } }
           ]
         );
 
-        return { result, wbs: [newWbsItem] }
+        return res.status(200).json({ result, wbs: [newWbsItem] })
 
-      } catch (err) {
-
-        throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // bölüm 1/3 " + err.message)
+      } catch (error) {
+        return res.status(400).json({ error: hataBase + "bölüm 1/3 - " + error })
       }
 
     }
@@ -366,7 +352,7 @@ const createWbs = async (req, res) => {
 
 
     // 2/3.seçenek - yukarıda bitmemiş
-    // en üst düzeye kayıt yapılacaksa - aşağıdaki fonksiyonlar en üst seviyeye göre hazırlanmış 
+    // ilk kayıt değil ama en üst düzeye kayıt yapılacaksa - aşağıdaki fonksiyonlar en üst seviyeye göre hazırlanmış 
     if (upWbsId === "0") {
 
       let newNumber = 1
@@ -385,11 +371,13 @@ const createWbs = async (req, res) => {
 
       })
 
-      if (Object.keys(errorObject).length) return ({ errorObject })
+      if (Object.keys(errorObject).length > 0) {
+        return res.status(200).json({ errorObject })
+      }
 
 
       const newWbsItem = {
-        _id: BSON.ObjectId(),
+        _id: new ObjectId(),
         code: newNumber.toString(),
         name: newWbsName,
         codeName: newWbsCodeName,
@@ -400,8 +388,8 @@ const createWbs = async (req, res) => {
 
       try {
 
-        const result = await collection_projeler.updateOne(
-          { _id: _projeId },
+        const result = await Proje.updateOne(
+          { _id: projeId },
           [
             { $set: { wbs: { $concatArrays: ["$wbs", [newWbsItem]] } } }
           ]
@@ -410,11 +398,10 @@ const createWbs = async (req, res) => {
         let currentWbsArray = proje.wbs
         let newWbsArray = [...currentWbsArray, newWbsItem]
 
-        return { result, wbs: newWbsArray }
+        return res.status(200).json({ result, wbs: newWbsArray })
 
-      } catch (err) {
-
-        throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // bölüm 2/3 " + err.message)
+      } catch (error) {
+        return res.status(400).json({ error: hataBase + "bölüm 2/3 - " + error })
       }
 
     }
@@ -427,15 +414,15 @@ const createWbs = async (req, res) => {
 
     let upWbs = proje.wbs.find(item => item._id.toString() == upWbsId.toString())
     if (!upWbs) {
-      throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // upWbsId sistemde bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+      throw new Error("'upWbsId' sistemde bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
     if (upWbs.code?.split(".").length === 8) {
-      throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // __mesajBaslangic__ Daha fazla alt başlık oluşturamazsınız. __mesajBitis__")
+      throw new Error("Daha fazla alt başlık oluşturamazsınız.")
     }
 
     if (upWbs.openForPoz == true) {
-      throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // __mesajBaslangic__ Poz eklemeye açmış olduğunuz başlığa alt başlık ekleyemezsiniz. __mesajBitis__")
+      throw new Error("Poz eklemeye açmış olduğunuz başlığa alt başlık ekleyemezsiniz.")
     }
 
     let upWbsCode = upWbs.code
@@ -458,11 +445,13 @@ const createWbs = async (req, res) => {
 
     })
 
-    if (Object.keys(errorObject).length) return ({ errorObject })
+    if (Object.keys(errorObject).length > 0) {
+      return res.status(200).json({ errorObject })
+    }
 
 
     let newWbsItem = {
-      _id: BSON.ObjectId(),
+      _id: new ObjectId(),
       code: text + newNumber,
       name: newWbsName,
       codeName: newWbsCodeName,
@@ -472,8 +461,8 @@ const createWbs = async (req, res) => {
 
     try {
 
-      const result = await collection_projeler.updateOne(
-        { _id: _projeId },
+      const result = await Proje.updateOne(
+        { _id: projeId },
         [
           { $set: { wbs: { $concatArrays: ["$wbs", [newWbsItem]] } } }
         ]
@@ -482,15 +471,368 @@ const createWbs = async (req, res) => {
       let currentWbsArray = proje.wbs
       let newWbsArray = [...currentWbsArray, newWbsItem]
 
-      return { result, wbs: newWbsArray }
+      return res.status(200).json({ result, wbs: newWbsArray })
 
     } catch (error) {
-      return res.status(401).json({ error: hataBase + " - bölüm 3/3 - " + error.message })
+      return res.status(400).json({ error: hataBase + "bölüm 3/3 - " + error })
     }
 
 
   } catch (error) {
-    return res.status(401).json({ error: hataBase + error.message })
+    return res.status(400).json({ error: hataBase + error })
+  }
+
+
+}
+
+
+
+const updateWbs = async (req, res) => {
+
+  const hataBase = "BACKEND - (updateWbs) - "
+
+  const { projeId, wbsId, newWbsName, newWbsCodeName } = req.body
+
+  try {
+
+    if (!projeId) {
+      throw new Error("db ye 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor724 ile iritbata geçiniz.")
+    }
+
+    if (!wbsId) {
+      throw new Error("db ye 'wbsId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor724 ile iritbata geçiniz.")
+    }
+
+    const errorObject = {}
+
+    // newWbsName
+    if (typeof newWbsName !== "string") {
+      throw new Error("db ye gelen wbsName türü 'string' türünde değil, sayfayı yenileyiniz, sorun devam ederse Rapor724 ile iritbata geçiniz.")
+    }
+
+    if (newWbsName.length < 1) {
+      errorObject.wbsNameError = "Boş bırakılamaz"
+    }
+
+
+    // newWbsCodeName
+    if (typeof newWbsCodeName !== "string") {
+      throw new Error("db ye gelen wbsCodeName türü 'string' türünde değil, sayfayı yenileyiniz, sorun devam ederse Rapor724 ile iritbata geçiniz.")
+    }
+
+    if (newWbsCodeName.length < 1) {
+      errorObject.wbsCodeNameError = "Boş bırakılamaz"
+    }
+
+    if (newWbsCodeName.includes(" ")) {
+      errorObject.wbsCodeNameError = "Boşluk içermemeli"
+    }
+
+    // ARA VALIDATE KONTROL - VALIDATE HATA VARSA BOŞUNA DEVAM EDİP AŞAĞIDAKİ SORGUYU YAPMASIN
+    if (Object.keys(errorObject).length > 0) {
+      return res.status(200).json({ errorObject })
+    }
+
+
+    const proje = await Proje.findOne({ _id: projeId, isDeleted: false })
+    if (!proje) throw new Error("dorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    if (!proje.wbs.find(x => x._id == wbsId)) throw new Error("güncellenmek istenen wbsId sistemde bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+
+
+
+
+    const newWbsArray = proje.wbs.map(item => {
+      if (item._id.toString() === wbsId.toString()) {
+        return { ...item, name: newWbsName, codeName: newWbsCodeName }
+      } else {
+        return item
+      }
+    })
+
+    const result = await Proje.updateOne(
+      { _id: projeId },
+      [
+        { $set: { wbs: newWbsArray } }
+      ]
+    );
+
+
+    return res.status(200).json({ result, wbs: newWbsArray })
+
+
+  } catch (error) {
+    return res.status(400).json({ error: hataBase + error })
+  }
+
+}
+
+
+const toggleWbsForPoz = async (req, res) => {
+
+  const hataBase = "BACKEND - (toggleWbsForPoz) - "
+
+  const { projeId, wbsId, switchValue } = req.body
+
+
+  try {
+
+    if (!projeId) {
+      throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!wbsId) {
+      throw new Error("Sorguya 'wbsId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!(switchValue === true || switchValue === false)) {
+      throw new Error("Sorguya 'switchValue' değeri gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+
+    const proje = await Proje.findOne({ _id: projeId, isDeleted: false })
+    if (!proje) throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+
+    if (!proje.wbs) throw new Error("projeye ait herhangi bir poz başlığı olmadığı görüldü, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+
+    let wbs = proje.wbs.find(item => item._id == wbsId)
+    if (!wbs) {
+      throw new Error("sorguya gönderilen 'wbsId' ile projeye ait WBS bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    // wbsCode un alt seviyeleri mevcutsa direk poz eklenemesin
+    // burada includes kullanamayız çünkü içinde değil başında arıyoruz
+    let text = wbs.code + "."
+    if (proje.wbs.find(item => item.code.indexOf(text) === 0)) {
+      throw new Error("Alt başlığı bulunan başlıklar poz eklemeye açılamaz.")
+    }
+
+
+    const newWbsArray = proje.wbs.map(item => {
+      if (item.code === wbs.code) {
+        return { ...item, openForPoz: switchValue }
+      } else {
+        return item
+      }
+    })
+
+    const result = await Proje.updateOne(
+      { _id: projeId },
+      [
+        { $set: { wbs: newWbsArray } }
+      ]
+    );
+
+    return res.status(200).json({ result, wbs: newWbsArray })
+
+  } catch (error) {
+    return res.status(401).json({ error: hataBase + error })
+  }
+
+
+}
+
+
+
+const deleteWbs = async (req, res) => {
+
+  const hataBase = "BACKEND - (deleteWbs) - "
+
+  const { projeId, wbsId } = req.body
+
+
+  try {
+
+    if (!projeId) {
+      throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!wbsId) {
+      throw new Error("Sorguya 'wbsId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+
+    const proje = await Proje.findOne({ _id: projeId, isDeleted: false })
+    if (!proje) throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+
+    let { wbs: currentWbsArray } = proje
+    if (!currentWbsArray) throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // Projeye ait WBS bulunamadı")
+
+    // return {currentWbsArray, _wbsId}
+
+    let oneWbs = await currentWbsArray.find(item => item._id.toString() == _wbsId.toString())
+
+    if (!oneWbs) throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // Sorguya gönderilen _wbsId sistemde bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+
+    // aşağıda pozlar collection da poz var mı diye sorgulama yapmaya gerek kalmadı
+    if (oneWbs.openForPoz) throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // __mesajBaslangic__ Poz eklemeye açık başlıklar silinemez. __mesajBitis__")
+
+    // wbs in alt seviyeleri mevcutsa silinmesin
+    // burada includes kullanamayız çünkü içinde değil başında arıyoruz
+    let { code: oneWbsCode } = oneWbs
+    if (currentWbsArray.find(item => item.code.indexOf(oneWbsCode + ".") === 0)) {
+      throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // " + "__mesajBaslangic__ Silmek istediğiniz  WBS'in alt seviyeleri mevcut, öncelikle onları silmelisiniz. __mesajBitis__")
+    }
+
+    const collection_pozlar = context.services.get("mongodb-atlas").db("rapor724_v2").collection("pozlar")
+    const poz = await collection_pozlar.findOne({ _wbsId, isDeleted: false })
+
+    // wbs altına poz eklenmişse silinmesin, pozlara ulaşamayız
+    if (poz) throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // " + "__mesajBaslangic__ Altında poz bulunan başlıklar silinemez. __mesajBitis__")
+
+
+
+
+    // 1/2. seçenek -- en üst seviyede silme yapılacaksa
+    if (!oneWbsCode.includes(".")) {
+
+      try {
+
+        const willBeDeletedWbsCode = oneWbsCode
+        // const leftPart = willBeDeletedWbsCode.substring(0, willBeDeletedWbsCode.lastIndexOf("."))
+
+        // seçili wbs i listeden çıkarma
+        const newWbsArray = currentWbsArray.filter(item => {
+          if (item.code != willBeDeletedWbsCode) {
+            return item
+          }
+        })
+
+
+        // silinme işleminden sonra komşu wbs lerin code numarasını düzenleme, silinenden sonrakilerin code numarasında ilgili kısmı 1 azaltma
+        // değişecek wbs code ların alt wbs leri de olabilir, alt wbs lerinde ilgili haneleri 1 azalmalı
+        // unutma bu kısım en üst wbs ler için aşağıdan farklı
+
+        // en üst (0) seviye olduğu için tek hane ve kendisi silinecek sayı zaten
+        let willBeDeletedNumber = parseInt(willBeDeletedWbsCode)
+        let longText
+        let rightPart
+        let theNumberText
+        let theNumber
+
+        const newWbsArray2 = newWbsArray.map(item => {
+
+          longText = item.code
+
+          if (longText.includes(".")) {
+            theNumberText = longText.split(".")[0]
+            theNumber = parseInt(theNumberText)
+            // rightPart 11.23.45 --> 23.45
+            rightPart = longText.substring(theNumberText.length + 1, longText.length)
+            if (theNumber > willBeDeletedNumber) {
+              return { ...item, code: (theNumber - 1) + "." + rightPart }
+            } else {
+              return item
+            }
+          }
+
+          if (!longText.includes(".")) {
+            // theNumberText = longText.split(".")[0]
+            // theNumberText = longText
+            // theNumber = parseInt(theNumberText)
+            theNumber = parseInt(longText)
+
+            if (theNumber > willBeDeletedNumber) {
+              return { ...item, code: (theNumber - 1).toString() }
+            } else {
+              return item
+            }
+          }
+
+
+        })
+
+        // return newWbsArray2
+
+        const result = await collection_projeler.updateOne(
+          { _id: _projeId },
+          [
+            { $set: { wbs: newWbsArray2 } }
+          ]
+        );
+
+        return { result, wbs: newWbsArray2 }
+
+      } catch (err) {
+        return res.status(401).json({ error: hataBase + error })
+      }
+
+    }
+
+
+
+
+
+    // 2/2. seçenek -- en üst seviye değilse
+    if (oneWbsCode.includes(".")) {
+
+      try {
+
+        const willBeDeletedWbsCode = oneWbsCode
+
+        // seçili wbs i listeden çıkarma
+        const newWbsArray = currentWbsArray.filter(item => {
+          if (item.code != willBeDeletedWbsCode) {
+            return item
+          }
+        })
+
+
+
+        let level = willBeDeletedWbsCode.split(".").length - 1
+        // silinecek wbs numarasının en son hanede olduğunu biliyoruz çünkü son haneden önceki hanesi silinecek olsa alt seviyesi olmuş olurdu, yukarıdaki kontrolden geçmezdi
+        let willBeDeletedNumber = parseInt(willBeDeletedWbsCode.split(".")[level])
+
+        // leftPart - değişecek hane son hane demiştik, sabit baş kısmını alıyoruz, aşağıda işlem yapacağız -- 11.23.45 --> 11.23
+        const leftPart = willBeDeletedWbsCode.substring(0, willBeDeletedWbsCode.lastIndexOf("."))
+        let longText
+        let rightPartWithTheNumber
+        let rightPart
+        let theNumberText
+        let theNumber
+        //
+        const newWbsArray2 = newWbsArray.map(item => {
+
+          if (item.code.indexOf(leftPart) === 0) {
+            longText = item.code
+            rightPartWithTheNumber = longText.substring(leftPart.length + 1, longText.length)
+            theNumberText = rightPartWithTheNumber.split(".")[0]
+            theNumber = parseInt(theNumberText)
+            rightPart = rightPartWithTheNumber.substring(theNumberText.length + 1, rightPartWithTheNumber.length)
+
+            if (theNumber > willBeDeletedNumber) {
+              if (rightPart.length) {
+                return { ...item, code: leftPart + "." + (theNumber - 1) + "." + rightPart }
+              } else {
+                return { ...item, code: leftPart + "." + (theNumber - 1) }
+              }
+            } else {
+              return item
+            }
+
+          } else {
+            return item
+          }
+        })
+
+        // return newWbsArray2
+
+        const result = await collection_projeler.updateOne(
+          { _id: _projeId },
+          [
+            { $set: { wbs: newWbsArray2 } }
+          ]
+        );
+
+        return { result, wbs: newWbsArray2 }
+
+      } catch (error) {
+        return res.status(401).json({ error: hataBase + error })
+      }
+
+    }
+
+  } catch (error) {
+    return res.status(401).json({ error: hataBase + error })
   }
 
 
@@ -499,7 +841,6 @@ const createWbs = async (req, res) => {
 
 
 
-
 module.exports = {
-  getProjeler_byFirma, getProje, createProje, createWbs
+  getProjeler_byFirma, getProje, createProje, createWbs, updateWbs, toggleWbsForPoz, deleteWbs
 }

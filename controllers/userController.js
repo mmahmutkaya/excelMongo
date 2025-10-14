@@ -6,6 +6,8 @@ const jwt = require('jsonwebtoken')
 // signup a user
 const signupUser = async (req, res) => {
 
+  const hataBase = "BACKEND - (signupUser) - "
+
   const { email, password } = req.body
 
   try {
@@ -22,7 +24,7 @@ const signupUser = async (req, res) => {
     }
 
   } catch (error) {
-    res.status(400).json({ error: error.message })
+    res.status(400).json({ error: hataBase + error })
   }
 }
 
@@ -30,6 +32,8 @@ const signupUser = async (req, res) => {
 
 // login a user
 const loginUser = async (req, res) => {
+
+  const hataBase = "BACKEND - (loginUser) - "
 
   const { email, password } = req.body
 
@@ -48,7 +52,7 @@ const loginUser = async (req, res) => {
     }
 
   } catch (error) {
-    res.status(400).json({ error: error.message })
+    res.status(400).json({ error: hataBase + error })
   }
 }
 
@@ -57,6 +61,8 @@ const loginUser = async (req, res) => {
 
 // send mail code
 const sendMailCode = async (req, res) => {
+
+  const hataBase = "BACKEND - (loginUser) - "
 
   const { email: userEmail } = req.headers
 
@@ -99,7 +105,7 @@ const sendMailCode = async (req, res) => {
     res.status(200).json("Mail adresinize gelen kodu giriniz.")
 
   } catch (error) {
-    res.status(400).json({ error: error.message })
+    res.status(400).json({ error: hataBase + error })
   }
 
 }
@@ -110,6 +116,8 @@ const sendMailCode = async (req, res) => {
 
 // confirm mail code
 const confirmMailCode = async (req, res) => {
+
+  const hataBase = "BACKEND - (loginUser) - "
 
   const { email: userEmail } = req.headers
   const { mailCode } = req.body
@@ -147,7 +155,7 @@ const confirmMailCode = async (req, res) => {
 
 
   } catch (error) {
-    res.status(400).json({ error: error.message })
+    res.status(400).json({ error: hataBase + error })
   }
 
 }
@@ -157,6 +165,8 @@ const confirmMailCode = async (req, res) => {
 
 // confirm mail code
 const saveNecessaryUserData = async (req, res) => {
+
+  const hataBase = "BACKEND - (loginUser) - "
 
   const { email } = req.headers
   const { isim, soyisim } = req.body
@@ -216,7 +226,7 @@ const saveNecessaryUserData = async (req, res) => {
     }
 
   } catch (error) {
-    res.status(400).json({ error: error.message })
+    res.status(400).json({ error: hataBase + error })
   }
 
 }
