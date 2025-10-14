@@ -35,7 +35,7 @@ const getFirma = async (req, res) => {
 
     const firma = await Firma.findOne({ _id: _firmaId })
 
-    res.status(200).json({ firma })
+    return res.status(200).json({ firma })
 
   } catch (error) {
     res.status(400).json({ error: hataBase + error.message })

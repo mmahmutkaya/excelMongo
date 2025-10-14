@@ -10,9 +10,10 @@ const getProjeler_byFirma = async (req, res) => {
 
   const hataBase = "BACKEND - getProjeler_byFirma - "
 
+
   try {
 
-    const { firmaId } = req.body
+    const firmaId = req.params.id
     if (!firmaId) {
       throw new Error("Sorguya 'firmaId' gönderilmemiş.")
     }
@@ -22,7 +23,7 @@ const getProjeler_byFirma = async (req, res) => {
       throw new Error("Sorguya gelen 'firmaId' türü doğru değil.")
     }
 
-    const projeler = await Proje.find({ _firmaId }, { name: 1, yetkiliKisiler: 1, yetkiliFirmalar: 1 })
+    const projeler = await Proje.find({ _firmaId }, { name: 1, _firmaId: 1, yetkiliKisiler: 1, yetkiliFirmalar: 1 })
 
     res.status(200).json({ projeler })
 
@@ -34,23 +35,23 @@ const getProjeler_byFirma = async (req, res) => {
 
 
 
-// const getFirma = async (req, res) => {
+const getProje = async (req, res) => {
 
-//   const hataBase = "BACKEND - getFirma - "
+  const hataBase = "BACKEND - getProje - "
 
-//   const _firmaId = new ObjectId(req.params.id)
+  const _projeId = new ObjectId(req.params.id)
 
-//   try {
+  try {
 
-//     const firma = await Firma.findOne({ _id: _firmaId })
+    const proje = await Proje.findOne({ _id: _projeId })
 
-//     res.status(200).json({ firma })
+    res.status(200).json({ proje })
 
-//   } catch (error) {
-//     res.status(400).json({ error: hataBase + error.message })
-//   }
+  } catch (error) {
+    res.status(400).json({ error: hataBase + error.message })
+  }
 
-// }
+}
 
 
 
@@ -104,8 +105,6 @@ const createProje = async (req, res) => {
 
 
     const isExist = await Proje.findOne({ name: projeName, _firmaId })
-    return res.status(200).json({ isExist })
-
     if (isExist && !errorObject.projeNameError) {
       errorObject.projeNameError = "Firmanın bu isimde projesi mevcut"
     }
@@ -212,6 +211,10 @@ const createProje = async (req, res) => {
       yetkiler: [{ name: "owner", createdAt: currentTime, createdBy: userEmail }]
     }]
 
+    let yetkiliFirmalar = [{
+      _firmaId, yetkiler: { name: "owner", createdAt: currentTime, createdBy: userEmail }
+    }]
+
 
     let newProje = {
       _firmaId,
@@ -226,7 +229,7 @@ const createProje = async (req, res) => {
       pozMetrajTipleri,
       pozBirimleri,
       yetkiliKisiler,
-      yetkiliFirmalar: [{ _firmaId, yetkiler: { name: "owner", createdAt: currentTime, createdBy: userEmail } }],
+      yetkiliFirmalar,
       createdBy: userEmail,
       createdAt: currentTime,
       isDeleted: false
@@ -243,7 +246,7 @@ const createProje = async (req, res) => {
       name: projeName
     }
 
-    return res.status(401).json({ newProje })
+    return res.status(200).json({ newProje })
 
   } catch (error) {
     return res.status(401).json({ error: hataBase + error.message })
@@ -253,6 +256,250 @@ const createProje = async (req, res) => {
 
 
 
+
+
+
+
+
+const createWbs = async (req, res) => {
+
+  const hataBase = "BACKEND - createWbs - "
+
+  const { projeId, upWbsId, newWbsName, newWbsCodeName } = req.body
+
+  try {
+
+
+    if (!projeId) {
+      throw new Error("Sorguya 'projeId' gönderilmemiş.")
+    }
+
+
+    const _projeId = new ObjectId(projeId)
+    if (!mongoose.Types.ObjectId.isValid(_projeId)) {
+      throw new Error("Sorguya gelen 'projeId' türü doğru değil.")
+    }
+
+
+    if (!(upWbsId === "0" || typeof upWbsId === "object")) {
+      throw new Error("--upWbsId-- sorguya, gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+
+    // aşağıdaki form verilerinden birinde hata tespit edilmişse
+    // alt satırda oluşturulan errorObject objesine form verisi ile ilişkilendirilmiş  property oluşturulup, içine yazı yazılıyor
+    // property isimleri yukarıda ilk satırda frontend den gelen verileri yakalarken kullanılanlar ile aynı 
+    // fonksiyon returnü olarak errorObject objesi döndürülüyor, frontenddeki form ekranında form verisine ait ilgili alanda bu yazı gösteriliyor
+    // form ile ilişkilendirilmiş ilgili alana ait bir ke hata yazısı yazılmışsa yani null değilse üstüne yazı yazılmıyor, ilk tespit edilen hata değiştirilmmeiş oluyor
+
+    const errorObject = {}
+
+    // newWbsName
+    if (typeof newWbsName !== "string") {
+      throw new Error("db ye gelen wbsName türü 'string' türünde değil, sayfayı yenileyiniz, sorun devam ederse Rapor724 ile iritbata geçiniz.")
+    }
+
+    if (newWbsName.length < 1) {
+      errorObject.wbsNameError = "Boş bırakılamaz"
+    }
+
+
+    // newWbsCodeName
+    if (typeof newWbsCodeName !== "string") {
+      throw new Error("db ye gelen wbsCodeName türü 'string' türünde değil, sayfayı yenileyiniz, sorun devam ederse Rapor724 ile iritbata geçiniz.")
+    }
+
+    if (newWbsCodeName.length < 1) {
+      errorObject.wbsCodeNameError = "Boş bırakılamaz"
+    }
+
+    if (newWbsCodeName.includes(" ")) {
+      errorObject.wbsCodeNameError = "Boşluk içermemeli"
+    }
+
+    // ARA VALIDATE KONTROL - VALIDATE HATA VARSA BOŞUNA DEVAM EDİP AŞAĞIDAKİ SORGUYU YAPMASIN
+    if (Object.keys(errorObject).length > 0) {
+      return res.status(200).json({ errorObject })
+    }
+
+    // burada kaldık
+
+
+    const collection_projeler = context.services.get("mongodb-atlas").db("rapor724_v2").collection("projeler")
+    const proje = await collection_projeler.findOne({ _id: _projeId, isDeleted: false })
+    if (!proje) throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // _projeId ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+
+
+
+
+    // 1/3.seçenek - yukarıda bitmemiş
+    //ilk defa wbs kaydı yapılacaksa, yani henüz "proje.wbs" yoksa
+    if (!proje.wbs || proje.wbs.length === 0) {
+
+      const newWbsItem = {
+        _id: BSON.ObjectId(),
+        code: "1",
+        name: newWbsName,
+        codeName: newWbsCodeName,
+        includesPoz: false,
+        openForPoz: false
+      }
+
+      try {
+
+        const result = await collection_projeler.updateOne(
+          { _id: _projeId },
+          [
+            { $set: { wbs: [newWbsItem] } }
+          ]
+        );
+
+        return { result, wbs: [newWbsItem] }
+
+      } catch (err) {
+
+        throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // bölüm 1/3 " + err.message)
+      }
+
+    }
+
+
+
+    // 2/3.seçenek - yukarıda bitmemiş
+    // en üst düzeye kayıt yapılacaksa - aşağıdaki fonksiyonlar en üst seviyeye göre hazırlanmış 
+    if (upWbsId === "0") {
+
+      let newNumber = 1
+      let number
+
+      proje.wbs.filter(item => !item.code.includes(".")).map(item => {
+
+        item.name === newWbsName ? errorObject.wbsNameError = "Aynı grup içinde kullanılmış" : null
+        item.codeName === newWbsCodeName ? errorObject.wbsCodeNameError = "Aynı grup içinde kullanılmış" : null
+
+        number = parseInt(item.code)
+
+        if (number >= newNumber) {
+          return newNumber = number + 1
+        }
+
+      })
+
+      if (Object.keys(errorObject).length) return ({ errorObject })
+
+
+      const newWbsItem = {
+        _id: BSON.ObjectId(),
+        code: newNumber.toString(),
+        name: newWbsName,
+        codeName: newWbsCodeName,
+        includesPoz: false,
+        openForPoz: false
+      }
+
+
+      try {
+
+        const result = await collection_projeler.updateOne(
+          { _id: _projeId },
+          [
+            { $set: { wbs: { $concatArrays: ["$wbs", [newWbsItem]] } } }
+          ]
+        );
+
+        let currentWbsArray = proje.wbs
+        let newWbsArray = [...currentWbsArray, newWbsItem]
+
+        return { result, wbs: newWbsArray }
+
+      } catch (err) {
+
+        throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // bölüm 2/3 " + err.message)
+      }
+
+    }
+
+
+
+
+    // 3/3.seçenek - yukarıda bitmemiş
+    // en üst düzey olmayıp mevcut wbs kaydına ekleme yapılacaksa
+
+    let upWbs = proje.wbs.find(item => item._id.toString() == upWbsId.toString())
+    if (!upWbs) {
+      throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // upWbsId sistemde bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (upWbs.code?.split(".").length === 8) {
+      throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // __mesajBaslangic__ Daha fazla alt başlık oluşturamazsınız. __mesajBitis__")
+    }
+
+    if (upWbs.openForPoz == true) {
+      throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // __mesajBaslangic__ Poz eklemeye açmış olduğunuz başlığa alt başlık ekleyemezsiniz. __mesajBitis__")
+    }
+
+    let upWbsCode = upWbs.code
+
+    let text = upWbsCode + "."
+    let level = text.split(".").length - 1
+    let newNumber = 1
+    let number
+
+    proje.wbs.filter(item => item.code.indexOf(text) == 0 && item.code.split(".").length - 1 == level).map(item => {
+
+      item.name === newWbsName ? errorObject.wbsNameError = "Aynı grup içinde kullanılmış" : null
+      item.codeName === newWbsCodeName ? errorObject.wbsCodeNameError = "Aynı grup içinde kullanılmış" : null
+
+      // yeni eklenecek wbs son hane numarasını belirlemek için aynı seviyedeki diğer wbs son numaraları kontrol ediliyor
+      number = parseInt(item.code.split(text)[1])
+      if (number >= newNumber) {
+        return newNumber = number + 1
+      }
+
+    })
+
+    if (Object.keys(errorObject).length) return ({ errorObject })
+
+
+    let newWbsItem = {
+      _id: BSON.ObjectId(),
+      code: text + newNumber,
+      name: newWbsName,
+      codeName: newWbsCodeName,
+      includesPoz: false,
+      openForPoz: false
+    }
+
+    try {
+
+      const result = await collection_projeler.updateOne(
+        { _id: _projeId },
+        [
+          { $set: { wbs: { $concatArrays: ["$wbs", [newWbsItem]] } } }
+        ]
+      );
+
+      let currentWbsArray = proje.wbs
+      let newWbsArray = [...currentWbsArray, newWbsItem]
+
+      return { result, wbs: newWbsArray }
+
+    } catch (error) {
+      return res.status(401).json({ error: hataBase + " - bölüm 3/3 - " + error.message })
+    }
+
+
+  } catch (error) {
+    return res.status(401).json({ error: hataBase + error.message })
+  }
+
+
+}
+
+
+
+
+
 module.exports = {
-  getProjeler_byFirma, createProje
+  getProjeler_byFirma, getProje, createProje, createWbs
 }

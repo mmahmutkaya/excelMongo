@@ -1,6 +1,6 @@
 const express = require('express')
 const {
-  getProjeler_byFirma, createProje
+  getProjeler_byFirma, getProje, createProje, createWbs
 } = require('../controllers/projeController')
 
 const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
@@ -12,10 +12,10 @@ router.use(requireAuthAndNecessary)
 
 
 // GET all getProjeler_byFirma
-router.get('/byfirma', getProjeler_byFirma)
+router.get('/byfirma/:id', getProjeler_byFirma)
 
-// // // GET a single proje
-// router.get('/:id', getProje)
+// GET a single proje
+router.get('/:id', getProje)
 
 // // POST a new proje
 router.post('/', createProje)
@@ -25,5 +25,12 @@ router.post('/', createProje)
 
 // // UPDATE a proje
 // router.patch('/:id', updateProje)
+
+
+
+// WBS
+router.post('/createwbs', createWbs)
+
+
 
 module.exports = router
