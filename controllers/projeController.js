@@ -1,4 +1,5 @@
 const Proje = require('../models/projeModel')
+const Poz = require('../models/pozModel')
 
 
 const mongoose = require('mongoose')
@@ -412,7 +413,7 @@ const createWbs = async (req, res) => {
     // 3/3.seçenek - yukarıda bitmemiş
     // en üst düzey olmayıp mevcut wbs kaydına ekleme yapılacaksa
 
-    let upWbs = proje.wbs.find(item => item._id.toString() == upWbsId.toString())
+    let upWbs = proje.wbs.find(item => item._id == upWbsId)
     if (!upWbs) {
       throw new Error("'upWbsId' sistemde bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
@@ -542,7 +543,7 @@ const updateWbs = async (req, res) => {
 
 
     const newWbsArray = proje.wbs.map(item => {
-      if (item._id.toString() === wbsId.toString()) {
+      if (item._id === wbsId) {
         return { ...item, name: newWbsName, codeName: newWbsCodeName }
       } else {
         return item
@@ -655,29 +656,26 @@ const deleteWbs = async (req, res) => {
     if (!proje) throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
 
     let { wbs: currentWbsArray } = proje
-    if (!currentWbsArray) throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // Projeye ait WBS bulunamadı")
+    if (!currentWbsArray) throw new Error("Projeye ait WBS bulunamadı")
 
-    // return {currentWbsArray, _wbsId}
+    let oneWbs = await currentWbsArray.find(item => item._id == wbsId)
 
-    let oneWbs = await currentWbsArray.find(item => item._id.toString() == _wbsId.toString())
-
-    if (!oneWbs) throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // Sorguya gönderilen _wbsId sistemde bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    if (!oneWbs) throw new Error("Sorguya gönderilen wbsId sistemde bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
 
     // aşağıda pozlar collection da poz var mı diye sorgulama yapmaya gerek kalmadı
-    if (oneWbs.openForPoz) throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // __mesajBaslangic__ Poz eklemeye açık başlıklar silinemez. __mesajBitis__")
+    if (oneWbs.openForPoz) throw new Error("Poz eklemeye açık başlıklar silinemez.")
 
     // wbs in alt seviyeleri mevcutsa silinmesin
     // burada includes kullanamayız çünkü içinde değil başında arıyoruz
     let { code: oneWbsCode } = oneWbs
     if (currentWbsArray.find(item => item.code.indexOf(oneWbsCode + ".") === 0)) {
-      throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // " + "__mesajBaslangic__ Silmek istediğiniz  WBS'in alt seviyeleri mevcut, öncelikle onları silmelisiniz. __mesajBitis__")
+      throw new Error("Alt başlığı bulunan başlıklar silinemez.")
     }
 
-    const collection_pozlar = context.services.get("mongodb-atlas").db("rapor724_v2").collection("pozlar")
-    const poz = await collection_pozlar.findOne({ _wbsId, isDeleted: false })
+    const poz = await Poz.findOne({ wbsId, isDeleted: false })
 
     // wbs altına poz eklenmişse silinmesin, pozlara ulaşamayız
-    if (poz) throw new Error("MONGO // collection_projeler__wbs // " + functionName + " // " + "__mesajBaslangic__ Altında poz bulunan başlıklar silinemez. __mesajBitis__")
+    if (poz) throw new Error("Poz içeren başlıklar silinemez.")
 
 
 
@@ -743,14 +741,14 @@ const deleteWbs = async (req, res) => {
 
         // return newWbsArray2
 
-        const result = await collection_projeler.updateOne(
-          { _id: _projeId },
+        const result = await Proje.updateOne(
+          { _id: projeId },
           [
             { $set: { wbs: newWbsArray2 } }
           ]
         );
 
-        return { result, wbs: newWbsArray2 }
+        return res.status(200).json({ result, wbs: newWbsArray2 })
 
       } catch (err) {
         return res.status(401).json({ error: hataBase + error })
@@ -816,14 +814,14 @@ const deleteWbs = async (req, res) => {
 
         // return newWbsArray2
 
-        const result = await collection_projeler.updateOne(
-          { _id: _projeId },
+        const result = await Proje.updateOne(
+          { _id: projeId },
           [
             { $set: { wbs: newWbsArray2 } }
           ]
         );
 
-        return { result, wbs: newWbsArray2 }
+        return res.status(200).json({ result, wbs: newWbsArray2 })
 
       } catch (error) {
         return res.status(401).json({ error: hataBase + error })
