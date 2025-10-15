@@ -1,6 +1,14 @@
 const express = require('express')
+
 const {
-  getProjeler_byFirma, getProje, createProje, createWbs, updateWbs, toggleWbsForPoz, deleteWbs
+  getProjeler_byFirma,
+  getProje,
+  createProje,
+  createWbs,
+  updateWbs,
+  toggleWbsForPoz,
+  deleteWbs,
+  moveWbsUp
 } = require('../controllers/projeController')
 
 const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
@@ -33,6 +41,7 @@ router.post('/createwbs', createWbs)
 router.post('/updatewbs', updateWbs)
 router.post('/togglewbsforpoz', toggleWbsForPoz)
 router.post('/deletewbs', deleteWbs)
+router.post('/movewbsup', moveWbsUp)
 
 
 
