@@ -11,7 +11,15 @@ const {
   moveWbsUp,
   moveWbsDown,
   moveWbsLeft,
-  moveWbsRight
+  moveWbsRight,
+  createLbs,
+  updateLbs,
+  toggleLbsForMahal,
+  deleteLbs,
+  moveLbsUp,
+  moveLbsDown,
+  moveLbsLeft,
+  moveLbsRight
 } = require('../controllers/projeController')
 
 const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
@@ -48,6 +56,21 @@ router.post('/movewbsup', moveWbsUp)
 router.post('/movewbsdown', moveWbsDown)
 router.post('/movewbsleft', moveWbsLeft)
 router.post('/movewbsright', moveWbsRight)
+
+
+
+
+// LBS
+router.post('/createlbs', createLbs)
+router.post('/updatelbs', updateLbs)
+router.post('/togglelbsformahal', toggleLbsForMahal)
+router.post('/deletelbs', deleteLbs)
+router.post('/movelbsup', moveLbsUp)
+router.post('/movelbsdown', moveLbsDown)
+router.post('/movelbsleft', moveLbsLeft)
+router.post('/movelbsright', moveLbsRight)
+
+
 
 
 
