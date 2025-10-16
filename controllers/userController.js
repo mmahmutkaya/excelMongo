@@ -24,7 +24,7 @@ const signupUser = async (req, res) => {
     }
 
   } catch (error) {
-    res.status(400).json({ error: hataBase + error })
+    res.status(401).json({ error: hataBase + error })
   }
 }
 
@@ -52,7 +52,7 @@ const loginUser = async (req, res) => {
     }
 
   } catch (error) {
-    res.status(400).json({ error: hataBase + error })
+    res.status(401).json({ error: hataBase + error })
   }
 }
 

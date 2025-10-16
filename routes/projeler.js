@@ -8,7 +8,10 @@ const {
   updateWbs,
   toggleWbsForPoz,
   deleteWbs,
-  moveWbsUp
+  moveWbsUp,
+  moveWbsDown,
+  moveWbsLeft,
+  moveWbsRight
 } = require('../controllers/projeController')
 
 const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
@@ -42,6 +45,9 @@ router.post('/updatewbs', updateWbs)
 router.post('/togglewbsforpoz', toggleWbsForPoz)
 router.post('/deletewbs', deleteWbs)
 router.post('/movewbsup', moveWbsUp)
+router.post('/movewbsdown', moveWbsDown)
+router.post('/movewbsleft', moveWbsLeft)
+router.post('/movewbsright', moveWbsRight)
 
 
 
