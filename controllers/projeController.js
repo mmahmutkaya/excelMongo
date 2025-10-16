@@ -1311,6 +1311,8 @@ const moveWbsLeft = async (req, res) => {
 
     let switch1 = false
 
+    let snackMessage
+
 
     _wbs2 = _wbs.map(item => {
 
@@ -1323,8 +1325,6 @@ const moveWbsLeft = async (req, res) => {
       let theNumber2
 
       longText2 = item.code
-
-
 
 
 
@@ -1372,13 +1372,11 @@ const moveWbsLeft = async (req, res) => {
 
 
       if (name_Match) {
-        let snackMessage = "Taşınmak istenen seviyede bu isim mevcut. (B)"
-        return res.status(200).json({ snackMessage })
+        snackMessage = "Taşınmak istenen seviyede bu isim mevcut. (B)"
       }
 
       if (codeName_Match) {
-        let snackMessage = "Taşınmak istenen seviyede bu isim mevcut. (B)"
-        return res.status(200).json({ snackMessage })
+        snackMessage = "Taşınmak istenen seviyede bu isim mevcut. (B)"
       }
 
 
@@ -1463,6 +1461,14 @@ const moveWbsLeft = async (req, res) => {
 
 
 
+    if (snackMessage) {
+      return res.status(200).json({ snackMessage })
+    }
+
+
+
+
+
     try {
 
       if (switch1) {
@@ -1529,6 +1535,7 @@ const moveWbsRight = async (req, res) => {
     let _wbs = currentWbsArray
     let _selectedWbs = oneWbs
     let _wbs2
+    let snackMessage
 
 
     let leftPart = _selectedWbs.code.substring(0, _selectedWbs.code.lastIndexOf("."))
@@ -1563,8 +1570,10 @@ const moveWbsRight = async (req, res) => {
         maxLevel = level2
       }
     })
+
     if (maxLevel == 7) {
-      throw new Error("MONGO // moveWbsRight // __mesajBaslangic__ maksimum seviyede alt başlık oluşturulmuş __mesajBitis__")
+      snackMessage = "Maksimum seviyede alt başlık oluşturulmuş"
+      return res.status(200).json({ snackMessage })
     }
 
 
@@ -1598,24 +1607,23 @@ const moveWbsRight = async (req, res) => {
     })
 
 
+
     if (name_Match) {
-      let snackMessage = "Taşınmak istenen seviyede bu isim mevcut. (B)"
+      snackMessage = "Taşınmak istenen seviyede bu isim mevcut. (B)"
       return res.status(200).json({ snackMessage })
     }
 
     if (codeName_Match) {
-      let snackMessage = "Taşınmak istenen seviyede bu isim mevcut. (B)"
+      snackMessage = "Taşınmak istenen seviyede bu isim mevcut. (B)"
       return res.status(200).json({ snackMessage })
     }
-
-
-
 
     // üst başlık poza açıksa iptal
     if (upWbs.openForPoz) {
       let snackMessage = "Poza açık başlıkların alt başlığı olamaz. (B)"
       return res.status(200).json({ snackMessage })
     }
+
 
     // tespit edilen üst başlığın mevcut alt başlıkları varsa en sonuncusunu bulma
     let maxNumber = 0
