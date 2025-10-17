@@ -13,6 +13,10 @@ const getFirmalar = async (req, res) => {
 
     const { email: userEmail } = req.headers
 
+    if (!userEmail) {
+      throw new Error("DB ye gönderilen sorguda 'email' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
     const firmalar = await Firma.find({ "yetkiliKisiler.email": userEmail }, { name: 1, yetkiliKisiler: 1 })
 
     res.status(200).json({ firmalar })
@@ -29,13 +33,21 @@ const getFirma = async (req, res) => {
 
   const hataBase = "BACKEND - (getFirma) - "
 
-  const _firmaId = new ObjectId(req.params.id)
-
   try {
 
-    const firma = await Firma.findOne({ _id: _firmaId })
+    const firmaId = req.params.id
 
-    return res.status(200).json({ firma })
+    if (!_firmaId) {
+      throw new Error("DB ye gönderilen sorguda '_firmaId' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    const firma = await Firma.findOne({ _id: firmaId })
+
+    if (firma) {
+      return res.status(200).json({ firma })
+    } else {
+      throw new Error("Sorguya gönderilen 'firmaId' ile Firma bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
 
   } catch (error) {
     res.status(400).json({ error: hataBase + error })
@@ -50,19 +62,22 @@ const createFirma = async (req, res) => {
 
   const hataBase = "BACKEND - (createFirma) - "
 
-  const simdikiZaman = new Date()
-
-  const {
-    email: userEmail,
-    isim: userIsim,
-    soyisim: userSoyisim
-  } = JSON.parse(req.user)
-
-
   try {
+
+    const simdikiZaman = new Date()
+
+    const {
+      email: userEmail,
+      isim: userIsim,
+      soyisim: userSoyisim
+    } = JSON.parse(req.user)
 
     // const { email: userEmail } = req.headers
     const { firmaName } = req.body
+
+    if (!firmaName) {
+      throw new Error("DB ye gönderilen sorguda 'firmaName' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
 
     let errorObject = {}
 
@@ -207,8 +222,7 @@ const createFirma = async (req, res) => {
         yetkiler: [{ name: "owner", createdAt: simdikiZaman, createdBy: userEmail }]
       }],
       createdBy: userEmail,
-      createdAt: simdikiZaman,
-      isDeleted: false
+      createdAt: simdikiZaman
     }
 
     const resultNewFirma = await Firma.create(newFirma)

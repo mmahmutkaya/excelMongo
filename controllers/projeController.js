@@ -19,12 +19,7 @@ const getProjeler_byFirma = async (req, res) => {
       throw new Error("Sorguya 'firmaId' gönderilmemiş.")
     }
 
-    const _firmaId = new ObjectId(firmaId)
-    if (!mongoose.Types.ObjectId.isValid(_firmaId)) {
-      throw new Error("Sorguya gelen 'firmaId' türü doğru değil.")
-    }
-
-    const projeler = await Proje.find({ _firmaId }, { name: 1, _firmaId: 1, yetkiliKisiler: 1, yetkiliFirmalar: 1 })
+    const projeler = await Proje.find({ _firmaId: firmaId }, { name: 1, _firmaId: 1, yetkiliKisiler: 1, yetkiliFirmalar: 1 })
 
     res.status(200).json({ projeler })
 
@@ -40,13 +35,20 @@ const getProje = async (req, res) => {
 
   const hataBase = "BACKEND - (getProje) - "
 
-  const projeId = req.params.id
-
   try {
+
+    const projeId = req.params.id
+    if (!projeId) {
+      throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse rapor7/24 ile iletişime geçebilirsiniz.")
+    }
 
     const proje = await Proje.findOne({ _id: projeId })
 
-    res.status(200).json({ proje })
+    if (proje) {
+      res.status(200).json({ proje })
+    } else {
+      throw new Error("Sorguya gönderilen 'projeId' ile Proje bulunamadı")
+    }
 
   } catch (error) {
     res.status(400).json({ error: hataBase + error })
@@ -71,15 +73,15 @@ const createProje = async (req, res) => {
 
     const { firmaId, projeName } = req.body
     if (!firmaId) {
-      throw new Error("Sorguya 'firmaId' gönderilmemiş.")
+      throw new Error("Sorguya 'firmaId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse rapor7/24 ile iletişime geçebilirsiniz.")
     }
     if (!projeName) {
-      throw new Error("Sorguya 'projeName' gönderilmemiş.")
+      throw new Error("Sorguya 'projeName' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse rapor7/24 ile iletişime geçebilirsiniz.")
     }
 
     const _firmaId = new ObjectId(firmaId)
     if (!mongoose.Types.ObjectId.isValid(_firmaId)) {
-      throw new Error("Sorguya gelen firmaId türü doğru değil.")
+      throw new Error("Sorguya gelen firmaId türü doğru değil, sayfayı yenileyiniz, sorun devam ederse rapor7/24 ile iletişime geçebilirsiniz.")
     }
 
     const currentTime = new Date()
@@ -232,8 +234,7 @@ const createProje = async (req, res) => {
       yetkiliKisiler,
       yetkiliFirmalar,
       createdBy: userEmail,
-      createdAt: currentTime,
-      isDeleted: false
+      createdAt: currentTime
     }
 
     const result_newProje = await Proje.create(newProje)
@@ -267,10 +268,9 @@ const createWbs = async (req, res) => {
 
   const hataBase = "BACKEND - (createWbs) - "
 
-  const { projeId, upWbsId, newWbsName, newWbsCodeName } = req.body
-
   try {
 
+    const { projeId, upWbsId, newWbsName, newWbsCodeName } = req.body
 
     if (!projeId) {
       throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
@@ -278,6 +278,14 @@ const createWbs = async (req, res) => {
 
     if (!upWbsId) {
       throw new Error("'upWbsId' sorguya, gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!newWbsName) {
+      throw new Error("Sorguya 'newWbsName' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!newWbsCodeName) {
+      throw new Error("'newWbsCodeName' sorguya, gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
 
@@ -318,7 +326,7 @@ const createWbs = async (req, res) => {
     }
 
 
-    const proje = await Proje.findOne({ _id: projeId, isDeleted: false })
+    const proje = await Proje.findOne({ _id: projeId })
     if (!proje) {
       throw new Error("talep edilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
@@ -498,9 +506,10 @@ const updateWbs = async (req, res) => {
 
   const hataBase = "BACKEND - (updateWbs) - "
 
-  const { projeId, wbsId, newWbsName, newWbsCodeName } = req.body
 
   try {
+
+    const { projeId, wbsId, newWbsName, newWbsCodeName } = req.body
 
     if (!projeId) {
       throw new Error("db ye 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor724 ile iritbata geçiniz.")
@@ -508,6 +517,14 @@ const updateWbs = async (req, res) => {
 
     if (!wbsId) {
       throw new Error("db ye 'wbsId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor724 ile iritbata geçiniz.")
+    }
+
+    if (!newWbsName) {
+      throw new Error("db ye 'newWbsName' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor724 ile iritbata geçiniz.")
+    }
+
+    if (!newWbsCodeName) {
+      throw new Error("db ye 'newWbsCodeName' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor724 ile iritbata geçiniz.")
     }
 
     const errorObject = {}
@@ -541,7 +558,7 @@ const updateWbs = async (req, res) => {
     }
 
 
-    const proje = await Proje.findOne({ _id: projeId, isDeleted: false })
+    const proje = await Proje.findOne({ _id: projeId })
     if (!proje) throw new Error("dorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     if (!proje.wbs.find(x => x._id == wbsId)) throw new Error("güncellenmek istenen wbsId sistemde bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
 
@@ -578,10 +595,9 @@ const toggleWbsForPoz = async (req, res) => {
 
   const hataBase = "BACKEND - (toggleWbsForPoz) - "
 
-  const { projeId, wbsId, switchValue } = req.body
-
-
   try {
+
+    const { projeId, wbsId, switchValue } = req.body
 
     if (!projeId) {
       throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
@@ -596,7 +612,7 @@ const toggleWbsForPoz = async (req, res) => {
     }
 
 
-    const proje = await Proje.findOne({ _id: projeId, isDeleted: false })
+    const proje = await Proje.findOne({ _id: projeId })
     if (!proje) throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
 
     if (!proje.wbs) throw new Error("projeye ait herhangi bir poz başlığı olmadığı görüldü, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
@@ -644,10 +660,9 @@ const deleteWbs = async (req, res) => {
 
   const hataBase = "BACKEND - (deleteWbs) - "
 
-  const { projeId, wbsId } = req.body
-
-
   try {
+
+    const { projeId, wbsId } = req.body
 
     if (!projeId) {
       throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
@@ -658,7 +673,7 @@ const deleteWbs = async (req, res) => {
     }
 
 
-    const proje = await Proje.findOne({ _id: projeId, isDeleted: false })
+    const proje = await Proje.findOne({ _id: projeId })
     if (!proje) throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
 
     let { wbs: currentWbsArray } = proje
@@ -682,7 +697,7 @@ const deleteWbs = async (req, res) => {
       return res.status(200).json({ snackMessage })
     }
 
-    const poz = await Poz.findOne({ wbsId, isDeleted: false })
+    const poz = await Poz.findOne({ wbsId })
 
     // wbs altına poz eklenmişse silinmesin, pozlara ulaşamayız
     if (poz) {
@@ -853,9 +868,9 @@ const moveWbsUp = async (req, res) => {
 
   const hataBase = "BACKEND - (moveWbsUp) - "
 
-  const { projeId, wbsId } = req.body
-
   try {
+
+    const { projeId, wbsId } = req.body
 
     if (!projeId) {
       throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
@@ -865,7 +880,7 @@ const moveWbsUp = async (req, res) => {
       throw new Error("Sorguya 'wbsId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    const proje = await Proje.findOne({ _id: projeId, isDeleted: false })
+    const proje = await Proje.findOne({ _id: projeId })
     if (!proje) throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
 
     let { wbs: currentWbsArray } = proje
@@ -1060,9 +1075,9 @@ const moveWbsDown = async (req, res) => {
 
   const hataBase = "BACKEND - (moveWbsDown) - "
 
-  const { projeId, wbsId } = req.body
-
   try {
+
+    const { projeId, wbsId } = req.body
 
     if (!projeId) {
       throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
@@ -1072,7 +1087,7 @@ const moveWbsDown = async (req, res) => {
       throw new Error("Sorguya 'wbsId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    const proje = await Proje.findOne({ _id: projeId, isDeleted: false })
+    const proje = await Proje.findOne({ _id: projeId })
     if (!proje) throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
 
     let { wbs: currentWbsArray } = proje
@@ -1265,9 +1280,9 @@ const moveWbsLeft = async (req, res) => {
 
   const hataBase = "BACKEND - (moveWbsLeft) - "
 
-  const { projeId, wbsId } = req.body
-
   try {
+
+    const { projeId, wbsId } = req.body
 
     if (!projeId) {
       throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
@@ -1277,7 +1292,7 @@ const moveWbsLeft = async (req, res) => {
       throw new Error("Sorguya 'wbsId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    const proje = await Proje.findOne({ _id: projeId, isDeleted: false })
+    const proje = await Proje.findOne({ _id: projeId })
     if (!proje) throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
 
     let { wbs: currentWbsArray } = proje
@@ -1513,9 +1528,9 @@ const moveWbsRight = async (req, res) => {
 
   const hataBase = "BACKEND - (moveWbsRight) - "
 
-  const { projeId, wbsId } = req.body
-
   try {
+
+    const { projeId, wbsId } = req.body
 
     if (!projeId) {
       throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
@@ -1525,7 +1540,7 @@ const moveWbsRight = async (req, res) => {
       throw new Error("Sorguya 'wbsId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    const proje = await Proje.findOne({ _id: projeId, isDeleted: false })
+    const proje = await Proje.findOne({ _id: projeId })
     if (!proje) throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
 
     let { wbs: currentWbsArray } = proje
@@ -1769,10 +1784,9 @@ const createLbs = async (req, res) => {
 
   const hataBase = "BACKEND - (createLbs) - "
 
-  const { projeId, upLbsId, newLbsName, newLbsCodeName } = req.body
-
   try {
 
+    const { projeId, upLbsId, newLbsName, newLbsCodeName } = req.body
 
     if (!projeId) {
       throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
@@ -1780,6 +1794,14 @@ const createLbs = async (req, res) => {
 
     if (!upLbsId) {
       throw new Error("'upLbsId' sorguya, gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!newLbsName) {
+      throw new Error("Sorguya 'newLbsName' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!newLbsCodeName) {
+      throw new Error("'newLbsCodeName' sorguya, gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
 
@@ -1820,7 +1842,7 @@ const createLbs = async (req, res) => {
     }
 
 
-    const proje = await Proje.findOne({ _id: projeId, isDeleted: false })
+    const proje = await Proje.findOne({ _id: projeId })
     if (!proje) {
       throw new Error("talep edilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
@@ -2000,9 +2022,9 @@ const updateLbs = async (req, res) => {
 
   const hataBase = "BACKEND - (updateLbs) - "
 
-  const { projeId, lbsId, newLbsName, newLbsCodeName } = req.body
-
   try {
+
+    const { projeId, lbsId, newLbsName, newLbsCodeName } = req.body
 
     if (!projeId) {
       throw new Error("db ye 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor724 ile iritbata geçiniz.")
@@ -2010,6 +2032,14 @@ const updateLbs = async (req, res) => {
 
     if (!lbsId) {
       throw new Error("db ye 'lbsId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor724 ile iritbata geçiniz.")
+    }
+
+    if (!newLbsName) {
+      throw new Error("Sorguya 'newLbsName' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!newLbsCodeName) {
+      throw new Error("'newLbsCodeName' sorguya, gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
     const errorObject = {}
@@ -2043,7 +2073,7 @@ const updateLbs = async (req, res) => {
     }
 
 
-    const proje = await Proje.findOne({ _id: projeId, isDeleted: false })
+    const proje = await Proje.findOne({ _id: projeId })
     if (!proje) throw new Error("dorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     if (!proje.lbs.find(x => x._id == lbsId)) throw new Error("güncellenmek istenen lbsId sistemde bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
 
@@ -2098,7 +2128,7 @@ const toggleLbsForMahal = async (req, res) => {
     }
 
 
-    const proje = await Proje.findOne({ _id: projeId, isDeleted: false })
+    const proje = await Proje.findOne({ _id: projeId })
     if (!proje) throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
 
     if (!proje.lbs) throw new Error("projeye ait herhangi bir mahal başlığı olmadığı görüldü, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
@@ -2146,10 +2176,9 @@ const deleteLbs = async (req, res) => {
 
   const hataBase = "BACKEND - (deleteLbs) - "
 
-  const { projeId, lbsId } = req.body
-
-
   try {
+
+    const { projeId, lbsId } = req.body
 
     if (!projeId) {
       throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
@@ -2160,7 +2189,7 @@ const deleteLbs = async (req, res) => {
     }
 
 
-    const proje = await Proje.findOne({ _id: projeId, isDeleted: false })
+    const proje = await Proje.findOne({ _id: projeId })
     if (!proje) throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
 
     let { lbs: currentLbsArray } = proje
@@ -2184,7 +2213,7 @@ const deleteLbs = async (req, res) => {
       return res.status(200).json({ snackMessage })
     }
 
-    const mahal = await Mahal.findOne({ lbsId, isDeleted: false })
+    const mahal = await Mahal.findOne({ lbsId })
 
     // lbs altına mahal eklenmişse silinmesin, mahallere ulaşamayız
     if (mahal) {
@@ -2355,9 +2384,9 @@ const moveLbsUp = async (req, res) => {
 
   const hataBase = "BACKEND - (moveLbsUp) - "
 
-  const { projeId, lbsId } = req.body
-
   try {
+
+    const { projeId, lbsId } = req.body
 
     if (!projeId) {
       throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
@@ -2367,7 +2396,7 @@ const moveLbsUp = async (req, res) => {
       throw new Error("Sorguya 'lbsId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    const proje = await Proje.findOne({ _id: projeId, isDeleted: false })
+    const proje = await Proje.findOne({ _id: projeId })
     if (!proje) throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
 
     let { lbs: currentLbsArray } = proje
@@ -2574,7 +2603,7 @@ const moveLbsDown = async (req, res) => {
       throw new Error("Sorguya 'lbsId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    const proje = await Proje.findOne({ _id: projeId, isDeleted: false })
+    const proje = await Proje.findOne({ _id: projeId })
     if (!proje) throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
 
     let { lbs: currentLbsArray } = proje
@@ -2767,9 +2796,9 @@ const moveLbsLeft = async (req, res) => {
 
   const hataBase = "BACKEND - (moveLbsLeft) - "
 
-  const { projeId, lbsId } = req.body
-
   try {
+
+    const { projeId, lbsId } = req.body
 
     if (!projeId) {
       throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
@@ -2779,7 +2808,7 @@ const moveLbsLeft = async (req, res) => {
       throw new Error("Sorguya 'lbsId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    const proje = await Proje.findOne({ _id: projeId, isDeleted: false })
+    const proje = await Proje.findOne({ _id: projeId })
     if (!proje) throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
 
     let { lbs: currentLbsArray } = proje
@@ -3015,9 +3044,9 @@ const moveLbsRight = async (req, res) => {
 
   const hataBase = "BACKEND - (moveLbsRight) - "
 
-  const { projeId, lbsId } = req.body
-
   try {
+
+    const { projeId, lbsId } = req.body
 
     if (!projeId) {
       throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
@@ -3027,7 +3056,7 @@ const moveLbsRight = async (req, res) => {
       throw new Error("Sorguya 'lbsId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    const proje = await Proje.findOne({ _id: projeId, isDeleted: false })
+    const proje = await Proje.findOne({ _id: projeId })
     if (!proje) throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
 
     let { lbs: currentLbsArray } = proje

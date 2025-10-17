@@ -8,23 +8,30 @@ const signupUser = async (req, res) => {
 
   const hataBase = "BACKEND - (signupUser) - "
 
-  const { email, password } = req.body
-
   try {
+
+    const { email, password } = req.body
+
+    if (!email) {
+      throw new Error("Sorguya 'email' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!password) {
+      throw new Error("Sorguya 'password' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
     const result = await User.signup(email, password)
 
     if (result.errorObject) {
-      res.status(200).json({ errorObject: result.errorObject })
-      return
+      return res.status(200).json({ errorObject: result.errorObject })
     }
 
     if (result.user) {
-      res.status(200).json({ user: result.user })
-      return
+      return res.status(200).json({ user: result.user })
     }
 
   } catch (error) {
-    res.status(401).json({ error: hataBase + error })
+    return res.status(401).json({ error: hataBase + error })
   }
 }
 
@@ -35,24 +42,30 @@ const loginUser = async (req, res) => {
 
   const hataBase = "BACKEND - (loginUser) - "
 
-  const { email, password } = req.body
-
   try {
+
+    const { email, password } = req.body
+
+    if (!email) {
+      throw new Error("Sorguya 'email' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!password) {
+      throw new Error("Sorguya 'password' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
 
     const result = await User.login(email, password)
 
     if (result.errorObject) {
-      res.status(200).json({ errorObject: result.errorObject })
-      return
+      return res.status(200).json({ errorObject: result.errorObject })
     }
 
     if (result.user) {
-      res.status(200).json({ user: result.user })
-      return
+      return res.status(200).json({ user: result.user })
     }
 
   } catch (error) {
-    res.status(401).json({ error: hataBase + error })
+    return res.status(401).json({ error: hataBase + error })
   }
 }
 
@@ -64,9 +77,13 @@ const sendMailCode = async (req, res) => {
 
   const hataBase = "BACKEND - (loginUser) - "
 
-  const { email: userEmail } = req.headers
-
   try {
+
+    const { email: userEmail } = req.headers
+
+    if (!userEmail) {
+      throw new Error("Sorguya 'email' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
 
     //  kod oluşturma
     let mailConfirmationKod = ''
@@ -102,10 +119,10 @@ const sendMailCode = async (req, res) => {
     }
     await transporter.sendMail(mailOptions)
 
-    res.status(200).json("Mail adresinize gelen kodu giriniz.")
+    return res.status(200).json("Mail adresinize gelen kodu giriniz.")
 
   } catch (error) {
-    res.status(400).json({ error: hataBase + error })
+    return res.status(400).json({ error: hataBase + error })
   }
 
 }
@@ -119,16 +136,23 @@ const confirmMailCode = async (req, res) => {
 
   const hataBase = "BACKEND - (loginUser) - "
 
-  const { email: userEmail } = req.headers
-  const { mailCode } = req.body
-
   try {
+
+    const { email: userEmail } = req.headers
+    const { mailCode } = req.body
+
+    if (!userEmail) {
+      throw new Error("Sorguya 'email' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+    if (!mailCode) {
+      throw new Error("Sorguya 'mailCode' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
 
     //  kodu user db ye kaydetme
     let user = await User.findOne(
       { email: userEmail }
     )
-
 
     if (user.mailConfirmationKod === mailCode) {
 
@@ -147,15 +171,15 @@ const confirmMailCode = async (req, res) => {
       user2.token = token
       user2.mailTeyit = true
 
-      res.status(200).json({ user: user2 })
+      return res.status(200).json({ user: user2 })
 
     } else {
-      res.status(200).json({ errorObject: { mailCodeError: "Kod eşleşmedi" } })
+      return res.status(200).json({ errorObject: { mailCodeError: "Kod eşleşmedi" } })
     }
 
 
   } catch (error) {
-    res.status(400).json({ error: hataBase + error })
+    return res.status(400).json({ error: hataBase + error })
   }
 
 }
@@ -168,38 +192,41 @@ const saveNecessaryUserData = async (req, res) => {
 
   const hataBase = "BACKEND - (loginUser) - "
 
-  const { email } = req.headers
-  const { isim, soyisim } = req.body
-
-  const errorObject = {}
-
-
-  //  errorObject kontrol-1 - gelen veriler uygun mu?
-
-  // emailError - 1
-  if (!isim && !errorObject.isimError) {
-    errorObject.isimError = "Boş bırakılamaz."
-  }
-  if (isim.length < 2 && !errorObject.isimError) {
-    errorObject.isimError = "Çok kısa"
-  }
-
-  // soyisimError - 1
-  if (!soyisim && !errorObject.soyisimError) {
-    errorObject.soyisimError = "Boş bırakılamaz."
-  }
-  if (soyisim.length < 2 && !errorObject.soyisimError) {
-    errorObject.soyisimError = "Çok kısa"
-  }
-
-  // hata kontrol - 1
-  if (Object.keys(errorObject).length) {
-    return ({ errorObject })
-  }
-
-
-
   try {
+
+    const { email } = req.headers
+    const { isim, soyisim } = req.body
+
+    if (!email) {
+      throw new Error("Sorguya 'email' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    const errorObject = {}
+
+
+    //  errorObject kontrol-1 - gelen veriler uygun mu?
+
+    // emailError - 1
+    if (!isim && !errorObject.isimError) {
+      errorObject.isimError = "Boş bırakılamaz."
+    }
+    if (isim.length < 2 && !errorObject.isimError) {
+      errorObject.isimError = "Çok kısa"
+    }
+
+    // soyisimError - 1
+    if (!soyisim && !errorObject.soyisimError) {
+      errorObject.soyisimError = "Boş bırakılamaz."
+    }
+    if (soyisim.length < 2 && !errorObject.soyisimError) {
+      errorObject.soyisimError = "Çok kısa"
+    }
+
+    // hata kontrol - 1
+    if (Object.keys(errorObject).length) {
+      return res.status(200).json({ errorObject })
+    }
+
 
     let user = await User.findOneAndUpdate(
       { email },
@@ -219,14 +246,14 @@ const saveNecessaryUserData = async (req, res) => {
       user2.token = token
       user2.mailTeyit = true
 
-      res.status(200).json({ user: user2 })
+      return res.status(200).json({ user: user2 })
 
     } else {
-      res.status(400).json({ error: "user not found" })
+      throw new Error("Kullanıcı bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile iletişime geçiniz.")
     }
 
   } catch (error) {
-    res.status(400).json({ error: hataBase + error })
+    return res.status(400).json({ error: hataBase + error })
   }
 
 }

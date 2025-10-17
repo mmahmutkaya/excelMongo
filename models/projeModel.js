@@ -16,11 +16,9 @@ const projeSchema = new Schema(
     yetkiliKisiler: Array,
     yetkiliFirmalar: Array,
     createdBy: String,
-    createdAt: Date,
-    isDeleted: Boolean
+    createdAt: Date
   },
   {
-    timestamps: true,
     collection: 'projeler',
     versionKey: false
   }

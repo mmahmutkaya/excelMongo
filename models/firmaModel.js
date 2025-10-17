@@ -12,11 +12,9 @@ const firmaSchema = new Schema(
     pozBirimleri: Array,
     yetkiliKisiler: Array,
     createdAt: Date,
-    createdBy: String,
-    isDeleted:Boolean
+    createdBy: String
   },
   {
-    timestamps: true,
     collection: 'firmalar',
     versionKey: false
   }
