@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken')
 
 const requireAuth = async (req, res, next) => {
 
-  const hataBase = "BACKEND - (requireAuthAndNecessary) - "
+  const hataBase = "BACKEND - (requireAuth) - "
 
   try {
 
@@ -22,7 +22,7 @@ const requireAuth = async (req, res, next) => {
     if (email === req_email) {
       next()
     } else {
-      throw new Error('Request is not authorized')
+      throw new Error('Token is not valid')
     }
 
   } catch (error) {

@@ -38,13 +38,6 @@ const loginUser = async (req, res) => {
 
     const { email, password } = req.body
 
-    if (!email) {
-      throw new Error("Sorguya 'email' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
-
-    if (!password) {
-      throw new Error("Sorguya 'password' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
 
     const result = await User.login(email, password)
 
@@ -133,11 +126,17 @@ const confirmMailCode = async (req, res) => {
     const { email: userEmail } = req.headers
     const { mailCode } = req.body
 
+    // aslında requireAuth dan geçti, bu kontole gerek yok
     if (!userEmail) {
       throw new Error("Sorguya 'email' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
-    if (!mailCode) {
+
+    if (!typeof mailCode !== "string") {
       throw new Error("Sorguya 'mailCode' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (mailCode.length < 1) {
+      return res.status(200).json({ errorObject: { mailCodeError: "Boş bırakılamaz" } })
     }
 
 
