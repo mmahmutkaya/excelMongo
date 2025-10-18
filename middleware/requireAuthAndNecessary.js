@@ -7,10 +7,10 @@ const requireAuthAndNecessary = async (req, res, next) => {
   const hataBase = "BACKEND - (requireAuthAndNecessary) - "
 
   // verify user is authenticated
-  const { email: req_email, token } = req.headers
-
 
   try {
+
+    const { email: req_email, token } = req.headers
 
     if (!req_email) {
       throw new Error('Request HEADER, "email" eksik')

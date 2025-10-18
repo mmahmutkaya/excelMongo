@@ -280,14 +280,6 @@ const createWbs = async (req, res) => {
       throw new Error("'upWbsId' sorguya, gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    if (!newWbsName) {
-      throw new Error("Sorguya 'newWbsName' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
-
-    if (!newWbsCodeName) {
-      throw new Error("'newWbsCodeName' sorguya, gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
-
 
     // aşağıdaki form verilerinden birinde hata tespit edilmişse
     // alt satırda oluşturulan errorObject objesine form verisi ile ilişkilendirilmiş  property oluşturulup, içine yazı yazılıyor
@@ -519,13 +511,6 @@ const updateWbs = async (req, res) => {
       throw new Error("db ye 'wbsId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor724 ile iritbata geçiniz.")
     }
 
-    if (!newWbsName) {
-      throw new Error("db ye 'newWbsName' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor724 ile iritbata geçiniz.")
-    }
-
-    if (!newWbsCodeName) {
-      throw new Error("db ye 'newWbsCodeName' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor724 ile iritbata geçiniz.")
-    }
 
     const errorObject = {}
 
@@ -1796,13 +1781,6 @@ const createLbs = async (req, res) => {
       throw new Error("'upLbsId' sorguya, gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    if (!newLbsName) {
-      throw new Error("Sorguya 'newLbsName' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
-
-    if (!newLbsCodeName) {
-      throw new Error("'newLbsCodeName' sorguya, gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
 
 
     // aşağıdaki form verilerinden birinde hata tespit edilmişse
@@ -2034,13 +2012,6 @@ const updateLbs = async (req, res) => {
       throw new Error("db ye 'lbsId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor724 ile iritbata geçiniz.")
     }
 
-    if (!newLbsName) {
-      throw new Error("Sorguya 'newLbsName' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
-
-    if (!newLbsCodeName) {
-      throw new Error("'newLbsCodeName' sorguya, gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
 
     const errorObject = {}
 

@@ -12,14 +12,6 @@ const signupUser = async (req, res) => {
 
     const { email, password } = req.body
 
-    if (!email) {
-      throw new Error("Sorguya 'email' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
-
-    if (!password) {
-      throw new Error("Sorguya 'password' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
-
     const result = await User.signup(email, password)
 
     if (result.errorObject) {

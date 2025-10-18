@@ -6,9 +6,9 @@ const requireMailTeyit = async (req, res, next) => {
 
   const hataBase = "BACKEND - (requireMailTeyit) - "
 
-  const { email } = req.headers
-
   try {
+
+    const { email } = req.headers
 
     let user = await User.findOne({ email })
 

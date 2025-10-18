@@ -12,6 +12,8 @@ const createMahal = async (req, res) => {
 
   const hataBase = "BACKEND - (createMahal) - "
 
+  try {
+    
   const {
     email: userEmail,
     isim: userIsim,
@@ -20,7 +22,6 @@ const createMahal = async (req, res) => {
 
   let { newMahal } = req.body
   
-  try {
 
 
 

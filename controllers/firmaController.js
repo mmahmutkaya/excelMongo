@@ -75,15 +75,12 @@ const createFirma = async (req, res) => {
     // const { email: userEmail } = req.headers
     const { firmaName } = req.body
 
-    if (!firmaName) {
+
+    if (typeof firmaName != "string" && !errorObject.firmaNameError) {
       throw new Error("DB ye gönderilen sorguda 'firmaName' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
     let errorObject = {}
-
-    if (typeof firmaName != "string" && !errorObject.firmaNameError) {
-      errorObject.firmaNameError = "Firma adı verisi 'yazı' türünde değil"
-    }
 
     if (firmaName.length == 0 && !errorObject.firmaNameError) {
       errorObject.firmaNameError = "Firma adı girilmemiş"
