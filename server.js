@@ -7,6 +7,8 @@ const pozRoutes = require('./routes/pozlar')
 const userRoutes = require('./routes/user')
 const firmaRoutes = require('./routes/firmalar')
 const projeRoutes = require('./routes/projeler')
+const mahalRoutes = require('./routes/mahaller')
+const dugumRoutes = require('./routes/dugumler')
 
 
 
@@ -27,6 +29,8 @@ app.use('/api/pozlar', pozRoutes)
 app.use('/api/user', userRoutes)
 app.use('/api/firmalar', firmaRoutes)
 app.use('/api/projeler', projeRoutes)
+app.use('/api/mahaller', mahalRoutes)
+app.use('/api/dugumler', dugumRoutes)
 
 
 // mongoose.set('strictQuery', true)

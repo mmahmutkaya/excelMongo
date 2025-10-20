@@ -23,10 +23,6 @@ const mahalSchema = new Schema(
     mahalName: {
       type: String,
       required: true
-    },
-    mahalBirimId: {
-      type: String,
-      required: true
     }
   },
   {

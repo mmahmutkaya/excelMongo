@@ -37,8 +37,8 @@ const getFirma = async (req, res) => {
 
     const firmaId = req.params.id
 
-    if (!_firmaId) {
-      throw new Error("DB ye gönderilen sorguda '_firmaId' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    if (!firmaId) {
+      throw new Error("DB ye gönderilen sorguda 'firmaId' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
     const firma = await Firma.findOne({ _id: firmaId })

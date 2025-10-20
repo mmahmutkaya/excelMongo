@@ -132,7 +132,7 @@ const createPoz = async (req, res) => {
     })
 
 
-    if (poz.pozName === newPoz.pozName && !pozNameError) {
+    if (poz?.pozName === newPoz.pozName && !pozNameError) {
       errorObject.pozNameError = `Bu poz ismi kullanılmış`
       pozNameError = true
       isFormError = true
@@ -144,7 +144,7 @@ const createPoz = async (req, res) => {
       isFormError = true
     }
 
-    if (poz.pozNo === newPoz.pozNo && !pozNoError) {
+    if (poz?.pozNo === newPoz.pozNo && !pozNoError) {
       errorObject.pozNoError = `Bu poz numarası kullanılmış`
       pozNoError = true
       isFormError = true

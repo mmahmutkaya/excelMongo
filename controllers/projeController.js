@@ -209,6 +209,7 @@ const createProje = async (req, res) => {
 
     const yetkiliKisiler = [{
       email: userEmail,
+      userEmail,
       isim: userIsim,
       soyisim: userSoyisim,
       yetkiler: [{ name: "owner", createdAt: currentTime, createdBy: userEmail }]
