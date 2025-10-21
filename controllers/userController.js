@@ -60,7 +60,7 @@ const loginUser = async (req, res) => {
 // send mail code
 const sendMailCode = async (req, res) => {
 
-  const hataBase = "BACKEND - (loginUser) - "
+  const hataBase = "BACKEND - (sendMailCode) - "
 
   try {
 
@@ -119,19 +119,20 @@ const sendMailCode = async (req, res) => {
 // confirm mail code
 const confirmMailCode = async (req, res) => {
 
-  const hataBase = "BACKEND - (loginUser) - "
+  const hataBase = "BACKEND - (confirmMailCode) - "
 
   try {
 
     const { email: userEmail } = req.headers
     const { mailCode } = req.body
 
+
     // aslında requireAuth dan geçti, bu kontole gerek yok
     if (!userEmail) {
       throw new Error("Sorguya 'email' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    if (!typeof mailCode !== "string") {
+    if (typeof mailCode !== "string") {
       throw new Error("Sorguya 'mailCode' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
@@ -181,7 +182,7 @@ const confirmMailCode = async (req, res) => {
 // confirm mail code
 const saveNecessaryUserData = async (req, res) => {
 
-  const hataBase = "BACKEND - (loginUser) - "
+  const hataBase = "BACKEND - (saveNecessaryUserData) - "
 
   try {
 
@@ -219,15 +220,47 @@ const saveNecessaryUserData = async (req, res) => {
     }
 
 
+
+    let userCode = isim.substring(0, 2) + soyisim.substring(0, 2)
+
+    const users = await User.find({}, { userCode: 1 })
+
+
+    if (users.length) {
+
+      let benzerVar
+      let maxNumber = 0
+
+      users.map(oneUser => {
+
+        let oneCode = oneUser.userCode
+
+        if (oneCode?.substring(0, 4) === userCode) {
+
+          benzerVar = true
+          let theNumber = parseInt(oneCode.substring(4, oneCode.length))
+          if (theNumber > maxNumber) {
+            maxNumber = theNumber
+          }
+
+        }
+
+      })
+
+      if (benzerVar) {
+        userCode = userCode + (parseInt(maxNumber) + 1)
+      }
+
+    }
+
     let user = await User.findOneAndUpdate(
       { email },
-      { $set: { isim, soyisim } },
+      { $set: { isim, soyisim, userCode } },
       { new: true }
     )
 
     if (user) {
 
-      // password eşleşti
       let user2 = JSON.parse(JSON.stringify(user))
 
       delete user2.password

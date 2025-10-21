@@ -4,34 +4,13 @@ const Schema = mongoose.Schema
 
 const pozSchema = new Schema(
   {
-    _firmaId: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true
-    },
-    _projeId: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true
-    },
-    _wbsId: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true
-    },
-    pozNo: {
-      type: String,
-      required: true
-    },
-    pozName: {
-      type: String,
-      required: true
-    },
-    pozBirimId: {
-      type: String,
-      required: true
-    },
-    pozMetrajTipId: {
-      type: String,
-      required: true
-    }
+    _firmaId: mongoose.Schema.Types.ObjectId,
+    _projeId:mongoose.Schema.Types.ObjectId,
+    _wbsId:mongoose.Schema.Types.ObjectId,
+    pozNo: String,
+    pozName:String,
+    pozBirimId: String,
+    pozMetrajTipId: String
   },
   {
     collection: 'pozlar',

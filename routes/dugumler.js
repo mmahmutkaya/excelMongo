@@ -1,8 +1,12 @@
 const express = require('express')
 const {
+  createDugum,
   getDugumler_pozlar,
   getDugumler_mahallerByPoz,
-  createDugum
+  getDugumler_byPoz,
+  getHazirlananmetraj,
+  update_hazirlananMetraj_peparing,
+  update_hazirlananMetraj_ready
 } = require('../controllers/dugumController')
 
 const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
@@ -15,13 +19,17 @@ router.use(requireAuthAndNecessary)
 
 
 
-router.get('/pozlar', getDugumler_pozlar)
-
-
-router.get('/mahallerbypoz', getDugumler_mahallerByPoz)
-
-
 router.post('/', createDugum)
+
+router.get('/pozlar', getDugumler_pozlar)
+router.get('/mahallerbypoz', getDugumler_mahallerByPoz)
+router.get('/bypoz', getDugumler_byPoz)
+router.get('/hazirlananmetraj', getHazirlananmetraj)
+
+router.post('/updatehazirlananmetrajpreparing', update_hazirlananMetraj_peparing)
+router.post('/updatehazirlananmetrajready', update_hazirlananMetraj_ready)
+
+
 
 
 

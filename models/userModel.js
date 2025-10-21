@@ -7,27 +7,13 @@ const Schema = mongoose.Schema
 
 const userSchema = new Schema(
   {
-    email: {
-      type: String,
-      required: true,
-      unique: true
-    },
-    password: {
-      type: String,
-      required: true
-    },
-    mailConfirmationKod: {
-      type: String
-    },
-    mailTeyit: {
-      type: Boolean
-    },
-    isim: {
-      type: String
-    },
-    soyisim: {
-      type: String
-    }
+    email: String,
+    password: String,
+    mailConfirmationKod: String,
+    mailTeyit: Boolean,
+    isim: String,
+    soyisim: String,
+    userCode: String
   },
   {
     versionKey: false
