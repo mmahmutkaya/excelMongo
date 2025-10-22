@@ -221,6 +221,8 @@ const saveNecessaryUserData = async (req, res) => {
 
 
 
+
+    // userCode
     let userCode = isim.substring(0, 2) + soyisim.substring(0, 2)
 
     const users = await User.find({}, { userCode: 1 })
@@ -253,9 +255,52 @@ const saveNecessaryUserData = async (req, res) => {
 
     }
 
+
+    // customSettings
+    const customSettings = {
+      pages: {
+        firmapozlari: {
+          basliklar: [
+            { id: "aciklama", baslikName: "Açıklama", visible: true, show: true },
+            { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
+          ]
+        },
+        pozlar: {
+          basliklar: [
+            { id: "aciklama", baslikName: "Açıklama", visible: true, show: true },
+            { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
+          ],
+          paraBirimleri: []
+        },
+        mahaller: {
+          basliklar: [
+            { id: "aciklama", baslikName: "Açıklama", visible: true, show: true },
+            { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
+          ]
+        },
+        metrajpozlar: {
+          basliklar: [
+            { id: "aciklama", baslikName: "Açıklama", visible: true, show: true },
+            { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
+          ],
+          showHasMahal: true
+        },
+        metrajOnayla: {
+          basliklar: [
+            { id: "aciklama", baslikName: "Açıklama", visible: true, show: true },
+            { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
+          ],
+          showMetrajYapabilenler: []
+        }
+      }
+    }
+
+
+
+
     let user = await User.findOneAndUpdate(
       { email },
-      { $set: { isim, soyisim, userCode } },
+      { $set: { isim, soyisim, userCode, customSettings } },
       { new: true }
     )
 
@@ -310,7 +355,7 @@ const showMetrajYapabilenler = async (req, res) => {
 
     await User.findOneAndUpdate(
       { email: userEmail },
-      { $set: { ["customSettings.showMetrajYapabilenler"]: showMetrajYapabilenler } },
+      { $set: { ["customSettings.pages.metrajOnayla.showMetrajYapabilenler"]: showMetrajYapabilenler } },
       { new: true }
     )
 

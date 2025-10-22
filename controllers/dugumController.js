@@ -220,13 +220,16 @@ const getDugumler_pozlar = async (req, res) => {
         onePoz.onaylananMetraj = onePoz2.onaylananMetraj
 
         onePoz.hazirlananMetrajlar = metrajYapabilenler.map(oneYapabilen => {
-          let toplam = 0
+          let toplamPreparing = 0
+          let toplamReady = 0
           onePoz2.hazirlananMetrajlar.map(oneArray => {
-            toplam = oneArray.find(x => x.userEmail === oneYapabilen.userEmail)?.metrajPreparing + toplam
+            toplamPreparing += oneArray.find(x => x.userEmail === oneYapabilen.userEmail)?.metrajPreparing ? oneArray.find(x => x.userEmail === oneYapabilen.userEmail)?.metrajPreparing : 0
+            toplamReady += oneArray.find(x => x.userEmail === oneYapabilen.userEmail)?.metrajPreparing ? oneArray.find(x => x.userEmail === oneYapabilen.userEmail)?.metrajReady : 0
           })
           return ({
             userEmail: oneYapabilen.userEmail,
-            metrajPreparing: toplam
+            metrajPreparing: toplamPreparing,
+            metrajReady: toplamReady
           })
         })
 
@@ -236,7 +239,7 @@ const getDugumler_pozlar = async (req, res) => {
 
     })
 
-    return res.status(200).json({ pozlar, pozlar2 })
+    return res.status(200).json({ pozlar })
 
 
   } catch (error) {
