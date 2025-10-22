@@ -1,11 +1,18 @@
 const express = require('express')
 
 // controller functions
-const { loginUser, signupUser, sendMailCode, confirmMailCode, saveNecessaryUserData } = require('../controllers/userController')
+const { loginUser,
+  signupUser,
+  sendMailCode,
+  confirmMailCode,
+  saveNecessaryUserData,
+  showMetrajYapabilenler
+} = require('../controllers/userController')
 
 const router = express.Router()
 const requireAuth = require('../middleware/requireAuth')
 const requireMailTeyit = require('../middleware/requireMailTeyit')
+const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
 
 
 // signup route
@@ -34,6 +41,15 @@ router.use(requireMailTeyit)
 
 // saveNecessaryUserData
 router.post('/savenecessaryuserdata', saveNecessaryUserData)
+
+
+
+
+
+router.use(requireAuthAndNecessary)
+
+// customSettings / showMetrajYapabilenler
+router.post('/customsettings/showmetrajyapabilenler', showMetrajYapabilenler)
 
 
 module.exports = router

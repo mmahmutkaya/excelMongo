@@ -13,7 +13,8 @@ const userSchema = new Schema(
     mailTeyit: Boolean,
     isim: String,
     soyisim: String,
-    userCode: String
+    userCode: String,
+    customSettings: Object
   },
   {
     versionKey: false

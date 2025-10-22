@@ -222,11 +222,11 @@ const getDugumler_pozlar = async (req, res) => {
         onePoz.hazirlananMetrajlar = metrajYapabilenler.map(oneYapabilen => {
           let toplam = 0
           onePoz2.hazirlananMetrajlar.map(oneArray => {
-            toplam = oneArray.find(x => x.userEmail === oneYapabilen.userEmail)?.metraj + toplam
+            toplam = oneArray.find(x => x.userEmail === oneYapabilen.userEmail)?.metrajPreparing + toplam
           })
           return ({
             userEmail: oneYapabilen.userEmail,
-            metraj: toplam
+            metrajPreparing: toplam
           })
         })
 
@@ -236,7 +236,7 @@ const getDugumler_pozlar = async (req, res) => {
 
     })
 
-    return res.status(200).json({ pozlar })
+    return res.status(200).json({ pozlar, pozlar2 })
 
 
   } catch (error) {
@@ -320,9 +320,6 @@ const getDugumler_mahallerByPoz = async (req, res) => {
   }
 
 }
-
-
-
 
 
 
@@ -647,8 +644,6 @@ const getDugumler_byPoz = async (req, res) => {
   }
 
 }
-
-
 
 
 
