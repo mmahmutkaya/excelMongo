@@ -757,6 +757,63 @@ const getHazirlananmetraj = async (req, res) => {
 
 
 
+
+const getHazirlananmetrajlar = async (req, res) => {
+
+  const hataBase = "BACKEND - (getHazirlananmetrajlar) - "
+
+  try {
+
+    const {
+      email: userEmail,
+      isim: userIsim,
+      soyisim: userSoyisim,
+      userCode
+    } = JSON.parse(req.user)
+
+    const { dugumid } = req.headers
+
+    if (!dugumid) {
+      throw new Error("'dugumid' verisi db sorgusuna gelmedi");
+    }
+
+    let _dugumId
+    try {
+      _dugumId = new ObjectId(dugumid)
+    } catch (error) {
+      throw new Error("DB ye gönderilen 'dugumid' verisi geçerli bir BSON ObjectId verisine dönüşemedi, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+
+    const result = await Dugum.aggregate([
+      { $match: { _id: _dugumId } },
+      { $project: { _pozId: 1, _mahalId: 1, hazirlananMetrajlar: 1, metrajPreparing: 1, metrajReady: 1, metrajOnaylanan: 1 } },
+      { $limit: 1 }
+    ])
+
+    let dugum = result[0]
+    // hazirlananMetraj = hazirlananMetrajlar_filtered[0]
+
+    let { hazirlananMetrajlar } = dugum
+
+
+    hazirlananMetrajlar = hazirlananMetrajlar.map(oneHazirlanan => {
+      oneHazirlanan.satirlar = oneHazirlanan.satirlar.filter(x => x.isReady || x.isSelected || x.hasSelectedCopy)
+      return oneHazirlanan
+    })
+
+    return res.status(200).json({ hazirlananMetrajlar })
+
+  } catch (error) {
+    return res.status(400).json({ error: hataBase + error })
+  }
+
+}
+
+
+
+
+
 const update_hazirlananMetraj_peparing = async (req, res) => {
 
   const hataBase = "BACKEND - (update_hazirlananMetraj_peparing) - "
@@ -1146,6 +1203,7 @@ module.exports = {
   getDugumler_mahallerByPoz,
   getDugumler_byPoz,
   getHazirlananmetraj,
+  getHazirlananmetrajlar,
   update_hazirlananMetraj_peparing,
   update_hazirlananMetraj_ready
 }

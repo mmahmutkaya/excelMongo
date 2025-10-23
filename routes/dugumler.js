@@ -5,6 +5,7 @@ const {
   getDugumler_mahallerByPoz,
   getDugumler_byPoz,
   getHazirlananmetraj,
+  getHazirlananmetrajlar,
   update_hazirlananMetraj_peparing,
   update_hazirlananMetraj_ready
 } = require('../controllers/dugumController')
@@ -25,6 +26,7 @@ router.get('/pozlar', getDugumler_pozlar)
 router.get('/mahallerbypoz', getDugumler_mahallerByPoz)
 router.get('/bypoz', getDugumler_byPoz)
 router.get('/hazirlananmetraj', getHazirlananmetraj)
+router.get('/hazirlananmetrajlar', getHazirlananmetrajlar)
 
 router.post('/updatehazirlananmetrajpreparing', update_hazirlananMetraj_peparing)
 router.post('/updatehazirlananmetrajready', update_hazirlananMetraj_ready)

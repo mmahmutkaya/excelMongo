@@ -221,6 +221,7 @@ const getPozlar = async (req, res) => {
       ])
 
 
+
       let metrajYapabilenler = proje.yetkiliKisiler.filter(x => x.yetkiler.find(x => x.name === "owner"))
 
 
@@ -301,6 +302,7 @@ const getPozlar = async (req, res) => {
     } catch (error) {
       throw new Error("tryCatch -1- " + error);
     }
+
 
 
     let anySelectable

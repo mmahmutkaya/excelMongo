@@ -242,7 +242,7 @@ const createProje = async (req, res) => {
 
     // tüm proje verileri gönderilmiyor, gerekli veriler gönderiliyor
     newProje = {
-      _id: result_newProje.insertedId,
+      _id: result_newProje._id,
       _firmaId,
       yetkiliKisiler,
       yetkiliFirmalar,
