@@ -13,7 +13,10 @@ const satirSchema = mongoose.Schema(
     "carpan5": Number,
     "metraj": Number,
     "isPreparing": Boolean,
-    "isReady": Boolean
+    "isReady": Boolean,
+    "isSelected":Boolean,
+    "hasSelectedCopy":Boolean,
+    "versiyon":Number,
   }
 )
 
@@ -23,7 +26,19 @@ const hazirlananMetrajSchema = mongoose.Schema(
     "metrajPreparing": Number,
     "metrajReady": Number,
     "metrajOnaylanan": Number,
+    "isReady":Boolean,
+    "isSelected":Boolean,
     "satirlar": [satirSchema]
+  }
+)
+
+const revizeMetrajSchema = mongoose.Schema(
+  {
+    "satirNo":String,
+    "isPreparing":Boolean,
+    "isReady":Boolean,
+    "isPreparing":Boolean,
+    "satirlar":Array
   }
 )
 
@@ -35,7 +50,7 @@ const dugumSchema = new Schema(
     openMetraj: Boolean,
     isDeleted: Boolean,
     hazirlananMetrajlar: [hazirlananMetrajSchema],
-    revizeMetrajlar: Array,
+    revizeMetrajlar: [revizeMetrajSchema],
     metrajVersiyonlari: Array
   },
   {

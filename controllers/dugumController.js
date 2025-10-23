@@ -1171,6 +1171,218 @@ const update_hazirlananMetraj_ready = async (req, res) => {
 
 
 
+const update_hazirlananMetrajlar_selected = async (req, res) => {
+
+  const hataBase = "BACKEND - (update_hazirlananMetrajlar_selected) - "
+
+  try {
+
+    const {
+      email: userEmail,
+      isim: userIsim,
+      soyisim: userSoyisim,
+      userCode
+    } = JSON.parse(req.user)
+
+    const { dugumId, hazirlananMetrajlar_state } = req.body
+
+    if (!dugumId) {
+      throw new Error("'dugumId' verisi db sorgusuna gelmedi");
+    }
+
+    let _dugumId
+    try {
+      _dugumId = new ObjectId(dugumId)
+    } catch (error) {
+      throw new Error("DB ye gönderilen 'dugumId' verisi geçerli bir BSON ObjectId verisine dönüşemedi, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!hazirlananMetrajlar_state) {
+      throw new Error("'hazirlananMetrajlar_state' verisi db sorgusuna gelmedi");
+    }
+
+
+
+    try {
+
+      let bulkArray = []
+      hazirlananMetrajlar_state.map(oneHazirlanan => {
+
+        let oneHazirlanan_selected_satirNolar = oneHazirlanan.satirlar.filter(x => x.isSelected && x.newSelected).map(oneSatir => {
+          return oneSatir.satirNo
+        })
+
+        oneBulk = {
+          updateOne: {
+            filter: { _id: _dugumId },
+            update: {
+              $set: {
+                "hazirlananMetrajlar.$[oneHazirlanan].satirlar.$[oneSatir].isSelected": true,
+                "hazirlananMetrajlar.$[oneHazirlanan].satirlar.$[oneSatir].hasSelectedCopy": false,
+                "hazirlananMetrajlar.$[oneHazirlanan].satirlar.$[oneSatir].versiyon": 0,
+                "hazirlananMetrajlar.$[oneSatir].satirlar": true,
+                "revizeMetrajlar.$[oneMetraj].isSelected": true,
+                "revizeMetrajlar.$[oneMetraj].satirlar": [],
+              },
+              $unset: {
+                "hazirlananMetrajlar.$[oneHazirlanan].satirlar.$[oneSatir].isReady": "",
+                "hazirlananMetrajlar.$[oneHazirlanan].satirlar.$[oneSatir].isReadyUnSeen": "",
+                "revizeMetrajlar.$[oneMetraj].isReady": "",
+              }
+            },
+            arrayFilters: [
+              {
+                "oneHazirlanan.userEmail": oneHazirlanan.userEmail
+              },
+              {
+                "oneSatir.satirNo": { $in: oneHazirlanan_selected_satirNolar },
+                "oneSatir.isReady": true
+              },
+              {
+                "oneMetraj.satirNo": { $in: oneHazirlanan_selected_satirNolar },
+                "oneMetraj.isReady": true
+              }
+            ]
+          }
+        }
+        bulkArray = [...bulkArray, oneBulk]
+
+      })
+
+
+      await Dugum.bulkWrite(
+        bulkArray,
+        { ordered: false }
+      )
+
+
+    } catch (error) {
+      throw new Error("tryCatch -1- " + error);
+    }
+
+
+
+
+
+
+    // metraj güncelleme
+    try {
+      await Dugum.updateOne({ _id: _dugumId },
+        [
+          {
+            $set: {
+              "hazirlananMetrajlar": {
+                $map: {
+                  input: "$hazirlananMetrajlar",
+                  as: "oneHazirlanan",
+                  in: {
+                    "$mergeObjects": [
+                      "$$oneHazirlanan",
+                      {
+                        metrajOnaylanan: {
+                          $sum: {
+                            $concatArrays: [
+                              {
+                                "$map": {
+                                  "input": "$$oneHazirlanan.satirlar",
+                                  "as": "oneSatir",
+                                  "in": {
+                                    "$cond": {
+                                      "if": { $and: [{ $eq: ["$$oneSatir.isSelected", true] }, { $ne: ["$$oneSatir.hasSelectedCopy", true] }] },
+                                      "then": "$$oneSatir.metraj",
+                                      "else": 0
+                                    }
+                                  }
+                                }
+                              },
+                              {
+                                "$concatArrays": [
+                                  {
+                                    "$map": {
+                                      "input": "$revizeMetrajlar",
+                                      "as": "oneMetraj",
+                                      "in": {
+                                        "$cond": {
+                                          "if": {
+                                            $eq: [
+                                              "$$oneMetraj.isSelected",
+                                              true
+                                            ]
+                                          },
+                                          "then": {
+                                            "$reduce": {
+                                              "input": "$$oneMetraj.satirlar",
+                                              "initialValue": 0,
+                                              "in": {
+                                                $add: [
+                                                  "$$value",
+                                                  {
+                                                    "$cond": {
+                                                      "if": {
+                                                        $and: [
+                                                          { $ne: ["$$this.metraj", ""] },
+                                                          { $eq: ["$$this.userEmail", "$$oneHazirlanan.userEmail"] },
+                                                          { $ne: ["$$this.isPasif", true] }
+                                                        ]
+                                                      },
+                                                      "then": {
+                                                        "$toDouble": "$$this.metraj"
+                                                      },
+                                                      "else": 0
+                                                    }
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          },
+                                          "else": 0
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            $set: {
+              "metrajOnaylanan": {
+                $sum: {
+                  "$map": {
+                    "input": "$hazirlananMetrajlar",
+                    "as": "oneHazirlanan",
+                    "in": "$$oneHazirlanan.metrajOnaylanan"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      )
+
+    } catch (error) {
+      throw new Error("tryCatch -2- " + error);
+    }
+
+    return res.status(200).json({ ok: true })
+
+  } catch (error) {
+    return res.status(400).json({ error: hataBase + error })
+  }
+
+}
+
+
+
+
 // const yeniFonksiyon = async (req, res) => {
 
 //   const hataBase = "BACKEND - (yeniFonksiyon) - "
@@ -1205,5 +1417,6 @@ module.exports = {
   getHazirlananmetraj,
   getHazirlananmetrajlar,
   update_hazirlananMetraj_peparing,
-  update_hazirlananMetraj_ready
+  update_hazirlananMetraj_ready,
+  update_hazirlananMetrajlar_selected
 }

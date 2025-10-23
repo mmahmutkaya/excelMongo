@@ -7,7 +7,8 @@ const {
   getHazirlananmetraj,
   getHazirlananmetrajlar,
   update_hazirlananMetraj_peparing,
-  update_hazirlananMetraj_ready
+  update_hazirlananMetraj_ready,
+  update_hazirlananMetrajlar_selected
 } = require('../controllers/dugumController')
 
 const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
@@ -30,6 +31,8 @@ router.get('/hazirlananmetrajlar', getHazirlananmetrajlar)
 
 router.post('/updatehazirlananmetrajpreparing', update_hazirlananMetraj_peparing)
 router.post('/updatehazirlananmetrajready', update_hazirlananMetraj_ready)
+
+router.post('/updatehazirlananmetrajlarselected', update_hazirlananMetrajlar_selected)
 
 
 
