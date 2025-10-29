@@ -13,7 +13,7 @@ var ObjectId = require('mongodb').ObjectId;
 const createDugum = async (req, res) => {
 
   const hataBase = "BACKEND - (createDugum) - "
-  
+
 
   try {
 
@@ -59,6 +59,7 @@ const createDugum = async (req, res) => {
     }
 
 
+    // mahaller = mahaller.filter(x => x.newSelected)
 
     const currentTime = new Date();
 
