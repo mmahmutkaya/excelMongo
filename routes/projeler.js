@@ -19,7 +19,8 @@ const {
   moveLbsUp,
   moveLbsDown,
   moveLbsLeft,
-  moveLbsRight
+  moveLbsRight,
+  createVersiyonMetraj
 } = require('../controllers/projeController')
 
 const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
@@ -27,24 +28,14 @@ const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
 const router = express.Router()
 
 
+// kullanıcı yetki sorgulama ve sorgunun devamına kullanıcı bilgilerini yükleme
 router.use(requireAuthAndNecessary)
 
 
-// GET all getProjeler_byFirma
+// PROJE TEMEL FONKSİYONLAR
 router.get('/byfirma/:id', getProjeler_byFirma)
-
-// GET a single proje
 router.get('/:id', getProje)
-
-// // POST a new proje
 router.post('/', createProje)
-
-// // DELETE a proje
-// router.delete('/:id', deleteProje)
-
-// // UPDATE a proje
-// router.patch('/:id', updateProje)
-
 
 
 // WBS
@@ -69,8 +60,6 @@ router.post('/movelbsup', moveLbsUp)
 router.post('/movelbsdown', moveLbsDown)
 router.post('/movelbsleft', moveLbsLeft)
 router.post('/movelbsright', moveLbsRight)
-
-
 
 
 

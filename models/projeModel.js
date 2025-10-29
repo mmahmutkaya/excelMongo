@@ -15,6 +15,7 @@ const projeSchema = new Schema(
     pozBirimleri:Array,
     yetkiliKisiler: Array,
     yetkiliFirmalar: Array,
+    metrajVersiyonlar:Array,
     createdBy: String,
     createdAt: Date
   },

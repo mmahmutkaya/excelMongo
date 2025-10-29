@@ -2,23 +2,62 @@ const mongoose = require('mongoose')
 
 const Schema = mongoose.Schema
 
+
+// SATIRLAR
+
 const satirSchema = mongoose.Schema(
   {
     "satirNo": String,
+    "originalSatirNo": String,
     "aciklama": String,
-    "carpan1": Number,
-    "carpan2": Number,
-    "carpan3": Number,
-    "carpan4": Number,
-    "carpan5": Number,
-    "metraj": Number,
+    "carpan1": String,
+    "carpan2": String,
+    "carpan3": String,
+    "carpan4": String,
+    "carpan5": String,
+    "metraj": String,
     "isPreparing": Boolean,
     "isReady": Boolean,
+    "isReadyUnSeen": Boolean,
     "isSelected":Boolean,
     "hasSelectedCopy":Boolean,
+    "isSelectedCopy":Boolean,
+    "isFirstCopy":Boolean,
+    "isLastCopy":Boolean,
+    "isPasif":Boolean,
+    "pasifEdilenVersiyon":Number,    
     "versiyon":Number,
   }
 )
+
+const revizeSatirSchema = mongoose.Schema(
+  {
+    "satirNo": String,
+    "originalSatirNo": String,
+    "aciklama": String,
+    "carpan1": String,
+    "carpan2": String,
+    "carpan3": String,
+    "carpan4": String,
+    "carpan5": String,
+    "metraj": String,
+    "isPreparing": Boolean,
+    "isReady": Boolean,
+    "isReadyUnSeen": Boolean,
+    "isSelected":Boolean,
+    "hasSelectedCopy":Boolean,
+    "isSelectedCopy":Boolean,
+    "isFirstCopy":Boolean,
+    "isLastCopy":Boolean,
+    "isPasif":Boolean,
+    "pasifEdilenVersiyon":Number,    
+    "versiyon":Number,    
+    "userEmail":String
+  }
+)
+
+
+
 
 const hazirlananMetrajSchema = mongoose.Schema(
   {
@@ -32,13 +71,14 @@ const hazirlananMetrajSchema = mongoose.Schema(
   }
 )
 
+
 const revizeMetrajSchema = mongoose.Schema(
   {
     "satirNo":String,
     "isPreparing":Boolean,
     "isReady":Boolean,
-    "isPreparing":Boolean,
-    "satirlar":Array
+    "isSelected":Boolean,
+    "satirlar":[revizeSatirSchema]
   }
 )
 
@@ -51,7 +91,8 @@ const dugumSchema = new Schema(
     isDeleted: Boolean,
     hazirlananMetrajlar: [hazirlananMetrajSchema],
     revizeMetrajlar: [revizeMetrajSchema],
-    metrajVersiyonlari: Array
+    metrajVersiyonlar: Array,
+    deneme:String
   },
   {
     collection: 'dugumler',

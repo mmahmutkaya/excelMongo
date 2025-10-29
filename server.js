@@ -9,6 +9,7 @@ const firmaRoutes = require('./routes/firmalar')
 const projeRoutes = require('./routes/projeler')
 const mahalRoutes = require('./routes/mahaller')
 const dugumRoutes = require('./routes/dugumler')
+const versiyonRoutes = require('./routes/versiyon')
 
 
 
@@ -31,6 +32,7 @@ app.use('/api/firmalar', firmaRoutes)
 app.use('/api/projeler', projeRoutes)
 app.use('/api/mahaller', mahalRoutes)
 app.use('/api/dugumler', dugumRoutes)
+app.use('/api/versiyon', versiyonRoutes)
 
 
 // mongoose.set('strictQuery', true)
