@@ -510,7 +510,71 @@ const getDugumler_byPoz = async (req, res) => {
                         }
                       }
                     }
+                  },
+                  hasVersiyonZero: {
+                    "$reduce": {
+                      "input": "$$oneHazirlanan.satirlar",
+                      "initialValue": false,
+                      "in": {
+                        "$cond": {
+                          "if": {
+                            "$and": [
+                              {
+                                $eq: [
+                                  "$$value",
+                                  false
+                                ]
+                              },
+                              {
+                                $eq: [
+                                  "$$this.versiyon",
+                                  0
+                                ]
+                              }
+                            ]
+                          },
+                          "then": true,
+                          "else": "$$value"
+                        }
+                      }
+                    }
                   }
+                }
+              }
+            },
+            revizeMetrajlar: {
+              $map: {
+                input: "$revizeMetrajlar",
+                as: "oneMetraj",
+                in: {
+                  hasVersiyonZero: {
+                    "$reduce": {
+                      "input": "$$oneMetraj.satirlar",
+                      "initialValue": false,
+                      "in": {
+                        "$cond": {
+                          "if": {
+                            "$and": [
+                              {
+                                $eq: [
+                                  "$$value",
+                                  false
+                                ]
+                              },
+                              {
+                                $eq: [
+                                  "$$this.versiyon",
+                                  0
+                                ]
+                              }
+                            ]
+                          },
+                          "then": true,
+                          "else": "$$value"
+                        }
+                      }
+                    }
+                  },
                 }
               }
             }
@@ -520,8 +584,28 @@ const getDugumler_byPoz = async (req, res) => {
 
 
       if (!dugumler_byPoz.length > 0) {
-        return res.status(200).json({ })
+        return res.status(200).json({})
       }
+
+      // return res.status(200).json({dugumler_byPoz})
+
+      dugumler_byPoz = dugumler_byPoz.map(oneDugum => {
+        oneDugum.hasVersiyonZero = false
+        oneDugum?.hazirlananMetrajlar?.map(oneHazirlanan => {
+          if (oneHazirlanan) {
+            if (oneHazirlanan.hasVersiyonZero) {
+              oneDugum.hasVersiyonZero = true
+            }
+          }
+        })
+        oneDugum.revizeMetrajlar.map(oneMetraj => {
+          if (oneMetraj.hasVersiyonZero) {
+            oneDugum.hasVersiyonZero = true
+          }
+        })
+
+        return oneDugum
+      })
 
     } catch (error) {
       throw new Error("'dugumler_byPoz' oluşturma sırasında hata oluştu" + error);
@@ -604,7 +688,6 @@ const getDugumler_byPoz = async (req, res) => {
     let anySelectable
     try {
 
-      anySelectable
       dugumler_byPoz.map(oneDugum => {
         oneDugum?.hazirlananMetrajlar?.map(oneHazirlanan => {
           if (oneHazirlanan) {

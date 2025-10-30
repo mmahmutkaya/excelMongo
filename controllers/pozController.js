@@ -203,7 +203,71 @@ const getPozlar = async (req, res) => {
                         }
                       }
                     }
-                  }
+                  },
+                  hasVersiyonZero: {
+                    "$reduce": {
+                      "input": "$$oneHazirlanan.satirlar",
+                      "initialValue": false,
+                      "in": {
+                        "$cond": {
+                          "if": {
+                            "$and": [
+                              {
+                                $eq: [
+                                  "$$value",
+                                  false
+                                ]
+                              },
+                              {
+                                $eq: [
+                                  "$$this.versiyon",
+                                  0
+                                ]
+                              }
+                            ]
+                          },
+                          "then": true,
+                          "else": "$$value"
+                        }
+                      }
+                    }
+                  },
+                }
+              }
+            },
+            revizeMetrajlar: {
+              $map: {
+                input: "$revizeMetrajlar",
+                as: "oneMetraj",
+                in: {
+                  hasVersiyonZero: {
+                    "$reduce": {
+                      "input": "$$oneMetraj.satirlar",
+                      "initialValue": false,
+                      "in": {
+                        "$cond": {
+                          "if": {
+                            "$and": [
+                              {
+                                $eq: [
+                                  "$$value",
+                                  false
+                                ]
+                              },
+                              {
+                                $eq: [
+                                  "$$this.versiyon",
+                                  0
+                                ]
+                              }
+                            ]
+                          },
+                          "then": true,
+                          "else": "$$value"
+                        }
+                      }
+                    }
+                  },
                 }
               }
             }
@@ -213,13 +277,13 @@ const getPozlar = async (req, res) => {
           $group: {
             _id: "$_pozId",
             hazirlananMetrajlar: { $push: "$hazirlananMetrajlar" },
+            revizeMetrajlar: { $push: "$revizeMetrajlar" },
             metrajPreparing: { $sum: "$metrajPreparing" },
             metrajReady: { $sum: "$metrajReady" },
             metrajOnaylanan: { $sum: "$metrajOnaylanan" }
           }
         }
       ])
-
 
 
       let metrajYapabilenler = proje.yetkiliKisiler.filter(x => x.yetkiler.find(x => x.name === "owner"))
@@ -236,6 +300,7 @@ const getPozlar = async (req, res) => {
         } else {
 
           onePoz.hasDugum = true
+          onePoz.hasVersiyonZero = false
 
           onePoz.metrajOnaylanan = onePoz2.metrajOnaylanan
           // return onePoz2.hazirlanan
@@ -249,6 +314,7 @@ const getPozlar = async (req, res) => {
             let hasReady_Array = []
             let hasSelected_Array = []
             let hasUnSelected_Array = []
+            let hasVersiyonZero_Array = []
 
 
             onePoz2.hazirlananMetrajlar.map(oneArray => {
@@ -270,6 +336,7 @@ const getPozlar = async (req, res) => {
                 hasReady_Array = [...hasReady_Array, oneHazirlanan?.hasReady]
                 hasSelected_Array = [...hasSelected_Array, oneHazirlanan?.hasSelected]
                 hasUnSelected_Array = [...hasUnSelected_Array, oneHazirlanan?.hasUnSelected]
+                hasVersiyonZero_Array = [...hasVersiyonZero_Array, oneHazirlanan?.hasVersiyonZero]
               }
 
             })
@@ -278,6 +345,11 @@ const getPozlar = async (req, res) => {
             let hasReady = hasReady_Array.find(x => x === true)
             let hasSelected = hasSelected_Array.find(x => x === true)
             let hasUnSelected = hasUnSelected_Array.find(x => x === true)
+            let hasVersiyonZero = hasVersiyonZero_Array.find(x => x === true)
+
+            if (hasVersiyonZero) {
+              onePoz.hasVersiyonZero = true
+            }
 
             return ({
               userEmail: oneYapabilen.userEmail,
@@ -287,9 +359,19 @@ const getPozlar = async (req, res) => {
               hasReadyUnSeen,
               hasReady,
               hasSelected,
-              hasUnSelected
+              hasUnSelected,
+              hasVersiyonZero
             })
 
+          })
+
+          // onePoz.revizeMetrajlar = onePoz2.revizeMetrajlar
+          onePoz2.revizeMetrajlar.map(oneMetraj => {
+            oneMetraj.map(oneSatir => {
+              if (oneSatir.hasVersiyonZero) {
+                onePoz.hasVersiyonZero = true
+              }
+            })
           })
 
         }
@@ -302,8 +384,6 @@ const getPozlar = async (req, res) => {
     } catch (error) {
       throw new Error("tryCatch -1- " + error);
     }
-
-
 
     let anySelectable
     try {
@@ -323,7 +403,7 @@ const getPozlar = async (req, res) => {
       throw new Error("tryCatch -2- " + error);
     }
 
-    res.status(200).json({ pozlar, anySelectable })
+    return res.status(200).json({ pozlar, anySelectable })
 
   } catch (error) {
     return res.status(400).json({ hatayeri: hataBase, error: hataBase + error })
