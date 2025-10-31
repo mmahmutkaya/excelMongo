@@ -748,6 +748,7 @@ const getOnaylananMetraj = async (req, res) => {
       soyisim: userSoyisim,
       userCode
     } = JSON.parse(req.user)
+    
 
     const { dugumid } = req.headers
 
