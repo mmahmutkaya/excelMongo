@@ -27,6 +27,7 @@ const satirSchema = mongoose.Schema(
     "isPasif":Boolean,
     "pasifEdilenVersiyon":Number,    
     "versiyon":Number,
+    "dizi":String,
   }
 )
 
@@ -51,7 +52,8 @@ const revizeSatirSchema = mongoose.Schema(
     "isLastCopy":Boolean,
     "isPasif":Boolean,
     "pasifEdilenVersiyon":Number,    
-    "versiyon":Number,    
+    "versiyon":Number,
+    "dizi":String,
     "userEmail":String
   }
 )
