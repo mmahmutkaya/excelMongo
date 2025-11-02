@@ -2,20 +2,37 @@ const mongoose = require('mongoose')
 
 const Schema = mongoose.Schema
 
+const isPaketBaslikSchema = mongoose.Schema(
+  {
+    _id: mongoose.Schema.Types.ObjectId,
+    name: String,
+    aciklama: String,
+    altBasliklar: Array,
+    createdBy: String,
+    createdAt: Date
+  }
+)
+
+const isPaketleriSchema = mongoose.Schema(
+  {
+    versiyon: Number,
+    basliklar: [isPaketBaslikSchema]
+  }
+)
+
 const projeSchema = new Schema(
   {
-    _firmaId:mongoose.ObjectId,
+    _firmaId: mongoose.ObjectId,
     name: String,
     wbs: Array,
     lbs: Array,
     paraBirimleri: Array,
-    isPaketBasliklari: Array,
-    isPaketleri: Array,
-    pozMetrajTipleri:Array,
-    pozBirimleri:Array,
+    isPaketleri: [isPaketleriSchema],
+    pozMetrajTipleri: Array,
+    pozBirimleri: Array,
     yetkiliKisiler: Array,
     yetkiliFirmalar: Array,
-    metrajVersiyonlar:Array,
+    metrajVersiyonlar: Array,
     createdBy: String,
     createdAt: Date
   },

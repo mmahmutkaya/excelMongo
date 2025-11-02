@@ -278,7 +278,7 @@ const saveNecessaryUserData = async (req, res) => {
             { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
           ]
         },
-        metrajpozlar: {
+        metrajOnayla: {
           basliklar: [
             { id: "aciklama", baslikName: "Açıklama", visible: true, show: true },
             { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
@@ -291,6 +291,12 @@ const saveNecessaryUserData = async (req, res) => {
             { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
           ],
           showMetrajYapabilenler: []
+        },
+        ispaketleri: {
+          basliklar: [
+            { id: "aciklama", baslikName: "Açıklama", visible: true, show: true },
+            { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
+          ]
         }
       }
     }
@@ -371,11 +377,66 @@ const showMetrajYapabilenler = async (req, res) => {
 
 
 
+
+
+const customSettingsPagesSetData = async (req, res) => {
+
+  const hataBase = "BACKEND - (customSettingsPagesSetData) - "
+
+  try {
+
+    const {
+      email: userEmail,
+      isim: userIsim,
+      soyisim: userSoyisim
+    } = JSON.parse(req.user)
+
+    let { pageName, dataName, setData } = req.body
+
+    // return res.status(200).json({ showMetrajYapabilenler })
+
+    if (!pageName) {
+      throw new Error(
+        "db ye 'pageName' değeri gelmedi, sayfayı yenileyiniz, sorun devam ederse lütfen Rapor 724 ile iletişime geçiniz."
+      );
+    }
+
+    if (!dataName) {
+      throw new Error(
+        "db ye 'dataName' değeri gelmedi, sayfayı yenileyiniz, sorun devam ederse lütfen Rapor 724 ile iletişime geçiniz."
+      );
+    }
+
+    if (!setData) {
+      throw new Error(
+        "db ye 'setData' değeri gelmedi, sayfayı yenileyiniz, sorun devam ederse lütfen Rapor 724 ile iletişime geçiniz."
+      );
+    }
+
+    await User.findOneAndUpdate(
+      { email: userEmail },
+      { $set: { [`customSettings.pages.${pageName}.${dataName}`]: setData } },
+      { new: true }
+    )
+
+    return res.status(200).json({ ok: true })
+
+  } catch (error) {
+    return res.status(400).json({ error: hataBase + error })
+  }
+
+}
+
+
+
+
+
 module.exports = {
   signupUser,
   loginUser,
   sendMailCode,
   confirmMailCode,
   saveNecessaryUserData,
-  showMetrajYapabilenler
+  showMetrajYapabilenler,
+  customSettingsPagesSetData
 }

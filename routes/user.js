@@ -6,7 +6,8 @@ const { loginUser,
   sendMailCode,
   confirmMailCode,
   saveNecessaryUserData,
-  showMetrajYapabilenler
+  showMetrajYapabilenler,
+  customSettingsPagesSetData
 } = require('../controllers/userController')
 
 const router = express.Router()
@@ -50,6 +51,7 @@ router.use(requireAuthAndNecessary)
 
 // customSettings / showMetrajYapabilenler
 router.post('/customsettings/showmetrajyapabilenler', showMetrajYapabilenler)
+router.post('/customsettingspagessetdata', customSettingsPagesSetData)
 
 
 module.exports = router

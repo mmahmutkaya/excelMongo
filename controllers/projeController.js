@@ -7,6 +7,20 @@ const mongoose = require('mongoose')
 var ObjectId = require('mongodb').ObjectId;
 
 
+deleteLastSpace = (sTr) => {
+
+  if (typeof sTr !== "string") {
+    return sTr
+  }
+
+  do {
+    if (sTr.endsWith(" ")) sTr = sTr.slice(0, -1)
+  } while (sTr.endsWith(" "));
+
+  return sTr
+};
+
+
 
 const getProjeler_byFirma = async (req, res) => {
 
@@ -226,8 +240,10 @@ const createProje = async (req, res) => {
       wbs: [],
       lbs: [],
       paraBirimleri: [],
-      isPaketBasliklari: [],
-      isPaketleri: [],
+      isPaketleri: [{
+        versiyon: 0,
+        basliklar: []
+      }],
       // pozBasliklari,
       // mahalBasliklari,
       pozMetrajTipleri,
@@ -3240,6 +3256,103 @@ const moveLbsRight = async (req, res) => {
 
 
 
+
+
+
+
+
+const createIsPaketBaslik = async (req, res) => {
+
+  const hataBase = "BACKEND - (createIsPaketBaslik) - "
+
+  try {
+
+    const {
+      email: userEmail,
+      isim: userIsim,
+      soyisim: userSoyisim,
+      userCode
+    } = JSON.parse(req.user)
+
+
+    let { projeId, baslikName, aciklama } = req.body
+
+    if (!projeId) {
+      throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!baslikName) {
+      throw new Error("Sorguya 'baslikName' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!aciklama) {
+      throw new Error("Sorguya 'aciklama' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    let proje = await Proje.findOne({ _id: projeId })
+    if (!proje) {
+      throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    let errorFormObj = {}
+
+
+    //form verisi -- yukarıda  "" const errorFormObj = {} ""  yazan satırdan önceki açıklamaları oku
+
+    // baslikName
+    typeof baslikName != "string" && errorFormObj.baslikName === null ? errorFormObj.baslikName = "MONGO // create_isPaketBaslik //  --  baslikName -- sorguya, string formatında gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz. " : null
+    baslikName = deleteLastSpace(baslikName)
+    if (!baslikName.length && !errorFormObj.baslikName) {
+      errorFormObj.baslikName = "'baslikName' sorguya, gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz."
+    }
+
+    // if (proje.isPaketBasliklari?.find(x => x.name === baslikName && !errorFormObj.baslikName)) {
+    //   errorFormObj.baslikName = "Bu projede, bu başlık ismi kullanılmış."
+    // }
+
+
+    // form veri girişlerinden en az birinde hata tespit edildiği için form objesi dönderiyoruz, formun ilgili alanlarında gösterilecek
+    // errorFormObj - aşağıda tekrar gönderiliyor
+    if (Object.keys(errorFormObj).length) {
+      return res.status(200).json({ errorFormObj })
+    }
+
+
+    const currentTime = new Date()
+
+    let newBaslik = {
+      _id: new ObjectId(),
+      name: baslikName,
+      aciklama,
+      altBasliklar: [],
+      createdAt: currentTime,
+      createdBy: userEmail
+    }
+
+
+    try {
+
+      await Proje.updateOne(
+        { _id: projeId },
+        { $push: { 'isPaketleri.$[onePaket].basliklar': newBaslik } },
+        { arrayFilters: [{"onePaket.versiyon": 0}] }
+      );
+
+      // return newWbsItem[0].code
+      return res.status(200).json({ newBaslik })
+
+    } catch (error) {
+      throw new Error("tryCatch -1- " + error);
+    }
+
+  } catch (error) {
+    return res.status(400).json({ error: hataBase + error })
+  }
+
+}
+
+
+
 module.exports = {
   getProjeler_byFirma,
   getProje,
@@ -3259,5 +3372,6 @@ module.exports = {
   moveLbsUp,
   moveLbsDown,
   moveLbsLeft,
-  moveLbsRight
+  moveLbsRight,
+  createIsPaketBaslik
 }
