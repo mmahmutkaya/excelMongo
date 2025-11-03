@@ -3300,15 +3300,15 @@ const createIsPaketBaslik = async (req, res) => {
     //form verisi -- yukarıda  "" const errorFormObj = {} ""  yazan satırdan önceki açıklamaları oku
 
     // baslikName
-    typeof baslikName != "string" && errorFormObj.baslikName === null ? errorFormObj.baslikName = "MONGO // create_isPaketBaslik //  --  baslikName -- sorguya, string formatında gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz. " : null
+    typeof baslikName != "string" && errorFormObj.baslikNameError === null ? errorFormObj.baslikNameError = "MONGO // create_isPaketBaslik //  --  baslikName -- sorguya, string formatında gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz. " : null
     baslikName = deleteLastSpace(baslikName)
-    if (!baslikName.length && !errorFormObj.baslikName) {
-      errorFormObj.baslikName = "'baslikName' sorguya, gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz."
+    if (!baslikName.length && !errorFormObj.baslikNameError) {
+      errorFormObj.baslikNameError = "'baslikName' sorguya, gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz."
     }
 
-    // if (proje.isPaketBasliklari?.find(x => x.name === baslikName && !errorFormObj.baslikName)) {
-    //   errorFormObj.baslikName = "Bu projede, bu başlık ismi kullanılmış."
-    // }
+    if (proje.isPaketleri?.find(onePaket => onePaket.versiyon === 0 && onePaket.basliklar.find(oneBaslik => oneBaslik.name === baslikName) && !errorFormObj.baslikNameError)) {
+      errorFormObj.baslikNameError = "Bu projede, bu başlık ismi kullanılmış."
+    }
 
 
     // form veri girişlerinden en az birinde hata tespit edildiği için form objesi dönderiyoruz, formun ilgili alanlarında gösterilecek
@@ -3323,6 +3323,100 @@ const createIsPaketBaslik = async (req, res) => {
     let newBaslik = {
       _id: new ObjectId(),
       name: baslikName,
+      aciklama,
+      altBasliklar: [],
+      createdAt: currentTime,
+      createdBy: userEmail
+    }
+
+
+    try {
+
+      await Proje.updateOne(
+        { _id: projeId },
+        { $push: { 'isPaketleri.$[onePaket].basliklar': newBaslik } },
+        { arrayFilters: [{"onePaket.versiyon": 0}] }
+      );
+
+      // return newWbsItem[0].code
+      return res.status(200).json({ newBaslik })
+
+    } catch (error) {
+      throw new Error("tryCatch -1- " + error);
+    }
+
+  } catch (error) {
+    return res.status(400).json({ error: hataBase + error })
+  }
+
+}
+
+
+
+
+
+const createIsPaket = async (req, res) => {
+
+  const hataBase = "BACKEND - (createIsPaket) - "
+
+  try {
+
+    const {
+      email: userEmail,
+      isim: userIsim,
+      soyisim: userSoyisim,
+      userCode
+    } = JSON.parse(req.user)
+
+
+    let { projeId, isPaketName, aciklama } = req.body
+
+    if (!projeId) {
+      throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!isPaketName) {
+      throw new Error("Sorguya 'isPaketName' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!aciklama) {
+      throw new Error("Sorguya 'aciklama' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    let proje = await Proje.findOne({ _id: projeId })
+    if (!proje) {
+      throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    let errorFormObj = {}
+
+
+    //form verisi -- yukarıda  "" const errorFormObj = {} ""  yazan satırdan önceki açıklamaları oku
+
+    // isPaketName
+    typeof isPaketName != "string" && errorFormObj.isPaketName === null ? errorFormObj.isPaketName = "MONGO // create_isPaketBaslik //  --  isPaketName -- sorguya, string formatında gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz. " : null
+    isPaketName = deleteLastSpace(isPaketName)
+    if (!isPaketName.length && !errorFormObj.isPaketName) {
+      errorFormObj.isPaketName = "'isPaketName' sorguya, gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz."
+    }
+
+    // if (proje.isPaketBasliklari?.find(x => x.name === isPaketName && !errorFormObj.isPaketName)) {
+    //   errorFormObj.isPaketName = "Bu projede, bu başlık ismi kullanılmış."
+    // }
+
+
+    // form veri girişlerinden en az birinde hata tespit edildiği için form objesi dönderiyoruz, formun ilgili alanlarında gösterilecek
+    // errorFormObj - aşağıda tekrar gönderiliyor
+    if (Object.keys(errorFormObj).length) {
+      return res.status(200).json({ errorFormObj })
+    }
+
+
+    const currentTime = new Date()
+
+    let newBaslik = {
+      _id: new ObjectId(),
+      name: isPaketName,
       aciklama,
       altBasliklar: [],
       createdAt: currentTime,
@@ -3373,5 +3467,6 @@ module.exports = {
   moveLbsDown,
   moveLbsLeft,
   moveLbsRight,
-  createIsPaketBaslik
+  createIsPaketBaslik,
+  createIsPaket
 }

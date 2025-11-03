@@ -20,7 +20,8 @@ const {
   moveLbsDown,
   moveLbsLeft,
   moveLbsRight,
-  createIsPaketBaslik
+  createIsPaketBaslik,
+  createIsPaket
 } = require('../controllers/projeController')
 
 const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
@@ -65,6 +66,7 @@ router.post('/movelbsright', moveLbsRight)
 
 // LBS
 router.post('/createispaketbaslik', createIsPaketBaslik)
+router.post('/createispaket', createIsPaket)
 
 
 module.exports = router

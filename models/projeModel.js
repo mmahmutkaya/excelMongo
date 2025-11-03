@@ -5,7 +5,11 @@ const Schema = mongoose.Schema
 const isPaketBaslikSchema = mongoose.Schema(
   {
     _id: mongoose.Schema.Types.ObjectId,
-    name: String,
+    name: {
+        type:String,
+        unique: true,
+        index: true
+    },
     aciklama: String,
     altBasliklar: Array,
     createdBy: String,
