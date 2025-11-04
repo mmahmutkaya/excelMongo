@@ -3294,27 +3294,27 @@ const createIsPaketBaslik = async (req, res) => {
       throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    let errorFormObj = {}
+    let errorObject = {}
 
 
-    //form verisi -- yukarıda  "" const errorFormObj = {} ""  yazan satırdan önceki açıklamaları oku
+    //form verisi -- yukarıda  "" const errorObject = {} ""  yazan satırdan önceki açıklamaları oku
 
     // baslikName
-    typeof baslikName != "string" && errorFormObj.baslikNameError === null ? errorFormObj.baslikNameError = "MONGO // create_isPaketBaslik //  --  baslikName -- sorguya, string formatında gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz. " : null
+    typeof baslikName != "string" && errorObject.baslikNameError === null ? errorObject.baslikNameError = "MONGO // create_isPaketBaslik //  --  baslikName -- sorguya, string formatında gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz. " : null
     baslikName = deleteLastSpace(baslikName)
-    if (!baslikName.length && !errorFormObj.baslikNameError) {
-      errorFormObj.baslikNameError = "'baslikName' sorguya, gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz."
+    if (!baslikName.length && !errorObject.baslikNameError) {
+      errorObject.baslikNameError = "'baslikName' sorguya, gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz."
     }
 
-    if (proje.isPaketleri?.find(onePaket => onePaket.versiyon === 0 && onePaket.basliklar.find(oneBaslik => oneBaslik.name === baslikName) && !errorFormObj.baslikNameError)) {
-      errorFormObj.baslikNameError = "Bu projede, bu başlık ismi kullanılmış."
+    if (proje.isPaketleri?.find(onePaket => onePaket.versiyon === 0 && onePaket.basliklar.find(oneBaslik => oneBaslik.name === baslikName) && !errorObject.baslikNameError)) {
+      errorObject.baslikNameError = "Bu projede, bu başlık ismi kullanılmış."
     }
 
 
     // form veri girişlerinden en az birinde hata tespit edildiği için form objesi dönderiyoruz, formun ilgili alanlarında gösterilecek
-    // errorFormObj - aşağıda tekrar gönderiliyor
-    if (Object.keys(errorFormObj).length) {
-      return res.status(200).json({ errorFormObj })
+    // errorObject - aşağıda tekrar gönderiliyor
+    if (Object.keys(errorObject).length) {
+      return res.status(200).json({ errorObject })
     }
 
 
@@ -3369,14 +3369,14 @@ const createIsPaket = async (req, res) => {
     } = JSON.parse(req.user)
 
 
-    let { projeId, baslikName, isPaketName, aciklama } = req.body
+    let { projeId, baslikId, isPaketName, aciklama } = req.body
 
     if (!projeId) {
       throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    if (!baslikName) {
-      throw new Error("Sorguya 'baslikName' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    if (!baslikId) {
+      throw new Error("Sorguya 'baslikId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
     if (!isPaketName) {
@@ -3392,31 +3392,33 @@ const createIsPaket = async (req, res) => {
       throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    let theBaslik = proje.isPaketleri?.find(onePaket => onePaket.versiyon === 0 && onePaket.basliklar.find(oneBaslik => oneBaslik.name === baslikName))
+    let theBaslik = proje.isPaketleri?.find(onePaket => onePaket.versiyon === 0).basliklar.find(oneBaslik => oneBaslik._id.toString() === baslikId)
+
+    // return res.status(200).json((theBaslik))
 
     if (!theBaslik) {
-      throw new Error("sorguya gönderilen 'baslikName' ile sistemde başlık bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+      throw new Error("sorguya gönderilen 'baslikId' ile güncel versiyon (versiyon 0) alanında başlık bulunamadı")
     }
 
-    let errorFormObj = {}
+    let errorObject = {}
 
-    //form verisi -- yukarıda  "" const errorFormObj = {} ""  yazan satırdan önceki açıklamaları oku
+    //form verisi -- yukarıda  "" const errorObject = {} ""  yazan satırdan önceki açıklamaları oku
 
     // isPaketName
     isPaketName = deleteLastSpace(isPaketName)
-    if (!isPaketName.length && !errorFormObj.isPaketNameError) {
-      errorFormObj.isPaketNameError = "'isPaketName' sorguya, gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz."
+    if (!isPaketName.length && !errorObject.isPaketNameError) {
+      errorObject.isPaketNameError = "'isPaketName' sorguya, gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz."
     }
 
-    if (theBaslik.altBasliklar.find(altBaslik => altBaslik.name === isPaketName) && !errorFormObj.isPaketNameError) {
-      errorFormObj.isPaketNameError = "'isPaketName' sorguya, gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz."
+    if (theBaslik.altBasliklar.find(altBaslik => altBaslik.name === isPaketName) && !errorObject.isPaketNameError) {
+      errorObject.isPaketNameError = "Bu başlık altında bu 'iş paket' ismi kullanılmış."
     }
 
 
     // form veri girişlerinden en az birinde hata tespit edildiği için form objesi dönderiyoruz, formun ilgili alanlarında gösterilecek
-    // errorFormObj - aşağıda tekrar gönderiliyor
-    if (Object.keys(errorFormObj).length) {
-      return res.status(200).json({ errorFormObj })
+    // errorObject - aşağıda tekrar gönderiliyor
+    if (Object.keys(errorObject).length) {
+      return res.status(200).json({ errorObject })
     }
 
 
@@ -3436,11 +3438,11 @@ const createIsPaket = async (req, res) => {
       await Proje.updateOne(
         { _id: projeId },
         { $push: { 'isPaketleri.$[onePaket].basliklar.$[oneBaslik].altBasliklar': altBaslik } },
-        { arrayFilters: [{ "onePaket.versiyon": 0 }, { "oneBaslik.name": isPaketName }] }
+        { arrayFilters: [{ "onePaket.versiyon": 0 }, { "oneBaslik._id": baslikId }] }
       );
 
       // return newWbsItem[0].code
-      return res.status(200).json({ newBaslik })
+      return res.status(200).json({ altBaslik })
 
     } catch (error) {
       throw new Error("tryCatch -1- " + error);
