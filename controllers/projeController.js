@@ -3335,7 +3335,7 @@ const createIsPaketBaslik = async (req, res) => {
       await Proje.updateOne(
         { _id: projeId },
         { $push: { 'isPaketleri.$[onePaket].basliklar': newBaslik } },
-        { arrayFilters: [{"onePaket.versiyon": 0}] }
+        { arrayFilters: [{ "onePaket.versiyon": 0 }] }
       );
 
       // return newWbsItem[0].code
@@ -3369,10 +3369,14 @@ const createIsPaket = async (req, res) => {
     } = JSON.parse(req.user)
 
 
-    let { projeId, isPaketName, aciklama } = req.body
+    let { projeId, baslikName, isPaketName, aciklama } = req.body
 
     if (!projeId) {
       throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!baslikName) {
+      throw new Error("Sorguya 'baslikName' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
     if (!isPaketName) {
@@ -3388,21 +3392,25 @@ const createIsPaket = async (req, res) => {
       throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    let errorFormObj = {}
+    let theBaslik = proje.isPaketleri?.find(onePaket => onePaket.versiyon === 0 && onePaket.basliklar.find(oneBaslik => oneBaslik.name === baslikName))
 
+    if (!theBaslik) {
+      throw new Error("sorguya gönderilen 'baslikName' ile sistemde başlık bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    let errorFormObj = {}
 
     //form verisi -- yukarıda  "" const errorFormObj = {} ""  yazan satırdan önceki açıklamaları oku
 
     // isPaketName
-    typeof isPaketName != "string" && errorFormObj.isPaketName === null ? errorFormObj.isPaketName = "MONGO // create_isPaketBaslik //  --  isPaketName -- sorguya, string formatında gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz. " : null
     isPaketName = deleteLastSpace(isPaketName)
-    if (!isPaketName.length && !errorFormObj.isPaketName) {
-      errorFormObj.isPaketName = "'isPaketName' sorguya, gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz."
+    if (!isPaketName.length && !errorFormObj.isPaketNameError) {
+      errorFormObj.isPaketNameError = "'isPaketName' sorguya, gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz."
     }
 
-    // if (proje.isPaketBasliklari?.find(x => x.name === isPaketName && !errorFormObj.isPaketName)) {
-    //   errorFormObj.isPaketName = "Bu projede, bu başlık ismi kullanılmış."
-    // }
+    if (theBaslik.altBasliklar.find(altBaslik => altBaslik.name === isPaketName) && !errorFormObj.isPaketNameError) {
+      errorFormObj.isPaketNameError = "'isPaketName' sorguya, gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz."
+    }
 
 
     // form veri girişlerinden en az birinde hata tespit edildiği için form objesi dönderiyoruz, formun ilgili alanlarında gösterilecek
@@ -3414,11 +3422,10 @@ const createIsPaket = async (req, res) => {
 
     const currentTime = new Date()
 
-    let newBaslik = {
+    let altBaslik = {
       _id: new ObjectId(),
       name: isPaketName,
       aciklama,
-      altBasliklar: [],
       createdAt: currentTime,
       createdBy: userEmail
     }
@@ -3428,8 +3435,8 @@ const createIsPaket = async (req, res) => {
 
       await Proje.updateOne(
         { _id: projeId },
-        { $push: { 'isPaketleri.$[onePaket].basliklar': newBaslik } },
-        { arrayFilters: [{"onePaket.versiyon": 0}] }
+        { $push: { 'isPaketleri.$[onePaket].basliklar.$[oneBaslik].altBasliklar': altBaslik } },
+        { arrayFilters: [{ "onePaket.versiyon": 0 }, { "oneBaslik.name": isPaketName }] }
       );
 
       // return newWbsItem[0].code
