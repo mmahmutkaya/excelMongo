@@ -5,19 +5,15 @@ const Schema = mongoose.Schema
 const isPaketBaslikSchema = mongoose.Schema(
   {
     _id: mongoose.Schema.Types.ObjectId,
-    name: {
-        type:String,
-        unique: true,
-        index: true
-    },
+    name: String,
     aciklama: String,
-    altBasliklar: Array,
+    isPaketleri: Array,
     createdBy: String,
     createdAt: Date
   }
 )
 
-const isPaketleriSchema = mongoose.Schema(
+const isPaketVersiyonSchema = mongoose.Schema(
   {
     versiyon: Number,
     basliklar: [isPaketBaslikSchema]
@@ -31,7 +27,7 @@ const projeSchema = new Schema(
     wbs: Array,
     lbs: Array,
     paraBirimleri: Array,
-    isPaketleri: [isPaketleriSchema],
+    isPaketVersiyonlar: [isPaketVersiyonSchema],
     pozMetrajTipleri: Array,
     pozBirimleri: Array,
     yetkiliKisiler: Array,

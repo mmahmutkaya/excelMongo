@@ -240,7 +240,7 @@ const createProje = async (req, res) => {
       wbs: [],
       lbs: [],
       paraBirimleri: [],
-      isPaketleri: [{
+      isPaketVersiyonlar: [{
         versiyon: 0,
         basliklar: []
       }],
@@ -3306,7 +3306,7 @@ const createIsPaketBaslik = async (req, res) => {
       errorObject.baslikNameError = "'baslikName' sorguya, gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz."
     }
 
-    if (proje.isPaketleri?.find(onePaket => onePaket.versiyon === 0 && onePaket.basliklar.find(oneBaslik => oneBaslik.name === baslikName) && !errorObject.baslikNameError)) {
+    if (proje.isPaketVersiyonlar?.find(oneVersiyon => oneVersiyon.versiyon === 0 && oneVersiyon.basliklar.find(oneBaslik => oneBaslik.name === baslikName) && !errorObject.baslikNameError)) {
       errorObject.baslikNameError = "Bu projede, bu başlık ismi kullanılmış."
     }
 
@@ -3334,8 +3334,8 @@ const createIsPaketBaslik = async (req, res) => {
 
       await Proje.updateOne(
         { _id: projeId },
-        { $push: { 'isPaketleri.$[onePaket].basliklar': newBaslik } },
-        { arrayFilters: [{ "onePaket.versiyon": 0 }] }
+        { $push: { 'isPaketVersiyonlar.$[oneVersiyon].basliklar': newBaslik } },
+        { arrayFilters: [{ "oneVersiyon.versiyon": 0 }] }
       );
 
       // return newWbsItem[0].code
@@ -3392,7 +3392,7 @@ const createIsPaket = async (req, res) => {
       throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    let theBaslik = proje.isPaketleri?.find(onePaket => onePaket.versiyon === 0).basliklar.find(oneBaslik => oneBaslik._id.toString() === baslikId)
+    let theBaslik = proje.isPaketVersiyonlar?.find(oneVersiyon => oneVersiyon.versiyon === 0).basliklar.find(oneBaslik => oneBaslik._id.toString() === baslikId)
 
     // return res.status(200).json((theBaslik))
 
@@ -3410,7 +3410,7 @@ const createIsPaket = async (req, res) => {
       errorObject.isPaketNameError = "'isPaketName' sorguya, gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz."
     }
 
-    if (theBaslik.altBasliklar.find(altBaslik => altBaslik.name === isPaketName) && !errorObject.isPaketNameError) {
+    if (theBaslik.isPaketleri.find(onePaket => onePaket.name === isPaketName) && !errorObject.isPaketNameError) {
       errorObject.isPaketNameError = "Bu başlık altında bu 'iş paket' ismi kullanılmış."
     }
 
@@ -3424,7 +3424,7 @@ const createIsPaket = async (req, res) => {
 
     const currentTime = new Date()
 
-    let altBaslik = {
+    let newPaket = {
       _id: new ObjectId(),
       name: isPaketName,
       aciklama,
@@ -3437,12 +3437,12 @@ const createIsPaket = async (req, res) => {
 
       await Proje.updateOne(
         { _id: projeId },
-        { $push: { 'isPaketleri.$[onePaket].basliklar.$[oneBaslik].altBasliklar': altBaslik } },
-        { arrayFilters: [{ "onePaket.versiyon": 0 }, { "oneBaslik._id": baslikId }] }
+        { $push: { 'isPaketVersiyonlar.$[oneVersiyon].basliklar.$[oneBaslik].isPaketleri': newPaket } },
+        { arrayFilters: [{ "oneVersiyon.versiyon": 0 }, { "oneBaslik._id": baslikId }] }
       );
 
       // return newWbsItem[0].code
-      return res.status(200).json({ altBaslik })
+      return res.status(200).json({ newPaket })
 
     } catch (error) {
       throw new Error("tryCatch -1- " + error);
