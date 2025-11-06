@@ -3324,7 +3324,7 @@ const createIsPaketBaslik = async (req, res) => {
       _id: new ObjectId(),
       name: baslikName,
       aciklama,
-      altBasliklar: [],
+      isPaketleri: [],
       createdAt: currentTime,
       createdBy: userEmail
     }
