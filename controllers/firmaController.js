@@ -1,59 +1,10 @@
 const Firma = require('../models/firmaModel')
+const Proje = require('../models/projeModel')
 
 
 const mongoose = require('mongoose')
 var ObjectId = require('mongodb').ObjectId;
 
-
-const getFirmalar = async (req, res) => {
-
-  const hataBase = "BACKEND - (getFirmalar) - "
-
-  try {
-
-    const { email: userEmail } = req.headers
-
-    if (!userEmail) {
-      throw new Error("DB ye gönderilen sorguda 'email' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
-
-    const firmalar = await Firma.find({ "yetkiliKisiler.email": userEmail }, { name: 1, yetkiliKisiler: 1 })
-
-    res.status(200).json({ firmalar })
-
-  } catch (error) {
-    res.status(400).json({ error: hataBase + error })
-  }
-
-}
-
-
-
-const getFirma = async (req, res) => {
-
-  const hataBase = "BACKEND - (getFirma) - "
-
-  try {
-
-    const firmaId = req.params.id
-
-    if (!firmaId) {
-      throw new Error("DB ye gönderilen sorguda 'firmaId' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
-
-    const firma = await Firma.findOne({ _id: firmaId })
-
-    if (firma) {
-      return res.status(200).json({ firma })
-    } else {
-      throw new Error("Sorguya gönderilen 'firmaId' ile Firma bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
-
-  } catch (error) {
-    res.status(400).json({ error: hataBase + error })
-  }
-
-}
 
 
 
@@ -240,6 +191,153 @@ const createFirma = async (req, res) => {
 }
 
 
+const getFirmalar = async (req, res) => {
+
+  const hataBase = "BACKEND - (getFirmalar) - "
+
+  try {
+
+    const { email: userEmail } = req.headers
+
+    if (!userEmail) {
+      throw new Error("DB ye gönderilen sorguda 'email' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    const firmalar = await Firma.find({ "yetkiliKisiler.email": userEmail }, { name: 1, yetkiliKisiler: 1 })
+
+    res.status(200).json({ firmalar })
+
+  } catch (error) {
+    res.status(400).json({ error: hataBase + error })
+  }
+
+}
+
+
+
+const getFirma = async (req, res) => {
+
+  const hataBase = "BACKEND - (getFirma) - "
+
+  try {
+
+    const firmaId = req.params.id
+
+    if (!firmaId) {
+      throw new Error("DB ye gönderilen sorguda 'firmaId' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    const firma = await Firma.findOne({ _id: firmaId })
+
+    if (firma) {
+      return res.status(200).json({ firma })
+    } else {
+      throw new Error("Sorguya gönderilen 'firmaId' ile Firma bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+  } catch (error) {
+    res.status(400).json({ error: hataBase + error })
+  }
+
+}
+
+
+
+
+
+const updateParaBirimleri = async (req, res) => {
+
+  const hataBase = "BACKEND - (updateParaBirimleri) - "
+
+  try {
+
+    const {
+      email: userEmail,
+      isim: userIsim,
+      soyisim: userSoyisim,
+      userCode
+    } = JSON.parse(req.user)
+
+    const { firmaId, oneBirim, showValue } = req.body
+
+    let _firmaId
+    try {
+      _firmaId = new ObjectId(firmaId)
+    } catch (error) {
+      throw new Error("DB ye gönderilen 'firmaId' verisi geçerli bir BSON ObjectId verisine dönüşemedi, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    let paraBirimiId = oneBirim.id
+    let paraBirimiName = oneBirim.name
+
+
+    if (!(showValue === true || showValue === false)) {
+      throw new Error(
+        "Para birimini aktif ya da pasif etmek istediniz fakat db ye 'showValue' gelmedi, sayfayı yenileyiniz, sorun devam ederse lütfen Rapor 724 ile iletişime geçiniz."
+      );
+    }
+
+    if (showValue) {
+
+      await Firma.updateOne(
+        { _id: _firmaId },
+        { $set: { "paraBirimleri.$[oneBirim].isActive": true } },
+        { arrayFilters: [{ "oneBirim.id": paraBirimiId }] }
+      )
+
+      await Proje.updateMany(
+        { _firmaId, "paraBirimleri.id": { $nin: [paraBirimiId] } },
+        { $addToSet: { paraBirimleri: { id: paraBirimiId, name: paraBirimiName, isActive: false, show: false } } }
+      )
+
+
+    } else {
+
+      await Firma.updateOne(
+        { _id: _firmaId },
+        { $set: { "paraBirimleri.$[oneBirim].isActive": false } },
+        { arrayFilters: [{ "oneBirim.id": paraBirimiId }] }
+      )
+
+
+      await Proje.updateMany({ _firmaId }, [
+        {
+          $set: {
+            paraBirimleri: {
+              $filter: {
+                input: "$paraBirimleri",
+                as: "oneBirim",
+                cond: {
+                  $or: [
+                    { $ne: ["$$oneBirim.id", paraBirimiId] },
+                    { $and: [{ $eq: ["$$oneBirim.id", paraBirimiId] }, { $eq: ["$$oneBirim.isActive", true] }] }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ])
+
+
+    }
+
+    res.status(200).json({ ok: true })
+
+  } catch (error) {
+    res.status(400).json({ error: hataBase + error })
+  }
+
+}
+
+
+
+
+
+
 module.exports = {
-  getFirmalar, createFirma, getFirma
+  getFirmalar,
+  createFirma,
+  getFirma,
+  updateParaBirimleri
 }
