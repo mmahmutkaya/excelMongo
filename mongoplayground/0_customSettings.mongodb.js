@@ -1,31 +1,40 @@
 
 
+// customSettings
 const customSettings = {
   pages: {
     firmapozlari: {
       basliklar: [
-        { id: "aciklama", baslikName: "Açıklama", visible: true, show: false },
-        { id: "versiyon", baslikName: "Versiyon", visible: true, show: false }
+        { id: "aciklama", baslikName: "Açıklama", visible: true, show: true },
+        { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
       ]
     },
     pozlar: {
       basliklar: [
-        { id: "aciklama", baslikName: "Açıklama", visible: true, show: false },
-        { id: "versiyon", baslikName: "Versiyon", visible: true, show: false }
-      ]
+        { id: "aciklama", baslikName: "Açıklama", visible: true, show: true },
+        { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
+      ],
+      paraBirimleri: []
     },
     mahaller: {
       basliklar: [
-        { id: "aciklama", baslikName: "Açıklama", visible: true, show: false },
-        { id: "versiyon", baslikName: "Versiyon", visible: true, show: false }
+        { id: "aciklama", baslikName: "Açıklama", visible: true, show: true },
+        { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
       ]
     },
-    metrajpozlar: {
+    metrajOnayla: {
       basliklar: [
-        { id: "aciklama", baslikName: "Açıklama", visible: true, show: false },
-        { id: "versiyon", baslikName: "Versiyon", visible: true, show: false }
+        { id: "aciklama", baslikName: "Açıklama", visible: true, show: true },
+        { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
       ],
-      showHasMahal: false
+      showHasMahal: true
+    },
+    metrajOnayla: {
+      basliklar: [
+        { id: "aciklama", baslikName: "Açıklama", visible: true, show: true },
+        { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
+      ],
+      showMetrajYapabilenler: []
     },
     ispaketleri: {
       basliklar: [
@@ -35,6 +44,8 @@ const customSettings = {
     }
   }
 }
+
+
 
 
 use('rapor724_v2');

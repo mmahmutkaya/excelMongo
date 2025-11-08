@@ -337,41 +337,41 @@ const saveNecessaryUserData = async (req, res) => {
 
 
 
-const showMetrajYapabilenler = async (req, res) => {
+// const showMetrajYapabilenler = async (req, res) => {
 
-  const hataBase = "BACKEND - (showMetrajYapabilenler) - "
+//   const hataBase = "BACKEND - (showMetrajYapabilenler) - "
 
-  try {
+//   try {
 
-    let { showMetrajYapabilenler } = req.body
-    const {
-      email: userEmail,
-      isim: userIsim,
-      soyisim: userSoyisim
-    } = JSON.parse(req.user)
+//     let { showMetrajYapabilenler } = req.body
+//     const {
+//       email: userEmail,
+//       isim: userIsim,
+//       soyisim: userSoyisim
+//     } = JSON.parse(req.user)
 
 
-    // return res.status(200).json({ showMetrajYapabilenler })
+//     // return res.status(200).json({ showMetrajYapabilenler })
 
-    if (!showMetrajYapabilenler) {
-      throw new Error(
-        "db ye 'showMetrajYapabilenler' değeri gelmedi, sayfayı yenileyiniz, sorun devam ederse lütfen Rapor 724 ile iletişime geçiniz."
-      );
-    }
+//     if (!showMetrajYapabilenler) {
+//       throw new Error(
+//         "db ye 'showMetrajYapabilenler' değeri gelmedi, sayfayı yenileyiniz, sorun devam ederse lütfen Rapor 724 ile iletişime geçiniz."
+//       );
+//     }
 
-    await User.findOneAndUpdate(
-      { email: userEmail },
-      { $set: { ["customSettings.pages.metrajOnayla.showMetrajYapabilenler"]: showMetrajYapabilenler } },
-      { new: true }
-    )
+//     await User.findOneAndUpdate(
+//       { email: userEmail },
+//       { $set: { ["customSettings.pages.metrajOnayla.showMetrajYapabilenler"]: showMetrajYapabilenler } },
+//       { new: true }
+//     )
 
-    return res.status(200).json({ ok: true })
+//     return res.status(200).json({ ok: true })
 
-  } catch (error) {
-    return res.status(400).json({ error: hataBase + error })
-  }
+//   } catch (error) {
+//     return res.status(400).json({ error: hataBase + error })
+//   }
 
-}
+// }
 
 
 

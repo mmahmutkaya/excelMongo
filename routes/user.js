@@ -6,7 +6,6 @@ const { loginUser,
   sendMailCode,
   confirmMailCode,
   saveNecessaryUserData,
-  showMetrajYapabilenler,
   customSettingsPagesSetData
 } = require('../controllers/userController')
 
@@ -50,7 +49,7 @@ router.post('/savenecessaryuserdata', saveNecessaryUserData)
 router.use(requireAuthAndNecessary)
 
 // customSettings / showMetrajYapabilenler
-router.post('/customsettings/showmetrajyapabilenler', showMetrajYapabilenler)
+// router.post('/customsettings/showmetrajyapabilenler', showMetrajYapabilenler)
 router.post('/customsettingspagessetdata', customSettingsPagesSetData)
 
 
