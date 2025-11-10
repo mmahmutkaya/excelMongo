@@ -10,6 +10,161 @@ var ObjectId = require('mongodb').ObjectId;
 
 
 
+
+const createPoz = async (req, res) => {
+
+  const hataBase = "BACKEND - (createPoz) - "
+
+  try {
+
+    const dateNow = new Date()
+
+    const {
+      email: userEmail,
+      isim: userIsim,
+      soyisim: userSoyisim
+    } = JSON.parse(req.user)
+
+    let { newPoz } = req.body
+
+    if (!newPoz) {
+      throw new Error("DB ye gönderilen sorguda 'newPoz' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    // veri düzeltme
+    if (newPoz.pozMetrajTipId === "insaatDemiri") {
+      newPoz.pozBirimId = "ton"
+    }
+
+
+    if (!newPoz._firmaId) {
+      // form alanına değil - direkt ekrana uyarı veren hata - (fonksiyon da durduruluyor)
+      throw new Error("DB ye gönderilen sorguda 'firmaId' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!newPoz._projeId) {
+      // form alanına değil - direkt ekrana uyarı veren hata - (fonksiyon da durduruluyor)
+      throw new Error("DB ye gönderilen sorguda 'projeId' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    ////// form validation - backend
+    // form alanına uyarı veren hatalar
+
+    let errorObject = {}
+    let isFormError = false
+
+    let wbsIdError
+    let pozNameError
+    let pozNoError
+    let pozBirimIdError
+    let pozMetrajTipIdError
+
+
+    if (!newPoz._wbsId && !wbsIdError) {
+      errorObject.wbsIdError = "Zorunlu"
+      wbsIdError = true
+      isFormError = true
+    }
+
+
+    if (typeof newPoz.pozName !== "string" && !pozNameError) {
+      errorObject.pozNameError = "Zorunlu"
+      pozNameError = true
+      isFormError = true
+    }
+
+    if (typeof newPoz.pozName === "string" && !pozNameError) {
+      if (newPoz.pozName.length === 0) {
+        errorObject.pozNameError = "Zorunlu"
+        pozNameError = true
+        isFormError = true
+      }
+    }
+
+    if (typeof newPoz.pozName === "string" && !pozNameError) {
+      let minimumHaneSayisi = 3
+      if (newPoz.pozName.length > 0 && newPoz.pozName.length < minimumHaneSayisi) {
+        errorObject.pozNameError = `${minimumHaneSayisi} haneden az olamaz`
+        pozNameError = true
+        isFormError = true
+      }
+    }
+
+
+    const poz = await Poz.findOne({
+      _projeId: newPoz._projeId,
+      $or: [
+        { pozName: newPoz.pozName },
+        { pozNo: newPoz.pozNo }
+      ]
+    })
+
+
+    if (poz?.pozName === newPoz.pozName && !pozNameError) {
+      errorObject.pozNameError = `Bu poz ismi kullanılmış`
+      pozNameError = true
+      isFormError = true
+    }
+
+    if (!newPoz.pozNo && !pozNoError) {
+      errorObject.pozNoError = `Zorunlu`
+      pozNoError = true
+      isFormError = true
+    }
+
+    if (poz?.pozNo === newPoz.pozNo && !pozNoError) {
+      errorObject.pozNoError = `Bu poz numarası kullanılmış`
+      pozNoError = true
+      isFormError = true
+    }
+
+
+    if (!newPoz.pozBirimId && !pozBirimIdError) {
+      errorObject.pozBirimIdError = `Zorunlu`
+      pozBirimIdError = true
+      isFormError = true
+    }
+
+
+    if (!newPoz.pozMetrajTipId) {
+      errorObject.pozMetrajTipIdError = `Zorunlu`
+      pozMetrajTipIdError = true
+      isFormError = true
+    }
+
+
+    // form alanına uyarı veren hatalar olmuşsa burda durduralım
+    if (isFormError) {
+      return res.status(200).json({ errorObject })
+    }
+
+    newPoz = {
+      ...newPoz,
+      birimFiyatlar: [],
+      createdAt: dateNow,
+      createdBy: userEmail
+    }
+
+    const result = await Poz.create(newPoz)
+
+    newPoz = {
+      ...newPoz,
+      _id: result.insertedId
+    }
+
+    res.status(200).json({ newPoz })
+
+  } catch (error) {
+    res.status(400).json({ error: hataBase + error })
+  }
+
+}
+
+
+
+
+
+
 const getPozlar = async (req, res) => {
 
   const hataBase = "BACKEND - (getPozlar) - "
@@ -416,13 +571,12 @@ const getPozlar = async (req, res) => {
 
 
 
-const createPoz = async (req, res) => {
 
-  const hataBase = "BACKEND - (createPoz) - "
+const updateBirimFiyatlar = async (req, res) => {
+
+  const hataBase = "BACKEND - (updateBirimFiyatlar) - "
 
   try {
-
-    const dateNow = new Date()
 
     const {
       email: userEmail,
@@ -430,137 +584,72 @@ const createPoz = async (req, res) => {
       soyisim: userSoyisim
     } = JSON.parse(req.user)
 
-    let { newPoz } = req.body
+    let { pozlar_newPara, paraBirimleri, projeId } = req.body
 
-    if (!newPoz) {
-      throw new Error("DB ye gönderilen sorguda 'newPoz' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    if (!pozlar_newPara) {
+      throw new Error("'pozlar_newPara' verisi db sorgusuna gelmedi");
     }
 
-    // veri düzeltme
-    if (newPoz.pozMetrajTipId === "insaatDemiri") {
-      newPoz.pozBirimId = "ton"
+    if (paraBirimleri && !projeId) {
+      throw new Error("Proje para birimlerinde aktif edilecekler var fakat 'projeId' db sorgusuna gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile iletişime geçiniz.");
+    }
+
+    const currentTime = new Date();
+
+
+    try {
+
+      let bulkArray = []
+
+      pozlar_newPara.map(onePoz => {
+
+        oneBulk = {
+          updateOne: {
+            filter: { _id: onePoz._id },
+            update: {
+              $set: {
+                "birimFiyatlar": onePoz.birimFiyatlar,
+              }
+            },
+          }
+        }
+
+        bulkArray = [...bulkArray, oneBulk]
+
+      })
+
+
+      await Poz.bulkWrite(
+        bulkArray,
+        { ordered: false }
+      )
+
+
+    } catch (error) {
+      throw new Error("tryCatch -1- " + error)
     }
 
 
-    if (!newPoz._firmaId) {
-      // form alanına değil - direkt ekrana uyarı veren hata - (fonksiyon da durduruluyor)
-      throw new Error("DB ye gönderilen sorguda 'firmaId' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
 
-    if (!newPoz._projeId) {
-      // form alanına değil - direkt ekrana uyarı veren hata - (fonksiyon da durduruluyor)
-      throw new Error("DB ye gönderilen sorguda 'projeId' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
+    try {
 
-    ////// form validation - backend
-    // form alanına uyarı veren hatalar
+      if (paraBirimleri) {
 
-    let errorObject = {}
-    let isFormError = false
+        await Proje.updateOne({ _id: projeId },
+          { $set: { paraBirimleri } }
+        )
 
-    let wbsIdError
-    let pozNameError
-    let pozNoError
-    let pozBirimIdError
-    let pozMetrajTipIdError
-
-
-    if (!newPoz._wbsId && !wbsIdError) {
-      errorObject.wbsIdError = "Zorunlu"
-      wbsIdError = true
-      isFormError = true
-    }
-
-
-    if (typeof newPoz.pozName !== "string" && !pozNameError) {
-      errorObject.pozNameError = "Zorunlu"
-      pozNameError = true
-      isFormError = true
-    }
-
-    if (typeof newPoz.pozName === "string" && !pozNameError) {
-      if (newPoz.pozName.length === 0) {
-        errorObject.pozNameError = "Zorunlu"
-        pozNameError = true
-        isFormError = true
       }
-    }
 
-    if (typeof newPoz.pozName === "string" && !pozNameError) {
-      let minimumHaneSayisi = 3
-      if (newPoz.pozName.length > 0 && newPoz.pozName.length < minimumHaneSayisi) {
-        errorObject.pozNameError = `${minimumHaneSayisi} haneden az olamaz`
-        pozNameError = true
-        isFormError = true
-      }
+    } catch (error) {
+      throw new Error("tryCatch -2- " + error)
     }
 
 
-    const poz = await Poz.findOne({
-      _projeId: newPoz._projeId,
-      $or: [
-        { pozName: newPoz.pozName },
-        { pozNo: newPoz.pozNo }
-      ]
-    })
-
-
-    if (poz?.pozName === newPoz.pozName && !pozNameError) {
-      errorObject.pozNameError = `Bu poz ismi kullanılmış`
-      pozNameError = true
-      isFormError = true
-    }
-
-    if (!newPoz.pozNo && !pozNoError) {
-      errorObject.pozNoError = `Zorunlu`
-      pozNoError = true
-      isFormError = true
-    }
-
-    if (poz?.pozNo === newPoz.pozNo && !pozNoError) {
-      errorObject.pozNoError = `Bu poz numarası kullanılmış`
-      pozNoError = true
-      isFormError = true
-    }
-
-
-    if (!newPoz.pozBirimId && !pozBirimIdError) {
-      errorObject.pozBirimIdError = `Zorunlu`
-      pozBirimIdError = true
-      isFormError = true
-    }
-
-
-    if (!newPoz.pozMetrajTipId) {
-      errorObject.pozMetrajTipIdError = `Zorunlu`
-      pozMetrajTipIdError = true
-      isFormError = true
-    }
-
-
-    // form alanına uyarı veren hatalar olmuşsa burda durduralım
-    if (isFormError) {
-      return res.status(200).json({ errorObject })
-    }
-
-    newPoz = {
-      ...newPoz,
-      birimFiyatlar: [],
-      createdAt: dateNow,
-      createdBy: userEmail
-    }
-
-    const result = await Poz.create(newPoz)
-
-    newPoz = {
-      ...newPoz,
-      _id: result.insertedId
-    }
-
-    res.status(200).json({ newPoz })
+    return res.status(200).json({ ok: true })
 
   } catch (error) {
-    res.status(400).json({ error: hataBase + error })
+    return res.status(400).json({ error: hataBase + error })
   }
 
 }
@@ -570,7 +659,8 @@ const createPoz = async (req, res) => {
 
 
 
-
 module.exports = {
-  createPoz, getPozlar
+  createPoz,
+  getPozlar,
+  updateBirimFiyatlar
 }

@@ -1,6 +1,8 @@
 const express = require('express')
 const {
-  createPoz, getPozlar
+  createPoz,
+  getPozlar,
+  updateBirimFiyatlar
 } = require('../controllers/pozController')
 
 const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
@@ -15,12 +17,9 @@ router.use(requireAuthAndNecessary)
 
 // GET all pozlar
 router.get('/', getPozlar)
-
-// // GET a single poz
-// router.get('/:id', getPoz)
-
-// POST a new poz
 router.post('/', createPoz)
+
+router.patch('/birimfiyatlar', updateBirimFiyatlar)
 
 // // DELETE a poz
 // router.delete('/:id', deletePoz)

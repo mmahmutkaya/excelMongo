@@ -29,7 +29,7 @@ const customSettings = {
       ],
       showHasMahal: true
     },
-    metrajOnayla: {
+    metraj: {
       basliklar: [
         { id: "aciklama", baslikName: "Açıklama", visible: true, show: true },
         { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
@@ -44,7 +44,6 @@ const customSettings = {
     }
   }
 }
-
 
 
 

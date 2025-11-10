@@ -5,12 +5,14 @@ const Schema = mongoose.Schema
 const pozSchema = new Schema(
   {
     _firmaId: mongoose.Schema.Types.ObjectId,
-    _projeId:mongoose.Schema.Types.ObjectId,
-    _wbsId:mongoose.Schema.Types.ObjectId,
+    _projeId: mongoose.Schema.Types.ObjectId,
+    _wbsId: mongoose.Schema.Types.ObjectId,
     pozNo: String,
-    pozName:String,
+    pozName: String,
     pozBirimId: String,
-    pozMetrajTipId: String
+    pozMetrajTipId: String,
+    birimFiyatlar: Array,
+
   },
   {
     collection: 'pozlar',

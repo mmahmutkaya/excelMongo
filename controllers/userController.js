@@ -283,9 +283,9 @@ const saveNecessaryUserData = async (req, res) => {
             { id: "aciklama", baslikName: "Açıklama", visible: true, show: true },
             { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
           ],
-          showHasMahal: true
+          showMetrajYapabilenler: []
         },
-        metrajOnayla: {
+        metraj: {
           basliklar: [
             { id: "aciklama", baslikName: "Açıklama", visible: true, show: true },
             { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
@@ -300,7 +300,6 @@ const saveNecessaryUserData = async (req, res) => {
         }
       }
     }
-
 
 
 
@@ -437,6 +436,5 @@ module.exports = {
   sendMailCode,
   confirmMailCode,
   saveNecessaryUserData,
-  showMetrajYapabilenler,
   customSettingsPagesSetData
 }
