@@ -269,8 +269,7 @@ const saveNecessaryUserData = async (req, res) => {
           basliklar: [
             { id: "aciklama", baslikName: "Açıklama", visible: true, show: true },
             { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
-          ],
-          paraBirimleri: []
+          ]
         },
         mahaller: {
           basliklar: [
@@ -278,7 +277,7 @@ const saveNecessaryUserData = async (req, res) => {
             { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
           ]
         },
-        metrajOnayla: {
+        metrajonayla: {
           basliklar: [
             { id: "aciklama", baslikName: "Açıklama", visible: true, show: true },
             { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
@@ -291,6 +290,13 @@ const saveNecessaryUserData = async (req, res) => {
             { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
           ],
           showMetrajYapabilenler: []
+        },
+        birimfiyat: {
+          basliklar: [
+            { id: "aciklama", baslikName: "Açıklama", visible: true, show: true },
+            { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
+          ],
+          paraBirimleri: []
         },
         ispaketleri: {
           basliklar: [

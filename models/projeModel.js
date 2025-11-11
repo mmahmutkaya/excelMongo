@@ -33,6 +33,7 @@ const projeSchema = new Schema(
     yetkiliKisiler: Array,
     yetkiliFirmalar: Array,
     metrajVersiyonlar: Array,
+    birimFiyatVersiyonlar: Array,
     createdBy: String,
     createdAt: Date
   },
