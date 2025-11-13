@@ -179,8 +179,8 @@ const createProje = async (req, res) => {
         versiyon: 0,
         basliklar: []
       }],
-      // pozBasliklari,
-      // mahalBasliklari,
+      metrajVersiyonlar:[],
+      birimfiyatVersiyonlar:[],
       pozMetrajTipleri,
       pozBirimleri,
       yetkiliKisiler,
