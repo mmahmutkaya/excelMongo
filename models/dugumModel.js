@@ -19,15 +19,15 @@ const satirSchema = mongoose.Schema(
     "isPreparing": Boolean,
     "isReady": Boolean,
     "isReadyUnSeen": Boolean,
-    "isSelected":Boolean,
-    "hasSelectedCopy":Boolean,
-    "isSelectedCopy":Boolean,
-    "isFirstCopy":Boolean,
-    "isLastCopy":Boolean,
-    "isPasif":Boolean,
-    "pasifEdilenVersiyon":Number,    
-    "versiyon":Number,
-    "dizi":String,
+    "isSelected": Boolean,
+    "hasSelectedCopy": Boolean,
+    "isSelectedCopy": Boolean,
+    "isFirstCopy": Boolean,
+    "isLastCopy": Boolean,
+    "isPasif": Boolean,
+    "pasifEdilenVersiyon": Number,
+    "versiyon": Number,
+    "dizi": String,
   }
 )
 
@@ -45,16 +45,16 @@ const revizeSatirSchema = mongoose.Schema(
     "isPreparing": Boolean,
     "isReady": Boolean,
     "isReadyUnSeen": Boolean,
-    "isSelected":Boolean,
-    "hasSelectedCopy":Boolean,
-    "isSelectedCopy":Boolean,
-    "isFirstCopy":Boolean,
-    "isLastCopy":Boolean,
-    "isPasif":Boolean,
-    "pasifEdilenVersiyon":Number,    
-    "versiyon":Number,
-    "dizi":String,
-    "userEmail":String
+    "isSelected": Boolean,
+    "hasSelectedCopy": Boolean,
+    "isSelectedCopy": Boolean,
+    "isFirstCopy": Boolean,
+    "isLastCopy": Boolean,
+    "isPasif": Boolean,
+    "pasifEdilenVersiyon": Number,
+    "versiyon": Number,
+    "dizi": String,
+    "userEmail": String
   }
 )
 
@@ -67,8 +67,8 @@ const hazirlananMetrajSchema = mongoose.Schema(
     "metrajPreparing": Number,
     "metrajReady": Number,
     "metrajOnaylanan": Number,
-    "isReady":Boolean,
-    "isSelected":Boolean,
+    "isReady": Boolean,
+    "isSelected": Boolean,
     "satirlar": [satirSchema]
   }
 )
@@ -76,13 +76,33 @@ const hazirlananMetrajSchema = mongoose.Schema(
 
 const revizeMetrajSchema = mongoose.Schema(
   {
-    "satirNo":String,
-    "isPreparing":Boolean,
-    "isReady":Boolean,
-    "isSelected":Boolean,
-    "satirlar":[revizeSatirSchema]
+    "satirNo": String,
+    "isPreparing": Boolean,
+    "isReady": Boolean,
+    "isSelected": Boolean,
+    "satirlar": [revizeSatirSchema]
   }
 )
+
+
+const isPaketBaslikSchema = mongoose.Schema(
+  {
+    _id: mongoose.Schema.Types.ObjectId,
+    name: String,
+    aciklama: String,
+    isPaketleri: Array,
+    createdBy: String,
+    createdAt: Date
+  }
+)
+
+const isPaketVersiyonSchema = mongoose.Schema(
+  {
+    versiyon: Number,
+    basliklar: [isPaketBaslikSchema]
+  }
+)
+
 
 const dugumSchema = new Schema(
   {
@@ -94,7 +114,7 @@ const dugumSchema = new Schema(
     hazirlananMetrajlar: [hazirlananMetrajSchema],
     revizeMetrajlar: [revizeMetrajSchema],
     metrajVersiyonlar: Array,
-    deneme:String
+    isPaketVersiyonlar: [isPaketVersiyonSchema],
   },
   {
     collection: 'dugumler',

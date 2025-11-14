@@ -236,11 +236,14 @@
 
 
 use('rapor724_v2');
-db["pozlar"].updateMany(
+db["dugumler"].updateMany(
   {},
   {
     $set: {
-      birimFiyatlar: []
+      isPaketVersiyonlar: [{
+        versiyon: 0,
+        basliklar: []
+      }]
     }
   }
 )

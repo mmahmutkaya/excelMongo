@@ -1,6 +1,7 @@
 const Proje = require('../models/projeModel')
 const Poz = require('../models/pozModel')
 const Mahal = require('../models/mahalModel')
+const Dugum = require('../models/dugumModel')
 
 
 const mongoose = require('mongoose')
@@ -179,8 +180,8 @@ const createProje = async (req, res) => {
         versiyon: 0,
         basliklar: []
       }],
-      metrajVersiyonlar:[],
-      birimfiyatVersiyonlar:[],
+      metrajVersiyonlar: [],
+      birimfiyatVersiyonlar: [],
       pozMetrajTipleri,
       pozBirimleri,
       yetkiliKisiler,
@@ -3273,6 +3274,18 @@ const createIsPaketBaslik = async (req, res) => {
         { arrayFilters: [{ "oneVersiyon.versiyon": 0 }] }
       );
 
+      let newBaslik2 = { ...newBaslik }
+      delete newBaslik2.name
+      delete newBaslik2.aciklama
+      delete newBaslik2.createdAt
+      delete newBaslik2.createdBy
+
+      await Dugum.updateMany(
+        { _projeId: projeId },
+        { $push: { 'isPaketVersiyonlar.$[oneVersiyon].basliklar': newBaslik2 } },
+        { arrayFilters: [{ "oneVersiyon.versiyon": 0 }] }
+      );
+
       // return newWbsItem[0].code
       return res.status(200).json({ newBaslik })
 
@@ -3373,6 +3386,19 @@ const createIsPaket = async (req, res) => {
       await Proje.updateOne(
         { _id: projeId },
         { $push: { 'isPaketVersiyonlar.$[oneVersiyon].basliklar.$[oneBaslik].isPaketleri': newPaket } },
+        { arrayFilters: [{ "oneVersiyon.versiyon": 0 }, { "oneBaslik._id": baslikId }] }
+      );
+
+      let newPaket2 = { ...newPaket }
+      delete newPaket2.name
+      delete newPaket2.aciklama
+      delete newPaket2.createdAt
+      delete newPaket2.createdBy
+
+
+      await Dugum.updateMany(
+        { _projeId: projeId },
+        { $push: { 'isPaketVersiyonlar.$[oneVersiyon].basliklar.$[oneBaslik].isPaketleri': newPaket2 } },
         { arrayFilters: [{ "oneVersiyon.versiyon": 0 }, { "oneBaslik._id": baslikId }] }
       );
 
