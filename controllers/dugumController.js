@@ -37,6 +37,8 @@ const createDugum = async (req, res) => {
       throw new Error("DB ye gönderilen 'projeid' verisi geçerli bir BSON ObjectId verisine dönüşemedi, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
+    const proje = await Proje.findOne({ _id: _projeId })
+    const { isPaketVersiyonlar } = proje
 
     if (!pozId) {
       throw new Error("'_pozId' verisi db sorgusuna gelmedi");
@@ -89,8 +91,6 @@ const createDugum = async (req, res) => {
 
 
 
-
-
     try {
 
       const bulkArray2 = mahaller.map(oneMahal => {
@@ -98,7 +98,7 @@ const createDugum = async (req, res) => {
           {
             updateOne: {
               filter: { _projeId, _mahalId: oneMahal._id, _pozId, hazirlananMetrajlar: { $exists: false } },
-              update: { $set: { hazirlananMetrajlar: [], revizeMetrajlar: [], metrajVersiyonlar: [] } },
+              update: { $set: { hazirlananMetrajlar: [], revizeMetrajlar: [], metrajVersiyonlar: [], isPaketVersiyonlar } },
             }
           }
         )
@@ -385,6 +385,7 @@ const getDugumler_byPoz = async (req, res) => {
             metrajPreparing: 1,
             metrajReady: 1,
             metrajOnaylanan: 1,
+            isPaketVersiyonlar: 1,
             hazirlananMetrajlar: {
               $map: {
                 input: "$hazirlananMetrajlar",
@@ -748,7 +749,7 @@ const getOnaylananMetraj = async (req, res) => {
       soyisim: userSoyisim,
       userCode
     } = JSON.parse(req.user)
-    
+
 
     const { dugumid } = req.headers
 
