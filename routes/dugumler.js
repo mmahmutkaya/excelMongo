@@ -16,6 +16,7 @@ const {
   update_hazirlananMetrajlar_selected,
   update_hazirlananMetrajlar_selectedFull,
   update_hazirlananMetrajlar_unReady,
+  update_isPaketleri
 } = require('../controllers/dugumController')
 
 const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
@@ -49,6 +50,7 @@ router.post('/updatehazirlananmetrajlarselected', update_hazirlananMetrajlar_sel
 router.post('/updatehazirlananmetrajlarselectedfull', update_hazirlananMetrajlar_selectedFull)
 router.post('/updatehazirlananmetrajlarunready', update_hazirlananMetrajlar_unReady)
 
+router.post('/ispaketleri', update_isPaketleri)
 
 
 

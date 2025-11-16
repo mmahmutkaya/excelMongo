@@ -93,12 +93,24 @@ const createDugum = async (req, res) => {
 
     try {
 
+      // BUNA GEREK KALMADI ÇÜNKÜ MONGOOSE dugumModel de yazdığı için hazirlananMetraj vb. ekliyor ilk oluşturmada fakat isPaketVerisyonlar projeden geldiği için eklenmeli
+      // const bulkArray2 = mahaller.map(oneMahal => {
+      //   return (
+      //     {
+      //       updateOne: {
+      //         filter: { _projeId, _mahalId: oneMahal._id, _pozId, hazirlananMetrajlar: { $exists: false } },
+      //         update: { $set: { hazirlananMetrajlar: [], revizeMetrajlar: [], metrajVersiyonlar: [], isPaketVersiyonlar } },
+      //       }
+      //     }
+      //   )
+      // })
+
       const bulkArray2 = mahaller.map(oneMahal => {
         return (
           {
             updateOne: {
-              filter: { _projeId, _mahalId: oneMahal._id, _pozId, hazirlananMetrajlar: { $exists: false } },
-              update: { $set: { hazirlananMetrajlar: [], revizeMetrajlar: [], metrajVersiyonlar: [], isPaketVersiyonlar } },
+              filter: { _projeId, _mahalId: oneMahal._id, _pozId, isPaketVersiyonlar: [] },
+              update: { $set: { isPaketVersiyonlar } },
             }
           }
         )
@@ -2688,6 +2700,78 @@ const update_hazirlananMetrajlar_unReady = async (req, res) => {
 
 
 
+const update_isPaketleri = async (req, res) => {
+
+  const hataBase = "BACKEND - (update_isPaketleri) - "
+
+  try {
+
+    const {
+      email: userEmail,
+      isim: userIsim,
+      soyisim: userSoyisim
+    } = JSON.parse(req.user)
+
+    let { dugumler } = req.body
+
+    if (!dugumler || dugumler.length === 0) {
+      throw new Error("'dugumler' verisi db sorgusuna gelmedi");
+    }
+
+
+
+    try {
+
+      let bulkArray = []
+      dugumler.map(oneDugum => {
+
+        oneBulk = {
+          updateOne: {
+            filter: { _id: _dugumId },
+            update: {
+              $set: {
+                "isPaketVersiyonlar.$[oneVersiyon].basliklar.$[oneBaslik].isPaketleri.$[onePaket].selected": oneDugum.newSelectedValue
+              }
+            },
+            arrayFilters: [
+              {
+                "oneDugum.versiyon": oneDugum
+              },
+              {
+                "oneSatir.satirNo": { $in: oneHazirlanan_unReady_satirNolar },
+                "oneSatir.isReady": true
+              },
+            ]
+          }
+        }
+        bulkArray = [...bulkArray, oneBulk]
+
+      })
+
+      await Dugum.bulkWrite(
+        bulkArray,
+        { ordered: false }
+      )
+
+
+    } catch (error) {
+      throw new Error("tryCatch -1- " + error);
+    }
+
+
+    return res.status(200).json({ ok: true })
+
+  } catch (error) {
+    return res.status(400).json({ error: hataBase + error })
+  }
+
+}
+
+
+
+
+
+
 // const yeniFonksiyon = async (req, res) => {
 
 //   const hataBase = "BACKEND - (yeniFonksiyon) - "
@@ -2730,5 +2814,6 @@ module.exports = {
   update_hazirlananMetrajlar_selected,
   update_hazirlananMetrajlar_selectedFull,
   update_hazirlananMetrajlar_unReady,
-  update_hazirlananMetrajlar_seen
+  update_hazirlananMetrajlar_seen,
+  update_isPaketleri
 }

@@ -84,14 +84,14 @@ const revizeMetrajSchema = mongoose.Schema(
   }
 )
 
-const isPaketiSchema = mongoose.Schema(
+const isPaketSchema = mongoose.Schema(
   {
     _id: mongoose.Schema.Types.ObjectId,
-    name: String,
-    aciklama: String,
+    // name: String,
+    // aciklama: String,
     selected: Boolean,
-    createdBy: String,
-    createdAt: Date
+    // createdBy: String,
+    // createdAt: Date
   }
 )
 
@@ -99,11 +99,11 @@ const isPaketiSchema = mongoose.Schema(
 const isPaketBaslikSchema = mongoose.Schema(
   {
     _id: mongoose.Schema.Types.ObjectId,
-    name: String,
-    aciklama: String,
-    isPaketleri: [isPaketiSchema],
-    createdBy: String,
-    createdAt: Date
+    // name: String,
+    // aciklama: String,
+    isPaketleri: [isPaketSchema],
+    // createdBy: String,
+    // createdAt: Date
   }
 )
 
