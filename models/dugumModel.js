@@ -84,33 +84,27 @@ const revizeMetrajSchema = mongoose.Schema(
   }
 )
 
-const isPaketSchema = mongoose.Schema(
-  {
-    _id: mongoose.Schema.Types.ObjectId,
-    // name: String,
-    // aciklama: String,
-    selected: Boolean,
-    // createdBy: String,
-    // createdAt: Date
-  }
-)
+// const isPaketSchema = mongoose.Schema(
+//   {
+//     _id: mongoose.Schema.Types.ObjectId,
+//     selected: Boolean
+//   }
+// )
 
 
 const isPaketBaslikSchema = mongoose.Schema(
   {
     _id: mongoose.Schema.Types.ObjectId,
-    // name: String,
-    // aciklama: String,
-    isPaketleri: [isPaketSchema],
-    // createdBy: String,
-    // createdAt: Date
+    // isPaketleri: [isPaketSchema],
+    paketId:mongoose.Schema.Types.ObjectId
   }
 )
 
 const isPaketVersiyonSchema = mongoose.Schema(
   {
     versiyon: Number,
-    basliklar: [isPaketBaslikSchema]
+    basliklar: [isPaketBaslikSchema],
+    _id: { id: false }
   }
 )
 
@@ -125,7 +119,7 @@ const dugumSchema = new Schema(
     hazirlananMetrajlar: [hazirlananMetrajSchema],
     revizeMetrajlar: [revizeMetrajSchema],
     metrajVersiyonlar: Array,
-    isPaketVersiyonlar: [isPaketVersiyonSchema],
+    isPaketVersiyonlar: [isPaketVersiyonSchema]
   },
   {
     collection: 'dugumler',

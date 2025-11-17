@@ -2712,7 +2712,12 @@ const update_isPaketleri = async (req, res) => {
       soyisim: userSoyisim
     } = JSON.parse(req.user)
 
-    let { dugumler } = req.body
+    let {
+      selectedIsPaketVersiyon,
+      selectedIsPaketBaslik,
+      selectedIsPaket,
+      dugumler
+    } = req.body
 
     if (!dugumler || dugumler.length === 0) {
       throw new Error("'dugumler' verisi db sorgusuna gelmedi");
@@ -2727,20 +2732,19 @@ const update_isPaketleri = async (req, res) => {
 
         oneBulk = {
           updateOne: {
-            filter: { _id: _dugumId },
+            filter: { _id: oneDugum._id },
             update: {
               $set: {
-                "isPaketVersiyonlar.$[oneVersiyon].basliklar.$[oneBaslik].isPaketleri.$[onePaket].selected": oneDugum.newSelectedValue
+                "isPaketVersiyonlar.$[oneVersiyon].basliklar.$[oneBaslik].paketId": oneDugum.newSelectedValue ? new ObjectId(selectedIsPaket._id) : null,
               }
             },
             arrayFilters: [
               {
-                "oneDugum.versiyon": oneDugum
+                "oneVersiyon.versiyon": selectedIsPaketVersiyon
               },
               {
-                "oneSatir.satirNo": { $in: oneHazirlanan_unReady_satirNolar },
-                "oneSatir.isReady": true
-              },
+                "oneBaslik._id": new ObjectId(selectedIsPaketBaslik._id)
+              }
             ]
           }
         }
