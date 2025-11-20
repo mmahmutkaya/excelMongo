@@ -659,8 +659,214 @@ const updateBirimFiyatlar = async (req, res) => {
 
 
 
+const isPaketMetrajlarByVersiyon = async (req, res) => {
+
+  const hataBase = "BACKEND - (isPaketMetrajlarByVersiyon) - "
+
+  try {
+
+    const {
+      email: userEmail,
+      isim: userIsim,
+      soyisim: userSoyisim
+    } = JSON.parse(req.user)
+
+    const { projeid, versiyontext } = req.headers
+    const versiyon = Number(versiyontext)
+
+    if (!projeid) {
+      throw new Error("DB ye gönderilen sorguda 'projeid' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!versiyontext) {
+      throw new Error("DB ye gönderilen sorguda 'versiyontext' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+
+    let _projeId
+    try {
+      _projeId = new ObjectId(projeid)
+    } catch (error) {
+      throw new Error("DB ye gönderilen 'projeid' verisi geçerli bir BSON ObjectId verisine dönüşemedi, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+
+
+    const proje = await Proje.findOne({ _id: _projeId })
+
+    let pozlar
+
+    try {
+
+      pozlar = await Poz.aggregate([
+        {
+          $match: {
+            _projeId
+          }
+        },
+        {
+          $project: {
+            _wbsId: 1
+          }
+        }
+      ])
+
+
+      const pozlar2 = await Dugum.aggregate([
+        {
+          $match: {
+            _projeId,
+          }
+        },
+        {
+          $project: {
+            _pozId: 1,
+            isPaketVersiyonlar: {
+              $filter: {
+                input: "$isPaketVersiyonlar",
+                as: "oneVersiyon",
+                cond: { $eq: ["$$oneVersiyon.versiyon", 0] }
+              }
+            }
+          }
+        }
+      ])
+
+      return res.status(200).json({ pozlar2 })
+
+      let metrajYapabilenler = proje.yetkiliKisiler.filter(x => x.yetkiler.find(x => x.name === "owner"))
+
+
+      pozlar = pozlar.map(onePoz => {
+
+        const onePoz2 = pozlar2.find(onePoz2 => onePoz2._id.toString() === onePoz._id.toString())
+
+        if (!onePoz2) {
+
+          onePoz.hasDugum = false
+
+        } else {
+
+          onePoz.hasDugum = true
+          onePoz.hasVersiyonZero = false
+
+          onePoz.metrajOnaylanan = onePoz2.metrajOnaylanan
+          // return onePoz2.hazirlanan
+          onePoz.hazirlananMetrajlar = metrajYapabilenler.map(oneYapabilen => {
+
+            let metrajPreparing = 0
+            let metrajReady = 0
+            let metrajOnaylanan = 0
+
+            let hasReadyUnSeen_Array = []
+            let hasReady_Array = []
+            let hasSelected_Array = []
+            let hasUnSelected_Array = []
+            let hasVersiyonZero_Array = []
+
+
+            onePoz2.hazirlananMetrajlar.map(oneArray => {
+
+              let oneHazirlanan = oneArray.find(x => x.userEmail === oneYapabilen.userEmail)
+
+              // if (oneHazirlanan?.satirlar?.filter(x => x.isReady).length > 0) {
+              if (oneHazirlanan) {
+
+                let metrajPreparing2 = oneHazirlanan?.metrajPreparing ? Number(oneHazirlanan?.metrajPreparing) : 0
+                let metrajReady2 = oneHazirlanan?.metrajReady ? Number(oneHazirlanan?.metrajReady) : 0
+                let metrajOnaylanan2 = oneHazirlanan?.metrajOnaylanan ? Number(oneHazirlanan?.metrajOnaylanan) : 0
+
+                metrajPreparing += metrajPreparing2
+                metrajReady += metrajReady2
+                metrajOnaylanan += metrajOnaylanan2
+
+                hasReadyUnSeen_Array = [...hasReadyUnSeen_Array, oneHazirlanan?.hasReadyUnSeen]
+                hasReady_Array = [...hasReady_Array, oneHazirlanan?.hasReady]
+                hasSelected_Array = [...hasSelected_Array, oneHazirlanan?.hasSelected]
+                hasUnSelected_Array = [...hasUnSelected_Array, oneHazirlanan?.hasUnSelected]
+                hasVersiyonZero_Array = [...hasVersiyonZero_Array, oneHazirlanan?.hasVersiyonZero]
+              }
+
+            })
+
+            let hasReadyUnSeen = hasReadyUnSeen_Array.find(x => x === true)
+            let hasReady = hasReady_Array.find(x => x === true)
+            let hasSelected = hasSelected_Array.find(x => x === true)
+            let hasUnSelected = hasUnSelected_Array.find(x => x === true)
+            let hasVersiyonZero = hasVersiyonZero_Array.find(x => x === true)
+
+            if (hasVersiyonZero) {
+              onePoz.hasVersiyonZero = true
+            }
+
+            return ({
+              userEmail: oneYapabilen.userEmail,
+              metrajPreparing,
+              metrajReady,
+              metrajOnaylanan,
+              hasReadyUnSeen,
+              hasReady,
+              hasSelected,
+              hasUnSelected,
+              hasVersiyonZero
+            })
+
+          })
+
+          // onePoz.revizeMetrajlar = onePoz2.revizeMetrajlar
+          onePoz2.revizeMetrajlar.map(oneMetraj => {
+            oneMetraj.map(oneSatir => {
+              if (oneSatir.hasVersiyonZero) {
+                onePoz.hasVersiyonZero = true
+              }
+            })
+          })
+
+        }
+
+        return onePoz
+
+      })
+
+
+    } catch (error) {
+      throw new Error("tryCatch -1- " + error);
+    }
+
+    let anySelectable
+    try {
+
+      anySelectable
+      pozlar.map(onePoz => {
+        onePoz?.hazirlananMetrajlar?.map(oneHazirlanan => {
+          if (oneHazirlanan) {
+            if (oneHazirlanan.hasUnSelected) {
+              anySelectable = true
+            }
+          }
+        })
+      })
+
+    } catch (error) {
+      throw new Error("tryCatch -2- " + error);
+    }
+
+    return res.status(200).json({ pozlar, anySelectable })
+
+  } catch (error) {
+    return res.status(400).json({ hatayeri: hataBase, error: hataBase + error })
+  }
+
+}
+
+
+
+
+
+
 module.exports = {
   createPoz,
   getPozlar,
-  updateBirimFiyatlar
+  updateBirimFiyatlar,
+  isPaketMetrajlarByVersiyon
 }
