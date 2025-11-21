@@ -690,9 +690,8 @@ const isPaketMetrajlarByVersiyon = async (req, res) => {
       throw new Error("DB ye gönderilen 'projeid' verisi geçerli bir BSON ObjectId verisine dönüşemedi, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-
-
     const proje = await Proje.findOne({ _id: _projeId })
+
 
     let pozlar
 
@@ -729,12 +728,17 @@ const isPaketMetrajlarByVersiyon = async (req, res) => {
               }
             }
           }
+        },
+        {
+          $group: {
+            _id: "$_pozId"
+          }
         }
       ])
 
-      return res.status(200).json({ pozlar2 })
+      // return res.status(200).json({ pozlar2 })
 
-      let metrajYapabilenler = proje.yetkiliKisiler.filter(x => x.yetkiler.find(x => x.name === "owner"))
+      let { isPaketVersiyonlar, wbsLer } = proje
 
 
       pozlar = pozlar.map(onePoz => {
