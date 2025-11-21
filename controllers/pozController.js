@@ -691,6 +691,8 @@ const isPaketMetrajlarByVersiyon = async (req, res) => {
     }
 
     const proje = await Proje.findOne({ _id: _projeId })
+    let { isPaketVersiyonlar, wbsLer, metrajVersiyonlar } = proje
+    let maxMetrajVersiyon = metrajVersiyonlar.reduce((acc, cur) => Math.max(acc, cur), 0)
 
 
     let pozlar
@@ -721,24 +723,29 @@ const isPaketMetrajlarByVersiyon = async (req, res) => {
           $project: {
             _pozId: 1,
             isPaketVersiyonlar: {
-              $filter: {
-                input: "$isPaketVersiyonlar",
-                as: "oneVersiyon",
-                cond: { $eq: ["$$oneVersiyon.versiyon", 0] }
-              }
+              $concatArrays: [
+                {
+                  $filter: {
+                    input: "$isPaketVersiyonlar",
+                    as: "oneVersiyon",
+                    cond: { $eq: ["$$oneVersiyon.versiyon", versiyon] }
+                  }
+                },
+                [{ metrajOnaylanan: 22 }]
+              ]
             }
           }
         },
         {
           $group: {
-            _id: "$_pozId"
+            _id: "$_pozId",
+            isPaketVersiyonlar: { $push: "$isPaketVersiyonlar" }
           }
         }
       ])
 
-      // return res.status(200).json({ pozlar2 })
+      return res.status(200).json({ pozlar2 })
 
-      let { isPaketVersiyonlar, wbsLer } = proje
 
 
       pozlar = pozlar.map(onePoz => {

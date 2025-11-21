@@ -105,12 +105,23 @@ const createDugum = async (req, res) => {
       //   )
       // })
 
+
+      // BURADA YENİ OLUŞAN DUGUMLERİN İÇERİKLERİ GÜNCELLENİYOR
       const bulkArray2 = mahaller.map(oneMahal => {
         return (
           {
             updateOne: {
               filter: { _projeId, _mahalId: oneMahal._id, _pozId, isPaketVersiyonlar: [] },
-              update: { $set: { isPaketVersiyonlar } },
+              update: {
+                $set: {
+                  isPaketVersiyonlar,
+                  metrajVersiyonlar: [
+                    {
+                      "versiyonNumber": 0
+                    }
+                  ]
+                }
+              },
             }
           }
         )
@@ -1663,6 +1674,26 @@ const update_onaylananMetraj_revize = async (req, res) => {
                 }
               }
             }
+          },
+          {
+            $set: {
+              "metrajVersiyonlar": {
+                $map: {
+                  input: "$metrajVersiyonlar",
+                  as: "oneVersiyon",
+                  in: {
+                    $cond: {
+                      if: { $eq: ["$$oneVersiyon.versiyonNumber", 0] },
+                      else: "$$oneVersiyon",
+                      then: {
+                        versiyonNumber: 0,
+                        metrajOnaylanan: "$metrajOnaylanan"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         ]
       )
@@ -1983,6 +2014,26 @@ const update_onaylananMetraj_sil = async (req, res) => {
                 }
               }
             }
+          },
+          {
+            $set: {
+              "metrajVersiyonlar": {
+                $map: {
+                  input: "$metrajVersiyonlar",
+                  as: "oneVersiyon",
+                  in: {
+                    $cond: {
+                      if: { $eq: ["$$oneVersiyon.versiyonNumber", 0] },
+                      else: "$$oneVersiyon",
+                      then: {
+                        versiyonNumber: 0,
+                        metrajOnaylanan: "$metrajOnaylanan"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         ]
       )
@@ -2285,6 +2336,26 @@ const update_hazirlananMetrajlar_selected = async (req, res) => {
                 }
               }
             }
+          },
+          {
+            $set: {
+              "metrajVersiyonlar": {
+                $map: {
+                  input: "$metrajVersiyonlar",
+                  as: "oneVersiyon",
+                  in: {
+                    $cond: {
+                      if: { $eq: ["$$oneVersiyon.versiyonNumber", 0] },
+                      else: "$$oneVersiyon",
+                      then: {
+                        versiyonNumber: 0,
+                        metrajOnaylanan: "$metrajOnaylanan"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         ]
       )
@@ -2486,6 +2557,26 @@ const update_hazirlananMetrajlar_selectedFull = async (req, res) => {
                     "input": "$hazirlananMetrajlar",
                     "as": "oneHazirlanan",
                     "in": "$$oneHazirlanan.metrajOnaylanan"
+                  }
+                }
+              }
+            }
+          },
+          {
+            $set: {
+              "metrajVersiyonlar": {
+                $map: {
+                  input: "$metrajVersiyonlar",
+                  as: "oneVersiyon",
+                  in: {
+                    $cond: {
+                      if: { $eq: ["$$oneVersiyon.versiyonNumber", 0] },
+                      else: "$$oneVersiyon",
+                      then: {
+                        versiyonNumber: 0,
+                        metrajOnaylanan: "$metrajOnaylanan"
+                      }
+                    }
                   }
                 }
               }
