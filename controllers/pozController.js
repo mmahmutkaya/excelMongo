@@ -671,16 +671,21 @@ const isPaketMetrajlarByVersiyon = async (req, res) => {
       soyisim: userSoyisim
     } = JSON.parse(req.user)
 
-    const { projeid, versiyontext } = req.headers
-    const versiyon = Number(versiyontext)
+    const { projeid, versiyonkesiftext } = req.headers
+    const versiyonKesif = Number(versiyonkesiftext)
+    // const versiyonMetraj = Number(versiyonmetrajtext)
 
     if (!projeid) {
       throw new Error("DB ye gönderilen sorguda 'projeid' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    if (!versiyontext) {
+    if (!versiyonkesiftext) {
       throw new Error("DB ye gönderilen sorguda 'versiyontext' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
+
+    // if (!versiyonmetrajtext) {
+    //   throw new Error("DB ye gönderilen sorguda 'versiyontext' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    // }
 
 
     let _projeId
@@ -691,9 +696,9 @@ const isPaketMetrajlarByVersiyon = async (req, res) => {
     }
 
     const proje = await Proje.findOne({ _id: _projeId })
+    const wbs = await Proje.findOne({ _id: _projeId })
     let { isPaketVersiyonlar, wbsLer, metrajVersiyonlar } = proje
-    let maxMetrajVersiyon = metrajVersiyonlar.reduce((acc, cur) => Math.max(acc, cur), 0)
-
+    let maxMetrajVersiyon = metrajVersiyonlar.reduce((acc, oneVersiyon) => Math.max(acc, oneVersiyon.versiyonNumber), 0)
 
     let pozlar
 
@@ -722,16 +727,25 @@ const isPaketMetrajlarByVersiyon = async (req, res) => {
         {
           $project: {
             _pozId: 1,
+
             isPaketVersiyonlar: {
               $concatArrays: [
                 {
                   $filter: {
                     input: "$isPaketVersiyonlar",
                     as: "oneVersiyon",
-                    cond: { $eq: ["$$oneVersiyon.versiyon", versiyon] }
+                    cond: { $eq: ["$$oneVersiyon.versiyon", versiyonKesif] }
                   }
                 },
-                [{ metrajOnaylanan: 22 }]
+                [{
+                  metrajVersiyonlar: {
+                    $filter: {
+                      input: "$metrajVersiyonlar",
+                      as: "oneVersiyon",
+                      cond: { $eq: ["$$oneVersiyon.versiyonNumber", maxMetrajVersiyon] }
+                    }
+                  }
+                }]
               ]
             }
           }
@@ -739,105 +753,40 @@ const isPaketMetrajlarByVersiyon = async (req, res) => {
         {
           $group: {
             _id: "$_pozId",
-            isPaketVersiyonlar: { $push: "$isPaketVersiyonlar" }
+            isPaketVersiyonlar: {
+              $push: { $mergeObjects: ["$isPaketVersiyonlar"] }
+            }
           }
         }
       ])
 
-      return res.status(200).json({ pozlar2 })
-
-
 
       pozlar = pozlar.map(onePoz => {
 
-        const onePoz2 = pozlar2.find(onePoz2 => onePoz2._id.toString() === onePoz._id.toString())
+        onePoz.isPaketVersiyonlar = proje.isPaketVersiyonlar
 
-        if (!onePoz2) {
+        let versiyonMetrajlar = pozlar2.filter(x => x._id.toString() === onePoz._id.toString())[0].isPaketVersiyonlar
 
-          onePoz.hasDugum = false
+        // return res.status(200).json({ versiyonMetrajlar })
 
-        } else {
-
-          onePoz.hasDugum = true
-          onePoz.hasVersiyonZero = false
-
-          onePoz.metrajOnaylanan = onePoz2.metrajOnaylanan
-          // return onePoz2.hazirlanan
-          onePoz.hazirlananMetrajlar = metrajYapabilenler.map(oneYapabilen => {
-
-            let metrajPreparing = 0
-            let metrajReady = 0
-            let metrajOnaylanan = 0
-
-            let hasReadyUnSeen_Array = []
-            let hasReady_Array = []
-            let hasSelected_Array = []
-            let hasUnSelected_Array = []
-            let hasVersiyonZero_Array = []
-
-
-            onePoz2.hazirlananMetrajlar.map(oneArray => {
-
-              let oneHazirlanan = oneArray.find(x => x.userEmail === oneYapabilen.userEmail)
-
-              // if (oneHazirlanan?.satirlar?.filter(x => x.isReady).length > 0) {
-              if (oneHazirlanan) {
-
-                let metrajPreparing2 = oneHazirlanan?.metrajPreparing ? Number(oneHazirlanan?.metrajPreparing) : 0
-                let metrajReady2 = oneHazirlanan?.metrajReady ? Number(oneHazirlanan?.metrajReady) : 0
-                let metrajOnaylanan2 = oneHazirlanan?.metrajOnaylanan ? Number(oneHazirlanan?.metrajOnaylanan) : 0
-
-                metrajPreparing += metrajPreparing2
-                metrajReady += metrajReady2
-                metrajOnaylanan += metrajOnaylanan2
-
-                hasReadyUnSeen_Array = [...hasReadyUnSeen_Array, oneHazirlanan?.hasReadyUnSeen]
-                hasReady_Array = [...hasReady_Array, oneHazirlanan?.hasReady]
-                hasSelected_Array = [...hasSelected_Array, oneHazirlanan?.hasSelected]
-                hasUnSelected_Array = [...hasUnSelected_Array, oneHazirlanan?.hasUnSelected]
-                hasVersiyonZero_Array = [...hasVersiyonZero_Array, oneHazirlanan?.hasVersiyonZero]
-              }
-
+        onePoz.isPaketVersiyonlar = onePoz.isPaketVersiyonlar.map(oneVersiyon => {
+          oneVersiyon?.basliklar.map(oneBaslik => {
+            oneBaslik.isPaketleri.map(onePaket => {
+              let paketMetrajlar = versiyonMetrajlar.filter(oneVersiyon3 => oneVersiyon3.basliklar.find(oneBaslik3 => oneBaslik3._id.toString() === oneBaslik._id.toString()))
+              return res.status(200).json({ paketMetrajlar })
+              // if (oneVersiyon) {
+              //   onePaket.metrajOnaylanan = oneVersiyon.metrajVersiyonlar
+              // }
+              return onePaket
             })
-
-            let hasReadyUnSeen = hasReadyUnSeen_Array.find(x => x === true)
-            let hasReady = hasReady_Array.find(x => x === true)
-            let hasSelected = hasSelected_Array.find(x => x === true)
-            let hasUnSelected = hasUnSelected_Array.find(x => x === true)
-            let hasVersiyonZero = hasVersiyonZero_Array.find(x => x === true)
-
-            if (hasVersiyonZero) {
-              onePoz.hasVersiyonZero = true
-            }
-
-            return ({
-              userEmail: oneYapabilen.userEmail,
-              metrajPreparing,
-              metrajReady,
-              metrajOnaylanan,
-              hasReadyUnSeen,
-              hasReady,
-              hasSelected,
-              hasUnSelected,
-              hasVersiyonZero
-            })
-
+            return oneBaslik
           })
-
-          // onePoz.revizeMetrajlar = onePoz2.revizeMetrajlar
-          onePoz2.revizeMetrajlar.map(oneMetraj => {
-            oneMetraj.map(oneSatir => {
-              if (oneSatir.hasVersiyonZero) {
-                onePoz.hasVersiyonZero = true
-              }
-            })
-          })
-
-        }
-
-        return onePoz
+          return oneVersiyon
+        })
 
       })
+
+      return res.status(200).json({ pozlar })
 
 
     } catch (error) {
