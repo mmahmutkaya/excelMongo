@@ -96,7 +96,7 @@ const isPaketBaslikSchema = mongoose.Schema(
   {
     _id: mongoose.Schema.Types.ObjectId,
     // isPaketleri: [isPaketSchema],
-    paketId:mongoose.Schema.Types.ObjectId
+    _paketId:mongoose.Schema.Types.ObjectId
   }
 )
 

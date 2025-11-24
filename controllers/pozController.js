@@ -1,6 +1,7 @@
 const Poz = require('../models/pozModel')
 const Dugum = require('../models/dugumModel')
 const Proje = require('../models/projeModel')
+const _ = require('lodash');
 
 const mongoose = require('mongoose')
 var ObjectId = require('mongodb').ObjectId;
@@ -659,9 +660,9 @@ const updateBirimFiyatlar = async (req, res) => {
 
 
 
-const isPaketMetrajlarByVersiyon = async (req, res) => {
+const isPaketleriPozMetrajlarByVersiyon = async (req, res) => {
 
-  const hataBase = "BACKEND - (isPaketMetrajlarByVersiyon) - "
+  const hataBase = "BACKEND - (isPaketleriPozMetrajlarByVersiyon) - "
 
   try {
 
@@ -671,22 +672,26 @@ const isPaketMetrajlarByVersiyon = async (req, res) => {
       soyisim: userSoyisim
     } = JSON.parse(req.user)
 
-    const { projeid, versiyonkesiftext } = req.headers
-    const versiyonKesif = Number(versiyonkesiftext)
+    const {
+      projeid,
+      ispaketversiyontext,
+      metrajversiyontext
+    } = req.headers
+
+    const selectedIsPaketVersiyon = Number(ispaketversiyontext)
     // const versiyonMetraj = Number(versiyonmetrajtext)
 
     if (!projeid) {
       throw new Error("DB ye gönderilen sorguda 'projeid' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    if (!versiyonkesiftext) {
-      throw new Error("DB ye gönderilen sorguda 'versiyontext' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    if (!ispaketversiyontext) {
+      throw new Error("DB ye gönderilen sorguda 'ispaketversiyontext' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    // if (!versiyonmetrajtext) {
-    //   throw new Error("DB ye gönderilen sorguda 'versiyontext' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    // }
-
+    if (!metrajversiyontext) {
+      throw new Error("DB ye gönderilen sorguda 'metrajversiyontext' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
 
     let _projeId
     try {
@@ -696,9 +701,7 @@ const isPaketMetrajlarByVersiyon = async (req, res) => {
     }
 
     const proje = await Proje.findOne({ _id: _projeId })
-    const wbs = await Proje.findOne({ _id: _projeId })
-    let { isPaketVersiyonlar, wbsLer, metrajVersiyonlar } = proje
-    let maxMetrajVersiyon = metrajVersiyonlar.reduce((acc, oneVersiyon) => Math.max(acc, oneVersiyon.versiyonNumber), 0)
+    let maxMetrajVersiyon = proje.metrajVersiyonlar.reduce((acc, oneVersiyon) => Math.max(acc, oneVersiyon.versiyonNumber), 0)
 
     let pozlar
 
@@ -727,91 +730,126 @@ const isPaketMetrajlarByVersiyon = async (req, res) => {
         {
           $project: {
             _pozId: 1,
+            _paketIds: {
+              $reduce: {
+                input: "$isPaketVersiyonlar",
+                initialValue: null,
+                in: {
+                  $cond: {
+                    if: { $eq: ["$$this.versiyon", selectedIsPaketVersiyon] },
+                    else: "$$value",
+                    then: "$$this.basliklar._paketId"
+                  }
+                }
+              }
+            },
+            metrajOnaylanan: {
+              $reduce: {
+                input: "$metrajVersiyonlar",
+                initialValue: null,
+                in: {
+                  $cond: {
+                    if: { $eq: ["$$this.versiyonNumber", maxMetrajVersiyon] },
+                    else: "$$value",
+                    then: "$$this.metrajOnaylanan"
+                  }
+                }
+              }
 
-            isPaketVersiyonlar: {
-              $concatArrays: [
-                {
-                  $filter: {
-                    input: "$isPaketVersiyonlar",
-                    as: "oneVersiyon",
-                    cond: { $eq: ["$$oneVersiyon.versiyon", versiyonKesif] }
-                  }
-                },
-                [{
-                  metrajVersiyonlar: {
-                    $filter: {
-                      input: "$metrajVersiyonlar",
-                      as: "oneVersiyon",
-                      cond: { $eq: ["$$oneVersiyon.versiyonNumber", maxMetrajVersiyon] }
-                    }
-                  }
-                }]
-              ]
             }
           }
         },
         {
           $group: {
             _id: "$_pozId",
-            isPaketVersiyonlar: {
-              $push: { $mergeObjects: ["$isPaketVersiyonlar"] }
+            pozPaketMetrajlar: {
+              $push: { $mergeObjects: [{ _paketIds: "$_paketIds" }, { metrajOnaylanan: "$metrajOnaylanan" }] }
             }
           }
         }
       ])
 
 
-      pozlar = pozlar.map(onePoz => {
 
-        onePoz.isPaketVersiyonlar = proje.isPaketVersiyonlar
+      // return res.status(200).json({ pozlar2 })
 
-        let versiyonMetrajlar = pozlar2.filter(x => x._id.toString() === onePoz._id.toString())[0].isPaketVersiyonlar
 
-        // return res.status(200).json({ versiyonMetrajlar })
-
-        onePoz.isPaketVersiyonlar = onePoz.isPaketVersiyonlar.map(oneVersiyon => {
-          oneVersiyon?.basliklar.map(oneBaslik => {
+      let isPaketler_byVersiyon = []
+      proje.isPaketVersiyonlar.map(oneVersiyon => {
+        if (oneVersiyon.versiyon === selectedIsPaketVersiyon) {
+          oneVersiyon.basliklar.map(oneBaslik => {
             oneBaslik.isPaketleri.map(onePaket => {
-              let paketMetrajlar = versiyonMetrajlar.filter(oneVersiyon3 => oneVersiyon3.basliklar.find(oneBaslik3 => oneBaslik3._id.toString() === oneBaslik._id.toString()))
-              return res.status(200).json({ paketMetrajlar })
-              // if (oneVersiyon) {
-              //   onePaket.metrajOnaylanan = oneVersiyon.metrajVersiyonlar
-              // }
-              return onePaket
+              isPaketler_byVersiyon = [...isPaketler_byVersiyon, { _id: onePaket._id }]
             })
-            return oneBaslik
           })
-          return oneVersiyon
-        })
-
+        }
       })
 
-      return res.status(200).json({ pozlar })
+      // return res.status(200).json({ isPaketler_byVersiyon })
 
+
+      pozlar = pozlar.map(onePoz => {
+
+        let pozPaketMetrajlar = pozlar2.find(onePoz2 => onePoz2._id.toString() === onePoz._id.toString())?.pozPaketMetrajlar
+
+        if (!pozPaketMetrajlar?.length > 0) {
+          return
+        }
+
+        onePoz.isPaketler_byVersiyon = _.cloneDeep(isPaketler_byVersiyon)
+
+        // let paketMetrajlar = isPaketMetrajlar_byPoz.filter(oneVersiyon3 => oneVersiyon3.basliklar.find(oneBaslik3 => oneBaslik3._paketId?.toString() === onePaket._id.toString()))
+
+        // let array2 = []
+        onePoz.isPaketler_byVersiyon = onePoz.isPaketler_byVersiyon.map(onePaket => {
+          onePaket.metrajOnaylanan = pozPaketMetrajlar.reduce((acc, oneMetraj) => oneMetraj._paketIds.find(x => x?.toString() === onePaket._id.toString()) ? acc + oneMetraj.metrajOnaylanan : acc + 0, 0)
+          return onePaket
+          // array2 = [...array2, { _id: onePaket._id, metraj }]
+        })
+        // return res.status(200).json({ array2 })
+
+        // oneVersiyon?.basliklar.map(oneBaslik => {
+        //   oneBaslik.isPaketleri.map(onePaket => {
+        //     let paketMetrajlar = isPaketMetrajlar_byPoz.filter(oneVersiyon3 => oneVersiyon3.basliklar.find(oneBaslik3 => oneBaslik3._paketId?.toString() === onePaket._id.toString()))
+        //     if (paketMetrajlar.length > 0) {
+        //       let paketMetraj = paketMetrajlar.reduce((acc, onePaket) => acc + onePaket.metrajVersiyonlar[0].metrajOnaylanan, 0)
+        //       onePaket.metrajOnaylanan = paketMetraj
+        //     }
+        //     return onePaket
+        //   })
+        //   return oneBaslik
+        // })
+
+        return onePoz
+
+      })
 
     } catch (error) {
       throw new Error("tryCatch -1- " + error);
     }
 
-    let anySelectable
-    try {
+    return res.status(200).json({ isPaketleriPozMetrajlarByVersiyon: pozlar })
 
-      anySelectable
-      pozlar.map(onePoz => {
-        onePoz?.hazirlananMetrajlar?.map(oneHazirlanan => {
-          if (oneHazirlanan) {
-            if (oneHazirlanan.hasUnSelected) {
-              anySelectable = true
-            }
-          }
-        })
-      })
 
-    } catch (error) {
-      throw new Error("tryCatch -2- " + error);
-    }
+    // let anySelectable
+    // try {
 
-    return res.status(200).json({ pozlar, anySelectable })
+    //   anySelectable
+    //   pozlar.map(onePoz => {
+    //     onePoz?.hazirlananMetrajlar?.map(oneHazirlanan => {
+    //       if (oneHazirlanan) {
+    //         if (oneHazirlanan.hasUnSelected) {
+    //           anySelectable = true
+    //         }
+    //       }
+    //     })
+    //   })
+
+    // } catch (error) {
+    //   throw new Error("tryCatch -2- " + error);
+    // }
+
+    // return res.status(200).json({ pozlar, anySelectable })
 
   } catch (error) {
     return res.status(400).json({ hatayeri: hataBase, error: hataBase + error })
@@ -822,11 +860,9 @@ const isPaketMetrajlarByVersiyon = async (req, res) => {
 
 
 
-
-
 module.exports = {
   createPoz,
   getPozlar,
   updateBirimFiyatlar,
-  isPaketMetrajlarByVersiyon
+  isPaketleriPozMetrajlarByVersiyon
 }

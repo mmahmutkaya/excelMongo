@@ -2826,7 +2826,7 @@ const update_isPaketleri = async (req, res) => {
             filter: { _id: oneDugum._id },
             update: {
               $set: {
-                "isPaketVersiyonlar.$[oneVersiyon].basliklar.$[oneBaslik].paketId": oneDugum.newSelectedValue ? new ObjectId(selectedIsPaket._id) : null,
+                "isPaketVersiyonlar.$[oneVersiyon].basliklar.$[oneBaslik]._paketId": oneDugum.newSelectedValue ? new ObjectId(selectedIsPaket._id) : null,
               }
             },
             arrayFilters: [

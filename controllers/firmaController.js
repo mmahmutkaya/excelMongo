@@ -110,9 +110,9 @@ const createFirma = async (req, res) => {
 
 
     const paraBirimleri = [
-      { id: "TRY", name: "Türk Lirası", isActive: false },
-      { id: "USD", name: "Amerikan Doları", isActive: false },
-      { id: "EUR", name: "Euro", isActive: false },
+      { id: "TRY", name: "Türk Lirası", isActive: false ,sembol:"₺"},
+      { id: "USD", name: "Amerikan Doları", isActive: false, sembol:"$" },
+      { id: "EUR", name: "Euro", isActive: false, sembol:"€" },
       { id: "UZS", name: "Özbekistan Sum", isActive: false }
     ]
 
@@ -269,6 +269,7 @@ const updateParaBirimleri = async (req, res) => {
 
     let paraBirimiId = oneBirim.id
     let paraBirimiName = oneBirim.name
+    let sembol = oneBirim.sembol
 
 
     if (!(showValue === true || showValue === false)) {
@@ -287,7 +288,7 @@ const updateParaBirimleri = async (req, res) => {
 
       await Proje.updateMany(
         { _firmaId, "paraBirimleri.id": { $nin: [paraBirimiId] } },
-        { $addToSet: { paraBirimleri: { id: paraBirimiId, name: paraBirimiName, isActive: false, show: false } } }
+        { $addToSet: { paraBirimleri: { id: paraBirimiId, name: paraBirimiName, sembol, isActive: false, show: false } } }
       )
 
 
