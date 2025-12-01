@@ -20,7 +20,6 @@ const {
   moveLbsDown,
   moveLbsLeft,
   moveLbsRight,
-  createIsPaketBaslik,
   createIsPaket
 } = require('../controllers/projeController')
 
@@ -65,7 +64,7 @@ router.post('/movelbsright', moveLbsRight)
 
 
 // LBS
-router.post('/createispaketbaslik', createIsPaketBaslik)
+// router.post('/createispaketbaslik', createIsPaketBaslik)
 router.post('/createispaket', createIsPaket)
 
 

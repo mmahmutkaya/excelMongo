@@ -178,7 +178,7 @@ const createProje = async (req, res) => {
       paraBirimleri: [],
       isPaketVersiyonlar: [{
         versiyon: 0,
-        basliklar: []
+        isPaketler: []
       }],
       metrajVersiyonlar: [],
       birimfiyatVersiyonlar: [],
@@ -3197,107 +3197,107 @@ const moveLbsRight = async (req, res) => {
 
 
 
-const createIsPaketBaslik = async (req, res) => {
+// const createIsPaketBaslik = async (req, res) => {
 
-  const hataBase = "BACKEND - (createIsPaketBaslik) - "
+//   const hataBase = "BACKEND - (createIsPaketBaslik) - "
 
-  try {
+//   try {
 
-    const {
-      email: userEmail,
-      isim: userIsim,
-      soyisim: userSoyisim,
-      userCode
-    } = JSON.parse(req.user)
-
-
-    let { projeId, baslikName, aciklama } = req.body
-
-    if (!projeId) {
-      throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
-
-    if (!baslikName) {
-      throw new Error("Sorguya 'baslikName' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
-
-    if (!aciklama) {
-      throw new Error("Sorguya 'aciklama' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
-
-    let proje = await Proje.findOne({ _id: projeId })
-    if (!proje) {
-      throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
-
-    let errorObject = {}
+//     const {
+//       email: userEmail,
+//       isim: userIsim,
+//       soyisim: userSoyisim,
+//       userCode
+//     } = JSON.parse(req.user)
 
 
-    //form verisi -- yukarıda  "" const errorObject = {} ""  yazan satırdan önceki açıklamaları oku
+//     let { projeId, baslikName, aciklama } = req.body
 
-    // baslikName
-    typeof baslikName != "string" && errorObject.baslikNameError === null ? errorObject.baslikNameError = "MONGO // create_isPaketBaslik //  --  baslikName -- sorguya, string formatında gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz. " : null
-    baslikName = deleteLastSpace(baslikName)
-    if (!baslikName.length && !errorObject.baslikNameError) {
-      errorObject.baslikNameError = "'baslikName' sorguya, gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz."
-    }
+//     if (!projeId) {
+//       throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+//     }
 
-    if (proje.isPaketVersiyonlar?.find(oneVersiyon => oneVersiyon.versiyon === 0 && oneVersiyon.basliklar.find(oneBaslik => oneBaslik.name === baslikName) && !errorObject.baslikNameError)) {
-      errorObject.baslikNameError = "Bu projede, bu başlık ismi kullanılmış."
-    }
+//     if (!baslikName) {
+//       throw new Error("Sorguya 'baslikName' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+//     }
 
+//     if (!aciklama) {
+//       throw new Error("Sorguya 'aciklama' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+//     }
 
-    // form veri girişlerinden en az birinde hata tespit edildiği için form objesi dönderiyoruz, formun ilgili alanlarında gösterilecek
-    // errorObject - aşağıda tekrar gönderiliyor
-    if (Object.keys(errorObject).length) {
-      return res.status(200).json({ errorObject })
-    }
+//     let proje = await Proje.findOne({ _id: projeId })
+//     if (!proje) {
+//       throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+//     }
 
-
-    const currentTime = new Date()
-
-    let newBaslik = {
-      _id: new ObjectId(),
-      name: baslikName,
-      aciklama,
-      isPaketleri: [],
-      createdAt: currentTime,
-      createdBy: userEmail
-    }
+//     let errorObject = {}
 
 
-    try {
+//     //form verisi -- yukarıda  "" const errorObject = {} ""  yazan satırdan önceki açıklamaları oku
 
-      await Proje.updateOne(
-        { _id: projeId },
-        { $push: { 'isPaketVersiyonlar.$[oneVersiyon].basliklar': newBaslik } },
-        { arrayFilters: [{ "oneVersiyon.versiyon": 0 }] }
-      );
+//     // baslikName
+//     typeof baslikName != "string" && errorObject.baslikNameError === null ? errorObject.baslikNameError = "MONGO // create_isPaketBaslik //  --  baslikName -- sorguya, string formatında gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz. " : null
+//     baslikName = deleteLastSpace(baslikName)
+//     if (!baslikName.length && !errorObject.baslikNameError) {
+//       errorObject.baslikNameError = "'baslikName' sorguya, gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz."
+//     }
 
-      let newBaslik2 = { ...newBaslik }
-      delete newBaslik2.name
-      delete newBaslik2.aciklama
-      delete newBaslik2.createdAt
-      delete newBaslik2.createdBy
+//     if (proje.isPaketVersiyonlar?.find(oneVersiyon => oneVersiyon.versiyon === 0 && oneVersiyon.basliklar.find(oneBaslik => oneBaslik.name === baslikName) && !errorObject.baslikNameError)) {
+//       errorObject.baslikNameError = "Bu projede, bu başlık ismi kullanılmış."
+//     }
 
-      await Dugum.updateMany(
-        { _projeId: projeId },
-        { $push: { 'isPaketVersiyonlar.$[oneVersiyon].basliklar': newBaslik2 } },
-        { arrayFilters: [{ "oneVersiyon.versiyon": 0 }] }
-      );
 
-      // return newWbsItem[0].code
-      return res.status(200).json({ newBaslik })
+//     // form veri girişlerinden en az birinde hata tespit edildiği için form objesi dönderiyoruz, formun ilgili alanlarında gösterilecek
+//     // errorObject - aşağıda tekrar gönderiliyor
+//     if (Object.keys(errorObject).length) {
+//       return res.status(200).json({ errorObject })
+//     }
 
-    } catch (error) {
-      throw new Error("tryCatch -1- " + error);
-    }
 
-  } catch (error) {
-    return res.status(400).json({ error: hataBase + error })
-  }
+//     const currentTime = new Date()
 
-}
+//     let newBaslik = {
+//       _id: new ObjectId(),
+//       name: baslikName,
+//       aciklama,
+//       isPaketleri: [],
+//       createdAt: currentTime,
+//       createdBy: userEmail
+//     }
+
+
+//     try {
+
+//       await Proje.updateOne(
+//         { _id: projeId },
+//         { $push: { 'isPaketVersiyonlar.$[oneVersiyon].basliklar': newBaslik } },
+//         { arrayFilters: [{ "oneVersiyon.versiyon": 0 }] }
+//       );
+
+//       let newBaslik2 = { ...newBaslik }
+//       delete newBaslik2.name
+//       delete newBaslik2.aciklama
+//       delete newBaslik2.createdAt
+//       delete newBaslik2.createdBy
+
+//       await Dugum.updateMany(
+//         { _projeId: projeId },
+//         { $push: { 'isPaketVersiyonlar.$[oneVersiyon].basliklar': newBaslik2 } },
+//         { arrayFilters: [{ "oneVersiyon.versiyon": 0 }] }
+//       );
+
+//       // return newWbsItem[0].code
+//       return res.status(200).json({ newBaslik })
+
+//     } catch (error) {
+//       throw new Error("tryCatch -1- " + error);
+//     }
+
+//   } catch (error) {
+//     return res.status(400).json({ error: hataBase + error })
+//   }
+
+// }
 
 
 
@@ -3317,34 +3317,31 @@ const createIsPaket = async (req, res) => {
     } = JSON.parse(req.user)
 
 
-    let { projeId, baslikId, isPaketName, aciklama } = req.body
+    let { projeId, isPaketName, aciklama } = req.body
 
     if (!projeId) {
       throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
-
-    if (!baslikId) {
-      throw new Error("Sorguya 'baslikId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
     if (!isPaketName) {
       throw new Error("Sorguya 'isPaketName' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    if (!aciklama) {
-      throw new Error("Sorguya 'aciklama' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
+    // AÇIKLAMA GELMEK ZORUNDA DEĞİL
+    // if (!aciklama) {
+    //   throw new Error("Sorguya 'aciklama' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    // }
 
     let proje = await Proje.findOne({ _id: projeId })
     if (!proje) {
       throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    let theBaslik = proje.isPaketVersiyonlar?.find(oneVersiyon => oneVersiyon.versiyon === 0).basliklar.find(oneBaslik => oneBaslik._id.toString() === baslikId)
+    let theVersiyon = proje.isPaketVersiyonlar?.find(oneVersiyon => oneVersiyon.versiyon === 0)
 
     // return res.status(200).json((theBaslik))
 
-    if (!theBaslik) {
+    if (!theVersiyon) {
       throw new Error("sorguya gönderilen 'baslikId' ile güncel versiyon (versiyon 0) alanında başlık bulunamadı")
     }
 
@@ -3358,7 +3355,7 @@ const createIsPaket = async (req, res) => {
       errorObject.isPaketNameError = "'isPaketName' sorguya, gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz."
     }
 
-    if (theBaslik.isPaketleri.find(onePaket => onePaket.name === isPaketName) && !errorObject.isPaketNameError) {
+    if (theVersiyon.isPaketler.find(onePaket => onePaket.name === isPaketName) && !errorObject.isPaketNameError) {
       errorObject.isPaketNameError = "Bu başlık altında bu 'iş paket' ismi kullanılmış."
     }
 
@@ -3375,6 +3372,7 @@ const createIsPaket = async (req, res) => {
     let newPaket = {
       _id: new ObjectId(),
       name: isPaketName,
+      isActive: true,
       aciklama,
       createdAt: currentTime,
       createdBy: userEmail
@@ -3385,22 +3383,21 @@ const createIsPaket = async (req, res) => {
 
       await Proje.updateOne(
         { _id: projeId },
-        { $push: { 'isPaketVersiyonlar.$[oneVersiyon].basliklar.$[oneBaslik].isPaketleri': newPaket } },
-        { arrayFilters: [{ "oneVersiyon.versiyon": 0 }, { "oneBaslik._id": baslikId }] }
+        { $push: { 'isPaketVersiyonlar.$[oneVersiyon].isPaketler': newPaket } },
+        { arrayFilters: [{ "oneVersiyon.versiyon": 0 }] }
       );
 
-      let newPaket2 = { ...newPaket }
-      delete newPaket2.name
-      delete newPaket2.aciklama
-      delete newPaket2.createdAt
-      delete newPaket2.createdBy
+      // let newPaket2 = { ...newPaket }
+      // delete newPaket2.name
+      // delete newPaket2.aciklama
+      // delete newPaket2.createdAt
+      // delete newPaket2.createdBy
 
-
-      await Dugum.updateMany(
-        { _projeId: projeId },
-        { $push: { 'isPaketVersiyonlar.$[oneVersiyon].basliklar.$[oneBaslik].isPaketleri': newPaket2 } },
-        { arrayFilters: [{ "oneVersiyon.versiyon": 0 }, { "oneBaslik._id": baslikId }] }
-      );
+      // await Dugum.updateMany(
+      //   { _projeId: projeId },
+      //   { $push: { 'isPaketVersiyonlar.$[oneVersiyon].isPaketler': newPaket2 } },
+      //   { arrayFilters: [{ "oneVersiyon.versiyon": 0 }] }
+      // );
 
       // return newWbsItem[0].code
       return res.status(200).json({ newPaket })
@@ -3437,6 +3434,5 @@ module.exports = {
   moveLbsDown,
   moveLbsLeft,
   moveLbsRight,
-  createIsPaketBaslik,
   createIsPaket
 }

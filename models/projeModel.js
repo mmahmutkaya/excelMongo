@@ -2,12 +2,12 @@ const mongoose = require('mongoose')
 
 const Schema = mongoose.Schema
 
-const isPaketBaslikSchema = mongoose.Schema(
+const isPaketSchema = mongoose.Schema(
   {
     _id: mongoose.Schema.Types.ObjectId,
     name: String,
+    isActive:Boolean,
     aciklama: String,
-    isPaketleri: Array,
     createdBy: String,
     createdAt: Date
   }
@@ -16,7 +16,7 @@ const isPaketBaslikSchema = mongoose.Schema(
 const isPaketVersiyonSchema = mongoose.Schema(
   {
     versiyon: Number,
-    basliklar: [isPaketBaslikSchema]
+    isPaketler: [isPaketSchema]
   }
 )
 
