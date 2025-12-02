@@ -38,7 +38,7 @@ const createDugum = async (req, res) => {
     }
 
     const proje = await Proje.findOne({ _id: _projeId })
-    const { isPaketVersiyonlar } = proje
+    // let { isPaketVersiyonlar } = proje
 
     if (!pozId) {
       throw new Error("'_pozId' verisi db sorgusuna gelmedi");
@@ -93,17 +93,17 @@ const createDugum = async (req, res) => {
 
     try {
 
-      // BUNA GEREK KALMADI ÇÜNKÜ MONGOOSE dugumModel de yazdığı için hazirlananMetraj vb. ekliyor ilk oluşturmada fakat isPaketVerisyonlar projeden geldiği için eklenmeli
-      // const bulkArray2 = mahaller.map(oneMahal => {
-      //   return (
-      //     {
-      //       updateOne: {
-      //         filter: { _projeId, _mahalId: oneMahal._id, _pozId, hazirlananMetrajlar: { $exists: false } },
-      //         update: { $set: { hazirlananMetrajlar: [], revizeMetrajlar: [], metrajVersiyonlar: [], isPaketVersiyonlar } },
-      //       }
-      //     }
-      //   )
-      // })
+      //   // BUNA GEREK KALMADI ÇÜNKÜ MONGOOSE dugumModel de yazdığı için hazirlananMetraj vb. ekliyor ilk oluşturmada fakat isPaketVerisyonlar projeden geldiği için eklenmeli
+      //   // const bulkArray2 = mahaller.map(oneMahal => {
+      //   //   return (
+      //   //     {
+      //   //       updateOne: {
+      //   //         filter: { _projeId, _mahalId: oneMahal._id, _pozId, hazirlananMetrajlar: { $exists: false } },
+      //   //         update: { $set: { hazirlananMetrajlar: [], revizeMetrajlar: [], metrajVersiyonlar: [], isPaketVersiyonlar } },
+      //   //       }
+      //   //     }
+      //   //   )
+      //   // })
 
 
       // BURADA YENİ OLUŞAN DUGUMLERİN İÇERİKLERİ GÜNCELLENİYOR
