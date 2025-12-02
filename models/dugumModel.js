@@ -92,16 +92,16 @@ const revizeMetrajSchema = mongoose.Schema(
 // )
 
 
-const isPaketSchema = mongoose.Schema(
-  {
-    _id: mongoose.Schema.Types.ObjectId,
-  }
-)
+// const isPaketSchema = mongoose.Schema(
+//   {
+//     _id: mongoose.Schema.Types.ObjectId,
+//   }
+// )
 
 const isPaketVersiyonSchema = mongoose.Schema(
   {
     versiyon: Number,
-    isPaketler: [isPaketSchema],
+    isPaketler: Array,
     _id: { id: false }
   }
 )

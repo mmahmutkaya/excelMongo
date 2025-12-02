@@ -236,7 +236,7 @@
 
 
 use('rapor724_v2');
-db["projeler"].updateMany(
+db["dugumler"].updateMany(
   {},
   {
     $set: {

@@ -738,7 +738,7 @@ const isPaketleriPozMetrajlarByVersiyon = async (req, res) => {
                   $cond: {
                     if: { $eq: ["$$this.versiyon", selectedIsPaketVersiyon] },
                     else: "$$value",
-                    then: "$$this.basliklar._paketId"
+                    then: "$$this.isPaketler"
                   }
                 }
               }
@@ -771,16 +771,14 @@ const isPaketleriPozMetrajlarByVersiyon = async (req, res) => {
 
 
 
-      // return res.status(200).json({ pozlar2 })
+      return res.status(200).json({ pozlar2 })
 
 
       let isPaketler_byVersiyon = []
       proje.isPaketVersiyonlar.map(oneVersiyon => {
         if (oneVersiyon.versiyon === selectedIsPaketVersiyon) {
-          oneVersiyon.basliklar.map(oneBaslik => {
-            oneBaslik.isPaketleri.map(onePaket => {
-              isPaketler_byVersiyon = [...isPaketler_byVersiyon, { _id: onePaket._id }]
-            })
+          oneVersiyon.isPaketler.map(onePaket => {
+            isPaketler_byVersiyon = [...isPaketler_byVersiyon, { _id: onePaket._id }]
           })
         }
       })
