@@ -176,10 +176,8 @@ const createProje = async (req, res) => {
       wbs: [],
       lbs: [],
       paraBirimleri: [],
-      isPaketVersiyonlar: [{
-        versiyon: 0,
-        isPaketler: []
-      }],
+      isPaketler:[],
+      isPaketVersiyonlar: [],
       metrajVersiyonlar: [],
       birimfiyatVersiyonlar: [],
       pozMetrajTipleri,
@@ -3260,7 +3258,7 @@ const moveLbsRight = async (req, res) => {
 //       _id: new ObjectId(),
 //       name: baslikName,
 //       aciklama,
-//       isPaketleri: [],
+//       isPaketler: [],
 //       createdAt: currentTime,
 //       createdBy: userEmail
 //     }
@@ -3337,13 +3335,13 @@ const createIsPaket = async (req, res) => {
       throw new Error("sorguya gönderilen 'projeId' ile sistemde proje bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    let theVersiyon = proje.isPaketVersiyonlar?.find(oneVersiyon => oneVersiyon.versiyon === 0)
+    // let theVersiyon = proje.isPaketVersiyonlar?.find(oneVersiyon => oneVersiyon.versiyon === 0)
 
     // return res.status(200).json((theBaslik))
 
-    if (!theVersiyon) {
-      throw new Error("sorguya gönderilen 'baslikId' ile güncel versiyon (versiyon 0) alanında başlık bulunamadı")
-    }
+    // if (!theVersiyon) {
+    //   throw new Error("sorguya gönderilen 'baslikId' ile güncel versiyon (versiyon 0) alanında başlık bulunamadı")
+    // }
 
     let errorObject = {}
 
@@ -3355,7 +3353,7 @@ const createIsPaket = async (req, res) => {
       errorObject.isPaketNameError = "'isPaketName' sorguya, gönderilmemiş, lütfen Rapor7/24 ile irtibata geçiniz."
     }
 
-    if (theVersiyon.isPaketler.find(onePaket => onePaket.name === isPaketName) && !errorObject.isPaketNameError) {
+    if (proje.isPaketler.find(onePaket => onePaket.name === isPaketName) && !errorObject.isPaketNameError) {
       errorObject.isPaketNameError = "Bu başlık altında bu 'iş paket' ismi kullanılmış."
     }
 
@@ -3383,8 +3381,7 @@ const createIsPaket = async (req, res) => {
 
       await Proje.updateOne(
         { _id: projeId },
-        { $push: { 'isPaketVersiyonlar.$[oneVersiyon].isPaketler': newPaket } },
-        { arrayFilters: [{ "oneVersiyon.versiyon": 0 }] }
+        { $push: { 'isPaketler': newPaket } }
       );
 
       // let newPaket2 = { ...newPaket }

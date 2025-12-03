@@ -114,7 +114,12 @@ const createDugum = async (req, res) => {
               filter: { _projeId, _mahalId: oneMahal._id, _pozId, isPaketVersiyonlar: [] },
               update: {
                 $set: {
-                  isPaketVersiyonlar,
+                  isPaketVersiyonlar: [
+                    {
+                      versiyon: 0,
+                      isPaketler: []
+                    }
+                  ],
                   metrajVersiyonlar: [
                     {
                       "versiyonNumber": 0

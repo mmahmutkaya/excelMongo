@@ -2,23 +2,23 @@ const mongoose = require('mongoose')
 
 const Schema = mongoose.Schema
 
-const isPaketSchema = mongoose.Schema(
-  {
-    _id: mongoose.Schema.Types.ObjectId,
-    name: String,
-    isActive:Boolean,
-    aciklama: String,
-    createdBy: String,
-    createdAt: Date
-  }
-)
+// const isPaketSchema = mongoose.Schema(
+//   {
+//     _id: mongoose.Schema.Types.ObjectId,
+//     name: String,
+//     isActive:Boolean,
+//     aciklama: String,
+//     createdBy: String,
+//     createdAt: Date
+//   }
+// )
 
-const isPaketVersiyonSchema = mongoose.Schema(
-  {
-    versiyon: Number,
-    isPaketler: [isPaketSchema]
-  }
-)
+// const isPaketVersiyonSchema = mongoose.Schema(
+//   {
+//     versiyon: Number,
+//     isPaketler: [isPaketSchema]
+//   }
+// )
 
 const projeSchema = new Schema(
   {
@@ -27,7 +27,8 @@ const projeSchema = new Schema(
     wbs: Array,
     lbs: Array,
     paraBirimleri: Array,
-    isPaketVersiyonlar: [isPaketVersiyonSchema],
+    isPaketler:Array,
+    isPaketVersiyonlar: Array,
     pozMetrajTipleri: Array,
     pozBirimleri: Array,
     yetkiliKisiler: Array,
