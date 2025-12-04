@@ -1,7 +1,8 @@
 const Proje = require('../models/projeModel')
 const Poz = require('../models/pozModel')
 const Mahal = require('../models/mahalModel')
-const Dugum = require('../models/dugumModel')
+const Firma = require('../models/firmaModel')
+// const Dugum = require('../models/dugumModel')
 
 
 const mongoose = require('mongoose')
@@ -99,6 +100,8 @@ const createProje = async (req, res) => {
       throw new Error("Sorguya gelen firmaId türü doğru değil, sayfayı yenileyiniz, sorun devam ederse rapor7/24 ile iletişime geçebilirsiniz.")
     }
 
+    let theFirma = await Firma.findOne({ _id: _firmaId })
+
     const currentTime = new Date()
 
 
@@ -175,8 +178,8 @@ const createProje = async (req, res) => {
       name: projeName,
       wbs: [],
       lbs: [],
-      paraBirimleri: [],
-      isPaketler:[],
+      paraBirimleri: theFirma.paraBirimleri.filter(x => x.isActive),
+      isPaketler: [],
       isPaketVersiyonlar: [],
       metrajVersiyonlar: [],
       birimfiyatVersiyonlar: [],
