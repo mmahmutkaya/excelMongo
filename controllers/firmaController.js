@@ -110,9 +110,9 @@ const createFirma = async (req, res) => {
 
 
     const paraBirimleri = [
-      { id: "TRY", name: "Türk Lirası", isActive: false ,sembol:"₺"},
-      { id: "USD", name: "Amerikan Doları", isActive: false, sembol:"$" },
-      { id: "EUR", name: "Euro", isActive: false, sembol:"€" },
+      { id: "TRY", name: "Türk Lirası", isActive: false, sembol: "₺" },
+      { id: "USD", name: "Amerikan Doları", isActive: false, sembol: "$" },
+      { id: "EUR", name: "Euro", isActive: false, sembol: "€" },
       { id: "UZS", name: "Özbekistan Sum", isActive: false }
     ]
 
@@ -286,6 +286,14 @@ const updateParaBirimleri = async (req, res) => {
         { arrayFilters: [{ "oneBirim.id": paraBirimiId }] }
       )
 
+      // // DAHA ÖNCEDEN KAYITLI İSE
+      // await Proje.updateMany(
+      //   { _firmaId: _firmaId },
+      //   { $set: { "paraBirimleri.$[oneBirim].isFirmaActive": true } },
+      //   { arrayFilters: [{ "oneBirim.id": paraBirimiId }] }
+      // )
+
+      // İLK DEFA KAYDEDİLECEKSE
       await Proje.updateMany(
         { _firmaId, "paraBirimleri.id": { $nin: [paraBirimiId] } },
         { $addToSet: { paraBirimleri: { id: paraBirimiId, name: paraBirimiName, sembol, isActive: false, show: false } } }
@@ -300,26 +308,31 @@ const updateParaBirimleri = async (req, res) => {
         { arrayFilters: [{ "oneBirim.id": paraBirimiId }] }
       )
 
+      // HENÜZ KULLANMAMIŞ OLAN PROJELERDE PASİF HALE GETİRMEK
+      await Proje.updateMany(
+        { _firmaId },
+        { $pull: { paraBirimleri: { id: paraBirimiId, isActive: false } } }
+      )
 
-      await Proje.updateMany({ _firmaId }, [
-        {
-          $set: {
-            paraBirimleri: {
-              $filter: {
-                input: "$paraBirimleri",
-                as: "oneBirim",
-                cond: {
-                  $or: [
-                    { $ne: ["$$oneBirim.id", paraBirimiId] },
-                    { $and: [{ $eq: ["$$oneBirim.id", paraBirimiId] }, { $eq: ["$$oneBirim.isActive", true] }] }
-                  ]
-                }
-              }
-            }
-          }
-        }
-      ])
 
+      // await Proje.updateMany({ _firmaId }, [
+      //   {
+      //     $set: {
+      //       paraBirimleri: {
+      //         $filter: {
+      //           input: "$paraBirimleri",
+      //           as: "oneBirim",
+      //           cond: {
+      //             $or: [
+      //               { $ne: ["$$oneBirim.id", paraBirimiId] },
+      //               { $and: [{ $eq: ["$$oneBirim.id", paraBirimiId] }, { $eq: ["$$oneBirim.isActive", true] }] }
+      //             ]
+      //           }
+      //         }
+      //       }
+      //     }
+      //   }
+      // ])
 
     }
 
