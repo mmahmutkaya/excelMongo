@@ -101,6 +101,11 @@ const createProje = async (req, res) => {
     }
 
     let theFirma = await Firma.findOne({ _id: _firmaId })
+    let paraBirimleri = theFirma.paraBirimleri.filter(x => x.isActive).map(oneBirim => {
+      oneBirim.isActive = false
+      oneBirim.isShow = true
+      return oneBirim
+    })
 
     const currentTime = new Date()
 
@@ -178,7 +183,7 @@ const createProje = async (req, res) => {
       name: projeName,
       wbs: [],
       lbs: [],
-      paraBirimleri: theFirma.paraBirimleri.filter(x => x.isActive),
+      paraBirimleri,
       isPaketler: [],
       isPaketVersiyonlar: [],
       metrajVersiyonlar: [],
