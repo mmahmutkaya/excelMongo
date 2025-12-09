@@ -296,7 +296,7 @@ const updateParaBirimleri = async (req, res) => {
       // İLK DEFA KAYDEDİLECEKSE
       await Proje.updateMany(
         { _firmaId, "paraBirimleri.id": { $nin: [paraBirimiId] } },
-        { $addToSet: { paraBirimleri: { id: paraBirimiId, name: paraBirimiName, sembol, isActive: false, show: false } } }
+        { $addToSet: { paraBirimleri: { id: paraBirimiId, name: paraBirimiName, sembol, isActive: false, isShow: true } } }
       )
 
 
