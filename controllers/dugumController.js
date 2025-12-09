@@ -2810,7 +2810,6 @@ const update_isPaketleri = async (req, res) => {
 
     let {
       selectedIsPaketVersiyon,
-      selectedIsPaketBaslik,
       selectedIsPaket,
       dugumler
     } = req.body
