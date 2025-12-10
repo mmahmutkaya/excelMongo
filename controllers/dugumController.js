@@ -413,6 +413,7 @@ const getDugumler_byPoz = async (req, res) => {
             metrajPreparing: 1,
             metrajReady: 1,
             metrajOnaylanan: 1,
+            isPaketler: 1,
             isPaketVersiyonlar: 1,
             hazirlananMetrajlar: {
               $map: {
@@ -2809,7 +2810,6 @@ const update_isPaketleri = async (req, res) => {
     } = JSON.parse(req.user)
 
     let {
-      selectedIsPaketVersiyon,
       selectedIsPaket,
       dugumler
     } = req.body
@@ -2823,29 +2823,51 @@ const update_isPaketleri = async (req, res) => {
     try {
 
       let bulkArray = []
-      dugumler.map(oneDugum => {
 
+      // dugumler.map(oneDugum => {
+      //   oneBulk = {
+      //     updateOne: {
+      //       filter: { _id: oneDugum._id },
+      //       update: {
+      //         $set: {
+      //           "isPaketVersiyonlar.$[oneVersiyon].basliklar.$[oneBaslik]._paketId": oneDugum.newSelectedValue ? new ObjectId(selectedIsPaket._id) : null,
+      //         }
+      //       },
+      //       arrayFilters: [
+      //         {
+      //           "oneVersiyon.versiyon": selectedIsPaketVersiyon
+      //         },
+      //         {
+      //           "oneBaslik._id": new ObjectId(selectedIsPaketBaslik._id)
+      //         }
+      //       ]
+      //     }
+      //   }
+      //   bulkArray = [...bulkArray, oneBulk]
+      // })
+
+
+      dugumler.filter(x => !x.newSelectedValue).map(oneDugum => {
         oneBulk = {
           updateOne: {
             filter: { _id: oneDugum._id },
-            update: {
-              $set: {
-                "isPaketVersiyonlar.$[oneVersiyon].basliklar.$[oneBaslik]._paketId": oneDugum.newSelectedValue ? new ObjectId(selectedIsPaket._id) : null,
-              }
-            },
-            arrayFilters: [
-              {
-                "oneVersiyon.versiyon": selectedIsPaketVersiyon
-              },
-              {
-                "oneBaslik._id": new ObjectId(selectedIsPaketBaslik._id)
-              }
-            ]
+            update: { $pull: { isPaketler: { _id: new ObjectId(selectedIsPaket._id) } } }
           }
         }
         bulkArray = [...bulkArray, oneBulk]
-
       })
+
+
+      dugumler.filter(x => x.newSelectedValue).map(oneDugum => {
+        oneBulk = {
+          updateOne: {
+            filter: { _id: oneDugum._id },
+            update: { $addToSet: { isPaketler: { _id: new ObjectId(selectedIsPaket._id) } } }
+          }
+        }
+        bulkArray = [...bulkArray, oneBulk]
+      })
+
 
       await Dugum.bulkWrite(
         bulkArray,

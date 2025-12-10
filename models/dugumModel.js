@@ -116,6 +116,7 @@ const dugumSchema = new Schema(
     isDeleted: Boolean,
     hazirlananMetrajlar: [hazirlananMetrajSchema],
     revizeMetrajlar: [revizeMetrajSchema],
+    isPaketler: Array,
     metrajVersiyonlar: Array,
     isPaketVersiyonlar: [isPaketVersiyonSchema]
   },
