@@ -3379,9 +3379,7 @@ const createIsPaket = async (req, res) => {
       _id: new ObjectId(),
       name: isPaketName,
       isActive: true,
-      aciklama,
-      createdAt: currentTime,
-      createdBy: userEmail
+      aciklama
     }
 
 
