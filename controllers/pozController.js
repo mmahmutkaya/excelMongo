@@ -660,9 +660,9 @@ const updateBirimFiyatlar = async (req, res) => {
 
 
 
-const isPaketleriPozMetrajlarByVersiyon = async (req, res) => {
+const pozMetrajlarIsPaketByVersiyon = async (req, res) => {
 
-  const hataBase = "BACKEND - (isPaketleriPozMetrajlarByVersiyon) - "
+  const hataBase = "BACKEND - (pozMetrajlarIsPaketByVersiyon) - "
 
   try {
 
@@ -826,7 +826,7 @@ const isPaketleriPozMetrajlarByVersiyon = async (req, res) => {
       throw new Error("tryCatch -1- " + error);
     }
 
-    return res.status(200).json({ isPaketleriPozMetrajlarByVersiyon: pozlar })
+    return res.status(200).json({ pozMetrajlarIsPaketByVersiyon: pozlar })
 
 
     // let anySelectable
@@ -862,5 +862,5 @@ module.exports = {
   createPoz,
   getPozlar,
   updateBirimFiyatlar,
-  isPaketleriPozMetrajlarByVersiyon
+  pozMetrajlarIsPaketByVersiyon
 }
