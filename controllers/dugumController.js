@@ -2797,96 +2797,96 @@ const update_hazirlananMetrajlar_unReady = async (req, res) => {
 
 
 
-const update_isPaketleri = async (req, res) => {
+// const update_isPaketleri = async (req, res) => {
 
-  const hataBase = "BACKEND - (update_isPaketleri) - "
+//   const hataBase = "BACKEND - (update_isPaketleri) - "
 
-  try {
+//   try {
 
-    const {
-      email: userEmail,
-      isim: userIsim,
-      soyisim: userSoyisim
-    } = JSON.parse(req.user)
+//     const {
+//       email: userEmail,
+//       isim: userIsim,
+//       soyisim: userSoyisim
+//     } = JSON.parse(req.user)
 
-    let {
-      selectedIsPaket,
-      dugumler
-    } = req.body
+//     let {
+//       selectedIsPaket,
+//       dugumler
+//     } = req.body
 
-    if (!dugumler || dugumler.length === 0) {
-      throw new Error("'dugumler' verisi db sorgusuna gelmedi");
-    }
-
-
-
-    try {
-
-      let bulkArray = []
-
-      // dugumler.map(oneDugum => {
-      //   oneBulk = {
-      //     updateOne: {
-      //       filter: { _id: oneDugum._id },
-      //       update: {
-      //         $set: {
-      //           "isPaketVersiyonlar.$[oneVersiyon].basliklar.$[oneBaslik]._paketId": oneDugum.newSelectedValue ? new ObjectId(selectedIsPaket._id) : null,
-      //         }
-      //       },
-      //       arrayFilters: [
-      //         {
-      //           "oneVersiyon.versiyon": selectedIsPaketVersiyon
-      //         },
-      //         {
-      //           "oneBaslik._id": new ObjectId(selectedIsPaketBaslik._id)
-      //         }
-      //       ]
-      //     }
-      //   }
-      //   bulkArray = [...bulkArray, oneBulk]
-      // })
+//     if (!dugumler || dugumler.length === 0) {
+//       throw new Error("'dugumler' verisi db sorgusuna gelmedi");
+//     }
 
 
-      dugumler.filter(x => !x.newSelectedValue).map(oneDugum => {
-        oneBulk = {
-          updateOne: {
-            filter: { _id: oneDugum._id },
-            update: { $pull: { isPaketler: { _id: new ObjectId(selectedIsPaket._id) } } }
-          }
-        }
-        bulkArray = [...bulkArray, oneBulk]
-      })
+
+//     try {
+
+//       let bulkArray = []
+
+//       // dugumler.map(oneDugum => {
+//       //   oneBulk = {
+//       //     updateOne: {
+//       //       filter: { _id: oneDugum._id },
+//       //       update: {
+//       //         $set: {
+//       //           "isPaketVersiyonlar.$[oneVersiyon].basliklar.$[oneBaslik]._paketId": oneDugum.newSelectedValue ? new ObjectId(selectedIsPaket._id) : null,
+//       //         }
+//       //       },
+//       //       arrayFilters: [
+//       //         {
+//       //           "oneVersiyon.versiyon": selectedIsPaketVersiyon
+//       //         },
+//       //         {
+//       //           "oneBaslik._id": new ObjectId(selectedIsPaketBaslik._id)
+//       //         }
+//       //       ]
+//       //     }
+//       //   }
+//       //   bulkArray = [...bulkArray, oneBulk]
+//       // })
 
 
-      dugumler.filter(x => x.newSelectedValue).map(oneDugum => {
-        oneBulk = {
-          updateOne: {
-            filter: { _id: oneDugum._id },
-            update: { $addToSet: { isPaketler: { _id: new ObjectId(selectedIsPaket._id) } } }
-          }
-        }
-        bulkArray = [...bulkArray, oneBulk]
-      })
+//       dugumler.filter(x => !x.newSelectedValue).map(oneDugum => {
+//         oneBulk = {
+//           updateOne: {
+//             filter: { _id: oneDugum._id },
+//             update: { $pull: { isPaketler: { _id: new ObjectId(selectedIsPaket._id) } } }
+//           }
+//         }
+//         bulkArray = [...bulkArray, oneBulk]
+//       })
 
 
-      await Dugum.bulkWrite(
-        bulkArray,
-        { ordered: false }
-      )
+//       dugumler.filter(x => x.newSelectedValue).map(oneDugum => {
+//         oneBulk = {
+//           updateOne: {
+//             filter: { _id: oneDugum._id },
+//             update: { $addToSet: { isPaketler: { _id: new ObjectId(selectedIsPaket._id) } } }
+//           }
+//         }
+//         bulkArray = [...bulkArray, oneBulk]
+//       })
 
 
-    } catch (error) {
-      throw new Error("tryCatch -1- " + error);
-    }
+//       await Dugum.bulkWrite(
+//         bulkArray,
+//         { ordered: false }
+//       )
 
 
-    return res.status(200).json({ ok: true })
+//     } catch (error) {
+//       throw new Error("tryCatch -1- " + error);
+//     }
 
-  } catch (error) {
-    return res.status(400).json({ error: hataBase + error })
-  }
 
-}
+//     return res.status(200).json({ ok: true })
+
+//   } catch (error) {
+//     return res.status(400).json({ error: hataBase + error })
+//   }
+
+// }
 
 
 
@@ -2935,6 +2935,5 @@ module.exports = {
   update_hazirlananMetrajlar_selected,
   update_hazirlananMetrajlar_selectedFull,
   update_hazirlananMetrajlar_unReady,
-  update_hazirlananMetrajlar_seen,
-  update_isPaketleri
+  update_hazirlananMetrajlar_seen
 }

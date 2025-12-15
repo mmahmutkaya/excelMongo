@@ -15,8 +15,7 @@ const {
   update_hazirlananMetrajlar_seen,
   update_hazirlananMetrajlar_selected,
   update_hazirlananMetrajlar_selectedFull,
-  update_hazirlananMetrajlar_unReady,
-  update_isPaketleri
+  update_hazirlananMetrajlar_unReady
 } = require('../controllers/dugumController')
 
 const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
@@ -49,10 +48,6 @@ router.post('/updatehazirlananmetrajlarseen', update_hazirlananMetrajlar_seen)
 router.post('/updatehazirlananmetrajlarselected', update_hazirlananMetrajlar_selected)
 router.post('/updatehazirlananmetrajlarselectedfull', update_hazirlananMetrajlar_selectedFull)
 router.post('/updatehazirlananmetrajlarunready', update_hazirlananMetrajlar_unReady)
-
-router.post('/ispaketleri', update_isPaketleri)
-
-
 
 
 // // // POST a new firma

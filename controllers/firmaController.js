@@ -27,7 +27,7 @@ const createFirma = async (req, res) => {
     const { firmaName } = req.body
 
 
-    if (typeof firmaName != "string" && !errorObject.firmaNameError) {
+    if (typeof firmaName != "string") {
       throw new Error("DB ye gönderilen sorguda 'firmaName' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
