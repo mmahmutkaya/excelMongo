@@ -2797,9 +2797,9 @@ const update_hazirlananMetrajlar_unReady = async (req, res) => {
 
 
 
-// const update_isPaketleri = async (req, res) => {
+// const update_ispaketler = async (req, res) => {
 
-//   const hataBase = "BACKEND - (update_isPaketleri) - "
+//   const hataBase = "BACKEND - (update_ispaketler) - "
 
 //   try {
 

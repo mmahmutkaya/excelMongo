@@ -807,7 +807,7 @@ const pozMetrajlarIsPaketByVersiyon = async (req, res) => {
         // return res.status(200).json({ array2 })
 
         // oneVersiyon?.basliklar.map(oneBaslik => {
-        //   oneBaslik.isPaketleri.map(onePaket => {
+        //   oneBaslik.ispaketler.map(onePaket => {
         //     let paketMetrajlar = isPaketMetrajlar_byPoz.filter(oneVersiyon3 => oneVersiyon3.basliklar.find(oneBaslik3 => oneBaslik3._paketId?.toString() === onePaket._id.toString()))
         //     if (paketMetrajlar.length > 0) {
         //       let paketMetraj = paketMetrajlar.reduce((acc, onePaket) => acc + onePaket.metrajVersiyonlar[0].metrajOnaylanan, 0)
