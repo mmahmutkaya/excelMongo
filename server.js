@@ -10,7 +10,7 @@ const projeRoutes = require('./routes/projeler')
 const mahalRoutes = require('./routes/mahaller')
 const dugumRoutes = require('./routes/dugumler')
 const versiyonRoutes = require('./routes/versiyon')
-const isPaketRoutes = require('./routes/ispaketler')
+
 
 
 
@@ -34,7 +34,7 @@ app.use('/api/projeler', projeRoutes)
 app.use('/api/mahaller', mahalRoutes)
 app.use('/api/dugumler', dugumRoutes)
 app.use('/api/versiyon', versiyonRoutes)
-app.use('/api/ispaketler', isPaketRoutes)
+
 
 
 // mongoose.set('strictQuery', true)

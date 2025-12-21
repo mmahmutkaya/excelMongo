@@ -91,56 +91,56 @@ const createDugum = async (req, res) => {
 
 
 
-    try {
+    // try {
 
-      //   // BUNA GEREK KALMADI ÇÜNKÜ MONGOOSE dugumModel de yazdığı için hazirlananMetraj vb. ekliyor ilk oluşturmada fakat isPaketVerisyonlar projeden geldiği için eklenmeli
-      //   // const bulkArray2 = mahaller.map(oneMahal => {
-      //   //   return (
-      //   //     {
-      //   //       updateOne: {
-      //   //         filter: { _projeId, _mahalId: oneMahal._id, _pozId, hazirlananMetrajlar: { $exists: false } },
-      //   //         update: { $set: { hazirlananMetrajlar: [], revizeMetrajlar: [], metrajVersiyonlar: [], isPaketVersiyonlar } },
-      //   //       }
-      //   //     }
-      //   //   )
-      //   // })
-
-
-      // BURADA YENİ OLUŞAN DUGUMLERİN İÇERİKLERİ GÜNCELLENİYOR
-      const bulkArray2 = mahaller.map(oneMahal => {
-        return (
-          {
-            updateOne: {
-              filter: { _projeId, _mahalId: oneMahal._id, _pozId, isPaketVersiyonlar: [] },
-              update: {
-                $set: {
-                  isPaketVersiyonlar: [
-                    {
-                      versiyon: 0,
-                      isPaketler: []
-                    }
-                  ],
-                  metrajVersiyonlar: [
-                    {
-                      "versiyonNumber": 0
-                    }
-                  ]
-                }
-              },
-            }
-          }
-        )
-      })
+    //   //   // BUNA GEREK KALMADI ÇÜNKÜ MONGOOSE dugumModel de yazdığı için hazirlananMetraj vb. ekliyor ilk oluşturmada fakat isPaketVerisyonlar projeden geldiği için eklenmeli
+    //   //   // const bulkArray2 = mahaller.map(oneMahal => {
+    //   //   //   return (
+    //   //   //     {
+    //   //   //       updateOne: {
+    //   //   //         filter: { _projeId, _mahalId: oneMahal._id, _pozId, hazirlananMetrajlar: { $exists: false } },
+    //   //   //         update: { $set: { hazirlananMetrajlar: [], revizeMetrajlar: [], metrajVersiyonlar: [], isPaketVersiyonlar } },
+    //   //   //       }
+    //   //   //     }
+    //   //   //   )
+    //   //   // })
 
 
-      await Dugum.bulkWrite(
-        bulkArray2,
-        { ordered: false }
-      )
+    //   // BURADA YENİ OLUŞAN DUGUMLERİN İÇERİKLERİ GÜNCELLENİYOR
+    //   const bulkArray2 = mahaller.map(oneMahal => {
+    //     return (
+    //       {
+    //         updateOne: {
+    //           filter: { _projeId, _mahalId: oneMahal._id, _pozId, isPaketler: [] },
+    //           update: {
+    //             $set: {
+    //               isPaketVersiyonlar: [
+    //                 {
+    //                   versiyon: 0,
+    //                   isPaketler: []
+    //                 }
+    //               ],
+    //               metrajVersiyonlar: [
+    //                 {
+    //                   "versiyonNumber": 0
+    //                 }
+    //               ]
+    //             }
+    //           },
+    //         }
+    //       }
+    //     )
+    //   })
 
-    } catch (error) {
-      throw new Error(" (try_catch_B) " + error);
-    }
+
+    //   await Dugum.bulkWrite(
+    //     bulkArray2,
+    //     { ordered: false }
+    //   )
+
+    // } catch (error) {
+    //   throw new Error(" (try_catch_B) " + error);
+    // }
 
     return res.status(200).json({ ok: true })
 
