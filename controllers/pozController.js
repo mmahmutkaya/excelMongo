@@ -585,7 +585,7 @@ const updateBirimFiyatlar = async (req, res) => {
       soyisim: userSoyisim
     } = JSON.parse(req.user)
 
-    let { pozlar_newPara, paraBirimleri, projeId } = req.body
+    let { pozlar_newPara, paraBirimleri, projeId, isParaBirimiNewVersiyonProgress } = req.body
 
     if (!pozlar_newPara) {
       throw new Error("'pozlar_newPara' verisi db sorgusuna gelmedi");
@@ -628,6 +628,14 @@ const updateBirimFiyatlar = async (req, res) => {
 
     } catch (error) {
       throw new Error("tryCatch -1- " + error)
+    }
+
+
+
+    let theProje
+    if (isParaBirimiNewVersiyonProgress) {
+      theProje = await Proje.findOne({ _id: projeId })
+      
     }
 
 
