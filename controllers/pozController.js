@@ -10,8 +10,6 @@ var ObjectId = require('mongodb').ObjectId;
 
 
 
-
-
 const createPoz = async (req, res) => {
 
   const hataBase = "BACKEND - (createPoz) - "
@@ -192,8 +190,9 @@ const getPozlar = async (req, res) => {
     }
 
 
-
     const proje = await Proje.findOne({ _id: _projeId })
+
+    let birimFiyatVersiyon = proje.birimfiyatVersiyonlar.reduce((acc, cur) => cur.versiyonNumber > acc.versiyonNumber ? cur : acc, { versiyonNumber: 0 })
 
     let pozlar
 
@@ -213,7 +212,24 @@ const getPozlar = async (req, res) => {
             pozName: 1,
             pozBirimId: 1,
             pozMetrajTipId: 1,
-            birimFiyatlar: 1
+            birimfiyatVersiyonlar: {
+              $reduce: {
+                "input": "$birimfiyatVersiyonlar",
+                "initialValue": { "versiyonNumber": 0 },
+                "in": {
+                  "$cond": {
+                    "if": {
+                      $gt: [
+                        "$$this.versiyonNumber",
+                        "$$value.versiyonNumber"
+                      ]
+                    },
+                    "then": "$$this",
+                    "else": "$$value"
+                  }
+                }
+              }
+            }
           }
         }
       ])
@@ -635,7 +651,7 @@ const updateBirimFiyatlar = async (req, res) => {
     let theProje
     if (isParaBirimiNewVersiyonProgress) {
       theProje = await Proje.findOne({ _id: projeId })
-      
+
     }
 
 
