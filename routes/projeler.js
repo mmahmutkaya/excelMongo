@@ -20,7 +20,9 @@ const {
   moveLbsDown,
   moveLbsLeft,
   moveLbsRight,
-  createIsPaket
+  createIsPaket,
+  requestProjeAktifYetkiliKisi,
+  deleteProjeAktifYetkiliKisi
 } = require('../controllers/projeController')
 
 const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
@@ -49,8 +51,6 @@ router.post('/movewbsleft', moveWbsLeft)
 router.post('/movewbsright', moveWbsRight)
 
 
-
-
 // LBS
 router.post('/createlbs', createLbs)
 router.post('/updatelbs', updateLbs)
@@ -62,10 +62,13 @@ router.post('/movelbsleft', moveLbsLeft)
 router.post('/movelbsright', moveLbsRight)
 
 
-
-// LBS
-// router.post('/createispaketbaslik', createIsPaketBaslik)
+//
 router.post('/createispaket', createIsPaket)
+
+
+// 
+router.post('/requestprojeaktifyetkilikisi', requestProjeAktifYetkiliKisi)
+router.post('/deleteprojeaktifyetkilikisi', deleteProjeAktifYetkiliKisi)
 
 
 module.exports = router

@@ -3417,6 +3417,159 @@ const createIsPaket = async (req, res) => {
 
 
 
+
+
+const requestProjeAktifYetkiliKisi = async (req, res) => {
+
+  const hataBase = "BACKEND - (requestProjeAktifYetkiliKisi) - "
+
+  try {
+
+    const currentTime = Date.now()
+
+    const {
+      email: userEmail,
+      isim: userIsim,
+      soyisim: userSoyisim,
+      userCode
+    } = JSON.parse(req.user)
+
+
+    let { projeId, arananYetkiler, aktifYetki } = req.body
+
+    if (!projeId) {
+      throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!arananYetkiler) {
+      throw new Error("Sorguya 'arananYetkiler' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!aktifYetki) {
+      throw new Error("Sorguya 'aktifYetki' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    let theProje = await Proje.findOne({ _id: projeId })
+    if (!theProje) {
+      throw new Error("sorguya gönderilen 'collectionId' ile sistemde 'document' bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    let hasYetki
+    arananYetkiler.map(oneAranan => {
+      theProje.yetkiliKisiler.find(x => x.email === userEmail)?.yetkiler?.map(oneYetki => {
+        if (oneYetki.name === oneAranan) {
+          hasYetki = true
+        }
+      })
+    })
+    if (!hasYetki) {
+      throw new Error("Bu işlem için yetkiniz yok görünüyor, Rapor7/24 ile iletişime geçebilirsiniz.")
+    }
+
+
+    let aktifYetkili = theProje.aktifYetkiliKisiler.find(x => x.yetki === aktifYetki)
+
+    if (aktifYetkili) {
+
+      if (aktifYetkili.email === userEmail) {
+        return res.status(200).json({ ok: true })
+      } else {
+        
+      }
+
+      return res.status(200).json({ message: `${aktifYetkili.email} adlı mail adresine sahip kullanıcı şu anda kayıt işlemi yapıyor, daha sonra tekrar deneyiniz, Rapor7/24 ile iletişime geçebilirsiniz.` })
+
+    } else {
+
+      try {
+
+        await Proje.updateOne(
+          { _id: projeId },
+          { $push: { 'aktifYetkiliKisiler': { yetki: aktifYetki, email: userEmail, createdTime: currentTime } } }
+        );
+
+        return res.status(200).json({ ok: true })
+
+      } catch (error) {
+        throw new Error("tryCatch -1- " + error);
+      }
+    }
+
+  } catch (error) {
+    return res.status(400).json({ error: hataBase + error })
+  }
+
+}
+
+
+
+const deleteProjeAktifYetkiliKisi = async (req, res) => {
+
+  const hataBase = "BACKEND - (deleteProjeAktifYetkiliKisi) - "
+
+  try {
+
+    const {
+      email: userEmail,
+      isim: userIsim,
+      soyisim: userSoyisim,
+      userCode
+    } = JSON.parse(req.user)
+
+
+    let { projeId, arananYetkiler, aktifYetki } = req.body
+
+    if (!projeId) {
+      throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!arananYetkiler) {
+      throw new Error("Sorguya 'arananYetkiler' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!aktifYetki) {
+      throw new Error("Sorguya 'aktifYetki' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    let theProje = await Proje.findOne({ _id: projeId })
+    if (!theProje) {
+      throw new Error("sorguya gönderilen 'collectionId' ile sistemde 'document' bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    let hasYetki
+    arananYetkiler.map(oneAranan => {
+      theProje.yetkiliKisiler.find(x => x.email === userEmail)?.yetkiler?.map(oneYetki => {
+        if (oneYetki.name === oneAranan) {
+          hasYetki = true
+        }
+      })
+    })
+    if (!hasYetki) {
+      throw new Error("Bu işlem için yetkiniz yok görünüyor, Rapor7/24 ile iletişime geçebilirsiniz.")
+    }
+
+    try {
+
+      await Proje.updateOne(
+        { _id: projeId },
+        { $pull: { 'aktifYetkiliKisiler': { yetki: aktifYetki } } }
+      );
+
+      return res.status(200).json({ ok: true })
+
+    } catch (error) {
+      throw new Error("tryCatch -1- " + error);
+    }
+
+  } catch (error) {
+    return res.status(400).json({ error: hataBase + error })
+  }
+
+}
+
+
+
+
 module.exports = {
   getProjeler_byFirma,
   getProje,
@@ -3437,5 +3590,7 @@ module.exports = {
   moveLbsDown,
   moveLbsLeft,
   moveLbsRight,
-  createIsPaket
+  createIsPaket,
+  requestProjeAktifYetkiliKisi,
+  deleteProjeAktifYetkiliKisi
 }

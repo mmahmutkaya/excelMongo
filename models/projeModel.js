@@ -32,6 +32,7 @@ const projeSchema = new Schema(
     pozMetrajTipleri: Array,
     pozBirimleri: Array,
     yetkiliKisiler: Array,
+    aktifYetkiliKisiler:Array,
     yetkiliFirmalar: Array,
     metrajVersiyonlar: Array,
     birimfiyatVersiyonlar: Array,
