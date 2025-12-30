@@ -176,7 +176,8 @@ const getPozlar = async (req, res) => {
       soyisim: userSoyisim
     } = JSON.parse(req.user)
 
-    const { projeid } = req.headers
+    const { projeid, selectedbirimfiyatversiyon } = req.headers
+
 
     if (!projeid) {
       throw new Error("DB ye gönderilen sorguda 'projeid' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
@@ -192,7 +193,14 @@ const getPozlar = async (req, res) => {
 
     const proje = await Proje.findOne({ _id: _projeId })
 
-    let birimFiyatVersiyon = proje.birimfiyatVersiyonlar.reduce((acc, cur) => cur.versiyonNumber > acc.versiyonNumber ? cur : acc, { versiyonNumber: 0 })
+    let selectedBirimFiyatVersiyon
+    if(selectedbirimfiyatversiyon === "undefined") {
+      selectedBirimFiyatVersiyon = proje.birimfiyatVersiyonlar.reduce((acc, cur) => cur.versiyonNumber > acc.versiyonNumber ? cur : acc, { versiyonNumber: 0 }).versiyonNumber
+    } else {
+      selectedBirimFiyatVersiyon = Number(selectedbirimfiyatversiyon)
+    }
+    // return res.status(200).json({ selectedBirimFiyatVersiyon })
+
 
     let pozlar
 
@@ -219,9 +227,9 @@ const getPozlar = async (req, res) => {
                 "in": {
                   "$cond": {
                     "if": {
-                      $gt: [
+                      $eq: [
                         "$$this.versiyonNumber",
-                        "$$value.versiyonNumber"
+                        selectedBirimFiyatVersiyon
                       ]
                     },
                     "then": "$$this",
@@ -651,7 +659,6 @@ const updateBirimFiyatlar = async (req, res) => {
     let theProje
     if (isParaBirimiNewVersiyonProgress) {
       theProje = await Proje.findOne({ _id: projeId })
-
     }
 
 
