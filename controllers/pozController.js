@@ -176,7 +176,7 @@ const getPozlar = async (req, res) => {
       soyisim: userSoyisim
     } = JSON.parse(req.user)
 
-    const { projeid, selectedbirimfiyatversiyon } = req.headers
+    const { projeid, selectedbirimfiyatversiyonnumber } = req.headers
 
 
     if (!projeid) {
@@ -190,16 +190,17 @@ const getPozlar = async (req, res) => {
       throw new Error("DB ye gönderilen 'projeid' verisi geçerli bir BSON ObjectId verisine dönüşemedi, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-
     const proje = await Proje.findOne({ _id: _projeId })
-
-    let selectedBirimFiyatVersiyon
-    if(selectedbirimfiyatversiyon === "undefined") {
-      selectedBirimFiyatVersiyon = proje.birimfiyatVersiyonlar.reduce((acc, cur) => cur.versiyonNumber > acc.versiyonNumber ? cur : acc, { versiyonNumber: 0 }).versiyonNumber
-    } else {
-      selectedBirimFiyatVersiyon = Number(selectedbirimfiyatversiyon)
+    if (!proje) {
+      throw new Error("DB ye gönderilen 'projeid' sistemde bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
-    // return res.status(200).json({ selectedBirimFiyatVersiyon })
+
+
+    // sorguya gelen bir birim fiyat versiyon varsa o aranıyor, yoksa en yükseği seçiliyor ve aranıyor
+    let selectedBirimFiyatVersiyon = proje.birimFiyatVersiyonlar.find(x => x.versiyonNumber === Number(selectedbirimfiyatversiyonnumber))
+    if (!selectedBirimFiyatVersiyon) {
+      selectedBirimFiyatVersiyon = proje.birimFiyatVersiyonlar.reduce((acc, cur) => cur.versiyonNumber > acc.versiyonNumber ? cur : acc, { versiyonNumber: 0 })
+    }
 
 
     let pozlar
@@ -220,16 +221,17 @@ const getPozlar = async (req, res) => {
             pozName: 1,
             pozBirimId: 1,
             pozMetrajTipId: 1,
-            birimfiyatVersiyonlar: {
+            birimFiyatlar: 1,
+            birimFiyatVersiyonlar: {
               $reduce: {
-                "input": "$birimfiyatVersiyonlar",
-                "initialValue": { "versiyonNumber": 0 },
+                "input": "$birimFiyatVersiyonlar",
+                "initialValue": { "versiyonNumber": 0, birimFiyatlar: [] },
                 "in": {
                   "$cond": {
                     "if": {
                       $eq: [
                         "$$this.versiyonNumber",
-                        selectedBirimFiyatVersiyon
+                        selectedBirimFiyatVersiyon?.versiyonNumber
                       ]
                     },
                     "then": "$$this",
@@ -583,7 +585,9 @@ const getPozlar = async (req, res) => {
       throw new Error("tryCatch -2- " + error);
     }
 
-    return res.status(200).json({ pozlar, anySelectable })
+    let { paraBirimleri, birimFiyatVersiyonlar } = proje
+
+    return res.status(200).json({ pozlar, anySelectable, selectedBirimFiyatVersiyon, paraBirimleri, birimFiyatVersiyonlar })
 
   } catch (error) {
     return res.status(400).json({ hatayeri: hataBase, error: hataBase + error })
@@ -609,43 +613,38 @@ const updateBirimFiyatlar = async (req, res) => {
       soyisim: userSoyisim
     } = JSON.parse(req.user)
 
-    let { pozlar_newPara, paraBirimleri, projeId, isParaBirimiNewVersiyonProgress } = req.body
+
+    let { projeId, pozlar_newPara, paraBirimleri, wasChangedForNewVersion } = req.body
+
 
     if (!pozlar_newPara) {
       throw new Error("'pozlar_newPara' verisi db sorgusuna gelmedi");
     }
 
+
     if (paraBirimleri && !projeId) {
       throw new Error("Proje para birimlerinde aktif edilecekler var fakat 'projeId' db sorgusuna gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile iletişime geçiniz.");
     }
 
-    const currentTime = new Date();
+
+    const currentTime = new Date()
 
 
     try {
 
-      let bulkArray = []
-
-      pozlar_newPara.map(onePoz => {
-
-        oneBulk = {
-          updateOne: {
-            filter: { _id: onePoz._id },
-            update: {
-              $set: {
-                "birimFiyatlar": onePoz.birimFiyatlar,
-              }
-            },
+      const bulkArray1 = pozlar_newPara.map(onePoz => {
+        return (
+          {
+            updateOne: {
+              filter: { _id: onePoz._id },
+              update: { $set: { birimFiyatlar: onePoz.birimFiyatlar } }
+            }
           }
-        }
-
-        bulkArray = [...bulkArray, oneBulk]
-
+        )
       })
 
-
       await Poz.bulkWrite(
-        bulkArray,
+        bulkArray1,
         { ordered: false }
       )
 
@@ -655,23 +654,37 @@ const updateBirimFiyatlar = async (req, res) => {
     }
 
 
-
-    let theProje
-    if (isParaBirimiNewVersiyonProgress) {
-      theProje = await Proje.findOne({ _id: projeId })
-    }
-
-
-
     try {
 
-      if (paraBirimleri) {
-
+      if (paraBirimleri && !wasChangedForNewVersion) {
+        console.log("parabirimleri ve waschanged")
         await Proje.updateOne({ _id: projeId },
-          { $set: { paraBirimleri } }
+          {
+            $set: { paraBirimleri },
+            $addToSet: { birimFiyatVersiyonlar: { wasChangedForNewVersion: true } }
+          }
         )
-
       }
+
+      if (paraBirimleri && wasChangedForNewVersion) {
+        console.log("parabirimleri")
+        await Proje.updateOne({ _id: projeId },
+          {
+            $set: { paraBirimleri }
+          }
+        )
+      }
+
+
+      if (!paraBirimleri && !wasChangedForNewVersion) {
+        console.log("waschanged")
+        await Proje.updateOne({ _id: projeId },
+          {
+            $addToSet: { birimFiyatVersiyonlar: { wasChangedForNewVersion: true } }
+          }
+        )
+      }
+
 
     } catch (error) {
       throw new Error("tryCatch -2- " + error)

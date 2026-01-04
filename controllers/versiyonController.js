@@ -204,77 +204,26 @@ const createVersiyon_birimFiyat = async (req, res) => {
       throw new Error("DB ye gönderilen 'projeId' verisi geçerli bir BSON ObjectId verisine dönüşemedi, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-
-    let proje = await Proje.findOne({ _id: _projeId })
-    if (!proje) {
-      throw new Error("'projeId' verisi db sorgusuna gelmedi");
-    }
-    const { birimfiyatVersiyonlar } = proje
-
-
-    // aşağıda else kısmında değişebiliyor
-    let versiyonNumber = 1
-
-    try {
-
-
-      if (!birimfiyatVersiyonlar.length === 0) {
-
-        Proje.updateOne({ _id: _projeId }, [
-          {
-            $set: {
-              birimfiyatVersiyonlar: [{ versiyonNumber, createdAt: currentTime }]
-            }
-          }
-        ])
-
-      } else {
-
-        birimfiyatVersiyonlar.map(oneVersiyon => {
-          if (oneVersiyon.versiyonNumber >= versiyonNumber) {
-            versiyonNumber = oneVersiyon.versiyonNumber + 1
-          }
-        })
-
-        await Proje.updateOne({ _id: _projeId }, [
-          {
-            $set: {
-              birimfiyatVersiyonlar: {
-                $concatArrays: [
-                  "$birimfiyatVersiyonlar",
-                  [{ versiyonNumber, createdAt: currentTime }]
-                ]
-              }
-            }
-          }
-        ])
-
-      }
-
-
-
-    } catch (error) {
-      throw new Error("tryCatch -1- " + error);
-    }
-
-    try {
-
-      await Poz.updateMany({ _projeId }, [
-        {
-          $set: {
-            birimfiyatVersiyonlar: { $concatArrays: ["$birimfiyatVersiyonlar", [{ versiyonNumber, birimFiyatlar: "$birimFiyatlar" }]] }
-          }
+    await Dugum.updateOne(
+      { _id: _dugumId },
+      {
+        $set: {
+          "birimFiyatVersiyonlar.$[oneVersiyon].createdAt": currentTime
+        },
+        $unset: {
+          "birimFiyatVersiyonlar.$[oneVersiyon].isProgress": "",
         }
-      ])
+      },
+      {
+        arrayFilters: [
+          {
+            "oneVersiyon.versiyoNumber": selectedBirimFiyatVersiyon.versiyonNumber
+          }
+        ]
+      }
+    )
 
-
-    } catch (error) {
-      throw new Error("tryCatch -2- " + error);
-    }
-
-    await proje.birimfiyatVersiyonlar.push({ versiyonNumber, createdAt: currentTime })
-
-    return res.status(200).json({ proje })
+    return res.status(200).json({ ok: true })
 
   } catch (error) {
     return res.status(400).json({ error: hataBase + error })

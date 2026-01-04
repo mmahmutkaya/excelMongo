@@ -22,7 +22,7 @@ const {
   moveLbsRight,
   createIsPaket,
   requestProjeAktifYetkiliKisi,
-  deleteProjeAktifYetkiliKisi
+  // deleteProjeAktifYetkiliKisi
 } = require('../controllers/projeController')
 
 const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
@@ -68,7 +68,7 @@ router.post('/createispaket', createIsPaket)
 
 // 
 router.post('/requestprojeaktifyetkilikisi', requestProjeAktifYetkiliKisi)
-router.post('/deleteprojeaktifyetkilikisi', deleteProjeAktifYetkiliKisi)
+// router.post('/deleteprojeaktifyetkilikisi', deleteProjeAktifYetkiliKisi)
 
 
 module.exports = router
