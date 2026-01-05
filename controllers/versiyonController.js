@@ -204,7 +204,7 @@ const createVersiyon_birimFiyat = async (req, res) => {
       throw new Error("DB ye gönderilen 'projeId' verisi geçerli bir BSON ObjectId verisine dönüşemedi, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    await Dugum.updateOne(
+    await Poz.updateOne(
       { _id: _dugumId },
       {
         $set: {
