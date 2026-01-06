@@ -2,7 +2,7 @@ const Dugum = require('../models/dugumModel')
 const Proje = require('../models/projeModel')
 const Poz = require('../models/pozModel')
 const Mahal = require('../models/mahalModel')
-
+const _ = require('lodash');
 
 const mongoose = require('mongoose')
 var ObjectId = require('mongodb').ObjectId;
@@ -36,6 +36,8 @@ const createVersiyon_metraj = async (req, res) => {
     } catch (error) {
       throw new Error("DB ye gönderilen 'projeId' verisi geçerli bir BSON ObjectId verisine dönüşemedi, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
+
+
 
 
     let proje = await Proje.findOne({ _id: _projeId })
@@ -195,7 +197,7 @@ const createVersiyon_birimFiyat = async (req, res) => {
       userCode
     } = JSON.parse(req.user)
 
-    const { projeId } = req.body
+    const { projeId, pozlar_birimFiyat, versiyonNumber } = req.body
 
     let _projeId
     try {
@@ -204,24 +206,79 @@ const createVersiyon_birimFiyat = async (req, res) => {
       throw new Error("DB ye gönderilen 'projeId' verisi geçerli bir BSON ObjectId verisine dönüşemedi, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    await Poz.updateOne(
-      { _id: _dugumId },
-      {
-        $set: {
-          "birimFiyatVersiyonlar.$[oneVersiyon].createdAt": currentTime
-        },
-        $unset: {
-          "birimFiyatVersiyonlar.$[oneVersiyon].isProgress": "",
-        }
-      },
-      {
-        arrayFilters: [
-          {
-            "oneVersiyon.versiyoNumber": selectedBirimFiyatVersiyon.versiyonNumber
+    if (!pozlar_birimFiyat.length > 0) {
+      throw new Error("'pozlar_birimFiyat' verisi db sorgusuna gelmedi");
+    }
+
+    if (!versiyonNumber) {
+      throw new Error("'versiyonNumber' verisi db sorgusuna gelmedi");
+    }
+
+    try {
+
+      const bulkArray1 = pozlar_birimFiyat.map(onePoz => {
+
+        let birimFiyatlar_saveAs_versiyon = _.cloneDeep(onePoz.birimFiyatlar.filter(oneFiyat => {
+          if (!oneFiyat.isProgress && Number(oneFiyat.fiyat) === 0) {
+            return false
+          } else {
+            return true
           }
-        ]
-      }
-    )
+        }))
+
+        let birimFiyatlar_noProgress = onePoz.birimFiyatlar.map(oneFiyat => {
+          delete oneFiyat.isProgress
+          return oneFiyat
+        })
+
+        return (
+          {
+            updateOne: {
+              filter: { _id: onePoz._id },
+              update: {
+                $set: { birimFiyatlar: birimFiyatlar_noProgress },
+                $push: { birimFiyatVersiyonlar: { versiyonNumber, birimFiyatlar: birimFiyatlar_saveAs_versiyon } }
+              }
+            }
+          }
+        )
+      })
+
+      await Poz.bulkWrite(
+        bulkArray1,
+        { ordered: false }
+      )
+
+    } catch (error) {
+      throw new Error("tryCatch -1- " + error)
+    }
+
+
+    try {
+
+      await Proje.updateOne({ _id: _projeId }, [
+        {
+          $set: {
+            birimFiyatVersiyonlar: {
+              $concatArrays: [
+                {
+                  $filter: {
+                    input: "$birimFiyatVersiyonlar",
+                    as: "oneVersiyon",
+                    cond: { $ne: ["$$oneVersiyon.wasChangedForNewVersion", true] }
+                  }
+                },
+                [{ versiyonNumber, createdAt: currentTime }]
+              ]
+            }
+          }
+        }
+      ])
+
+    } catch (error) {
+      throw new Error("tryCatch -2- " + error)
+    }
+
 
     return res.status(200).json({ ok: true })
 
@@ -230,8 +287,6 @@ const createVersiyon_birimFiyat = async (req, res) => {
   }
 
 }
-
-
 
 
 
