@@ -23,7 +23,7 @@ app.use(express.json())
 
 
 app.use(cors({
-  origin: 'http://localhost:3000', // Allow requests from your client
+  origin: ['http://localhost:3000','https://rapor724.vercel.app'], // Allow requests from your client
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allow these methods
   allowedHeaders: ['Content-Type', 'Authorization'] // Allow these headers
 }));
