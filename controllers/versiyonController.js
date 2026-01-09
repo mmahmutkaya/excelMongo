@@ -197,7 +197,7 @@ const createVersiyon_birimFiyat = async (req, res) => {
       userCode
     } = JSON.parse(req.user)
 
-    const { projeId, pozlar_birimFiyat, versiyonNumber } = req.body
+    const { projeId, pozlar_birimFiyat, versiyonNumber, aciklama } = req.body
 
     let _projeId
     try {
@@ -214,10 +214,21 @@ const createVersiyon_birimFiyat = async (req, res) => {
       throw new Error("'versiyonNumber' verisi db sorgusuna gelmedi");
     }
 
+    let versiyonKaydiGereklimi
+
     try {
 
       const bulkArray1 = pozlar_birimFiyat.map(onePoz => {
 
+        let birimFiyatlar_noProgress = onePoz.birimFiyatlar.map(oneFiyat => {
+          if (oneFiyat.isProgress) {
+            delete oneFiyat.isProgress
+            versiyonKaydiGereklimi = true
+          }
+          return oneFiyat
+        })
+
+        // bir önceki versiyonda tutarı 0 olup, tutar girilip kaydedildikten sonra tekrar 0 yapılanların yeni versiyonda yeri olmasın 
         let birimFiyatlar_saveAs_versiyon = _.cloneDeep(onePoz.birimFiyatlar.filter(oneFiyat => {
           if (!oneFiyat.isProgress && Number(oneFiyat.fiyat) === 0) {
             return false
@@ -225,11 +236,6 @@ const createVersiyon_birimFiyat = async (req, res) => {
             return true
           }
         }))
-
-        let birimFiyatlar_noProgress = onePoz.birimFiyatlar.map(oneFiyat => {
-          delete oneFiyat.isProgress
-          return oneFiyat
-        })
 
         return (
           {
@@ -244,41 +250,71 @@ const createVersiyon_birimFiyat = async (req, res) => {
         )
       })
 
-      await Poz.bulkWrite(
-        bulkArray1,
-        { ordered: false }
-      )
+      if (versiyonKaydiGereklimi) {
+        await Poz.bulkWrite(
+          bulkArray1,
+          { ordered: false }
+        )
+      }
 
     } catch (error) {
       throw new Error("tryCatch -1- " + error)
     }
 
 
-    try {
 
-      await Proje.updateOne({ _id: _projeId }, [
-        {
-          $set: {
-            birimFiyatVersiyonlar: {
-              $concatArrays: [
-                {
-                  $filter: {
-                    input: "$birimFiyatVersiyonlar",
-                    as: "oneVersiyon",
-                    cond: { $ne: ["$$oneVersiyon.wasChangedForNewVersion", true] }
-                  }
-                },
-                [{ versiyonNumber, createdAt: currentTime }]
-              ]
+    if (versiyonKaydiGereklimi) {
+
+      try {
+
+        await Proje.updateOne({ _id: _projeId }, [
+          {
+            $set: {
+              birimFiyatVersiyonlar: {
+                $concatArrays: [
+                  {
+                    $filter: {
+                      input: "$birimFiyatVersiyonlar",
+                      as: "oneVersiyon",
+                      cond: { $ne: ["$$oneVersiyon.wasChangedForNewVersion", true] }
+                    }
+                  },
+                  [{ versiyonNumber, aciklama, createdAt: currentTime }]
+                ]
+              }
             }
           }
-        }
-      ])
+        ])
 
-    } catch (error) {
-      throw new Error("tryCatch -2- " + error)
+      } catch (error) {
+        throw new Error("tryCatch -2- " + error)
+      }
+
+    } else {
+
+      try {
+
+        await Proje.updateOne({ _id: _projeId }, [
+          {
+            $set: {
+              birimFiyatVersiyonlar: {
+                $filter: {
+                  input: "$birimFiyatVersiyonlar",
+                  as: "oneVersiyon",
+                  cond: { $ne: ["$$oneVersiyon.wasChangedForNewVersion", true] }
+                }
+              }
+            }
+          }
+        ])
+
+        return res.status(200).json({ message: "Son kayıtlı versiyon ile yeni kaydedilmek istenen versiyon arasında herhangi bir fark tespit edilemedi, kayıt işlemi iptal edildi." })
+
+      } catch (error) {
+        throw new Error("tryCatch -3- " + error)
+      }
+
     }
-
 
     return res.status(200).json({ ok: true })
 
