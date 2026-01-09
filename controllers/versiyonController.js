@@ -220,22 +220,24 @@ const createVersiyon_birimFiyat = async (req, res) => {
 
       const bulkArray1 = pozlar_birimFiyat.map(onePoz => {
 
-        let birimFiyatlar_noProgress = onePoz.birimFiyatlar.map(oneFiyat => {
-          if (oneFiyat.isProgress) {
-            delete oneFiyat.isProgress
-            versiyonKaydiGereklimi = true
-          }
-          return oneFiyat
-        })
-
         // bir önceki versiyonda tutarı 0 olup, tutar girilip kaydedildikten sonra tekrar 0 yapılanların yeni versiyonda yeri olmasın 
         let birimFiyatlar_saveAs_versiyon = _.cloneDeep(onePoz.birimFiyatlar.filter(oneFiyat => {
           if (!oneFiyat.isProgress && Number(oneFiyat.fiyat) === 0) {
             return false
           } else {
+            delete oneFiyat.eskiFiyat
             return true
           }
         }))
+
+        let birimFiyatlar_noProgress = onePoz.birimFiyatlar.map(oneFiyat => {
+          if (oneFiyat.isProgress) {
+            delete oneFiyat.isProgress
+            delete oneFiyat.eskiFiyat
+            versiyonKaydiGereklimi = true
+          }
+          return oneFiyat
+        })
 
         return (
           {
