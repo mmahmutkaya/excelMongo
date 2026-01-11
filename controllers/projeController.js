@@ -3435,14 +3435,10 @@ const requestProjeAktifYetkiliKisi = async (req, res) => {
     } = JSON.parse(req.user)
 
 
-    let { projeId, arananYetkiler, aktifYetki } = req.body
+    let { projeId, aktifYetki } = req.body
 
     if (!projeId) {
       throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
-
-    if (!arananYetkiler) {
-      throw new Error("Sorguya 'arananYetkiler' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
     if (!aktifYetki) {
@@ -3454,17 +3450,30 @@ const requestProjeAktifYetkiliKisi = async (req, res) => {
       throw new Error("sorguya gönderilen 'collectionId' ile sistemde 'document' bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
-    let hasYetki
-    arananYetkiler.map(oneAranan => {
-      theProje.yetkiliKisiler.find(x => x.email === userEmail)?.yetkiler?.map(oneYetki => {
-        if (oneYetki.name === oneAranan) {
-          hasYetki = true
-        }
+
+
+
+    // yetki kontrol
+    try {
+
+      let arananYetkiler = [aktifYetki, "owner"]
+
+      let hasYetki
+      arananYetkiler.map(oneAranan => {
+        theProje.yetkiliKisiler.find(x => x.email === userEmail)?.yetkiler?.map(oneYetki => {
+          if (oneYetki.name === oneAranan) {
+            hasYetki = true
+          }
+        })
       })
-    })
-    if (!hasYetki) {
-      throw new Error("Bu işlem için yetkiniz yok görünüyor, Rapor7/24 ile iletişime geçebilirsiniz.")
+      if (!hasYetki) {
+        return res.status(200).json({ message: "Bu işlem için yetkiniz yok görünüyor, Rapor7/24 ile iletişime geçebilirsiniz." })
+      }
+
+    } catch (error) {
+      throw new Error("tryCatch -yetki- " + error)
     }
+
 
 
     let aktifYetkili = theProje.aktifYetkiliKisiler.find(x => x.yetki === aktifYetki)
@@ -3528,69 +3537,50 @@ const requestProjeAktifYetkiliKisi = async (req, res) => {
 
 
 
-// const deleteProjeAktifYetkiliKisi = async (req, res) => {
+const deleteProjeAktifYetkiliKisi = async (req, res) => {
 
-//   const hataBase = "BACKEND - (deleteProjeAktifYetkiliKisi) - "
+  const hataBase = "BACKEND - (deleteProjeAktifYetkiliKisi) - "
 
-//   try {
+  try {
 
-//     const {
-//       email: userEmail,
-//       isim: userIsim,
-//       soyisim: userSoyisim,
-//       userCode
-//     } = JSON.parse(req.user)
+    const {
+      email: userEmail,
+      isim: userIsim,
+      soyisim: userSoyisim,
+      userCode
+    } = JSON.parse(req.user)
 
 
-//     let { projeId, arananYetkiler, aktifYetki } = req.body
+    let { projeId, aktifYetki } = req.body
 
-//     if (!projeId) {
-//       throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-//     }
+    if (!projeId) {
+      throw new Error("Sorguya 'projeId' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
 
-//     if (!arananYetkiler) {
-//       throw new Error("Sorguya 'arananYetkiler' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-//     }
+    if (!aktifYetki) {
+      throw new Error("Sorguya 'aktifYetki' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
 
-//     if (!aktifYetki) {
-//       throw new Error("Sorguya 'aktifYetki' gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-//     }
 
-//     let theProje = await Proje.findOne({ _id: projeId })
-//     if (!theProje) {
-//       throw new Error("sorguya gönderilen 'collectionId' ile sistemde 'document' bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-//     }
+    try {
 
-//     let hasYetki
-//     arananYetkiler.map(oneAranan => {
-//       theProje.yetkiliKisiler.find(x => x.email === userEmail)?.yetkiler?.map(oneYetki => {
-//         if (oneYetki.name === oneAranan) {
-//           hasYetki = true
-//         }
-//       })
-//     })
-//     if (!hasYetki) {
-//       throw new Error("Bu işlem için yetkiniz yok görünüyor, Rapor7/24 ile iletişime geçebilirsiniz.")
-//     }
+      await Proje.updateOne(
+        { _id: projeId },
+        { $pull: { 'aktifYetkiliKisiler': { yetki: aktifYetki } } }
+      );
 
-//     try {
+      return res.status(200).json({ ok: true })
 
-//       await Proje.updateOne(
-//         { _id: projeId },
-//         { $pull: { 'aktifYetkiliKisiler': { yetki: aktifYetki } } }
-//       );
+    } catch (error) {
+      throw new Error("tryCatch -1- " + error);
+    }
 
-//       return res.status(200).json({ ok: true })
 
-//     } catch (error) {
-//       throw new Error("tryCatch -1- " + error);
-//     }
+  } catch (error) {
+    return res.status(400).json({ error: hataBase + error })
+  }
 
-//   } catch (error) {
-//     return res.status(400).json({ error: hataBase + error })
-//   }
-
-// }
+}
 
 
 
@@ -3618,5 +3608,5 @@ module.exports = {
   moveLbsRight,
   createIsPaket,
   requestProjeAktifYetkiliKisi,
-  // deleteProjeAktifYetkiliKisi
+  deleteProjeAktifYetkiliKisi
 }

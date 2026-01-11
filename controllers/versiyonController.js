@@ -186,9 +186,10 @@ const createVersiyon_birimFiyat = async (req, res) => {
 
   const hataBase = "BACKEND - (createVersiyon_birimFiyat) - "
 
+
   try {
 
-    const currentTime = new Date();
+    const currentTime = new Date()
 
     const {
       email: userEmail,
@@ -213,6 +214,37 @@ const createVersiyon_birimFiyat = async (req, res) => {
     if (!versiyonNumber) {
       throw new Error("'versiyonNumber' verisi db sorgusuna gelmedi");
     }
+
+
+    let theProje = await Proje.findOne({ _id: projeId })
+    if (!theProje) {
+      throw new Error("sorguya gönderilen 'collectionId' ile sistemde 'document' bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+
+
+    // yetki kontrol
+    try {
+      let arananYetkiler = ["birimFiyatEdit", "owner"]
+
+      let hasYetki
+      arananYetkiler.map(oneAranan => {
+        theProje.yetkiliKisiler.find(x => x.email === userEmail)?.yetkiler?.map(oneYetki => {
+          if (oneYetki.name === oneAranan) {
+            hasYetki = true
+          }
+        })
+      })
+      if (!hasYetki) {
+        return res.status(200).json({ message: "Bu işlem için yetkiniz yok görünüyor, Rapor7/24 ile iletişime geçebilirsiniz." })
+      }
+
+
+    } catch (error) {
+      throw new Error("tryCatch -yetki- " + error)
+    }
+
+
 
     let versiyonKaydiGereklimi
 

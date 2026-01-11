@@ -605,6 +605,7 @@ const updateBirimFiyatlar = async (req, res) => {
 
   const hataBase = "BACKEND - (updateBirimFiyatlar) - "
 
+
   try {
 
     const {
@@ -626,8 +627,37 @@ const updateBirimFiyatlar = async (req, res) => {
       throw new Error("Proje para birimlerinde aktif edilecekler var fakat 'projeId' db sorgusuna gönderilmemiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile iletişime geçiniz.");
     }
 
+    let theProje = await Proje.findOne({ _id: projeId })
+    if (!theProje) {
+      throw new Error("sorguya gönderilen 'projeId' ile sistemde 'proje' bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
 
     const currentTime = new Date()
+
+
+
+    // yetki kontrol
+    try {
+      let arananYetkiler = ["birimFiyatEdit", "owner"]
+
+      let hasYetki
+      arananYetkiler.map(oneAranan => {
+        theProje.yetkiliKisiler.find(x => x.email === userEmail)?.yetkiler?.map(oneYetki => {
+          if (oneYetki.name === oneAranan) {
+            hasYetki = true
+          }
+        })
+      })
+      if (!hasYetki) {
+        return res.status(200).json({ message: "Bu işlem için yetkiniz yok görünüyor, Rapor7/24 ile iletişime geçebilirsiniz." })
+      }
+
+
+    } catch (error) {
+      throw new Error("tryCatch -yetki- " + error)
+    }
+
+
 
 
     try {
@@ -652,6 +682,8 @@ const updateBirimFiyatlar = async (req, res) => {
     } catch (error) {
       throw new Error("tryCatch -1- " + error)
     }
+
+
 
 
     try {
