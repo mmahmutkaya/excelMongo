@@ -587,7 +587,7 @@ const getPozlar = async (req, res) => {
 
     let { paraBirimleri, birimFiyatVersiyonlar, birimFiyatVersiyon_isProgress } = proje
 
-    return res.status(200).json({ pozlar, anySelectable, selectedBirimFiyatVersiyon, paraBirimleri, birimFiyatVersiyonlar })
+    return res.status(200).json({ pozlar, anySelectable, selectedBirimFiyatVersiyon, paraBirimleri, birimFiyatVersiyonlar, birimFiyatVersiyon_isProgress })
 
   } catch (error) {
     return res.status(400).json({ hatayeri: hataBase, error: hataBase + error })
