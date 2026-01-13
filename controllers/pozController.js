@@ -585,7 +585,7 @@ const getPozlar = async (req, res) => {
       throw new Error("tryCatch -2- " + error);
     }
 
-    let { paraBirimleri, birimFiyatVersiyonlar } = proje
+    let { paraBirimleri, birimFiyatVersiyonlar, birimFiyatVersiyon_isProgress } = proje
 
     return res.status(200).json({ pozlar, anySelectable, selectedBirimFiyatVersiyon, paraBirimleri, birimFiyatVersiyonlar })
 
@@ -615,7 +615,7 @@ const updateBirimFiyatlar = async (req, res) => {
     } = JSON.parse(req.user)
 
 
-    let { projeId, pozlar_newPara, paraBirimleri, wasChangedForNewVersion } = req.body
+    let { projeId, pozlar_newPara, paraBirimleri, birimFiyatVersiyon_isProgress } = req.body
 
 
     if (!pozlar_newPara) {
@@ -688,18 +688,18 @@ const updateBirimFiyatlar = async (req, res) => {
 
     try {
 
-      if (paraBirimleri && !wasChangedForNewVersion) {
-        console.log("parabirimleri ve waschanged")
+      if (paraBirimleri && !birimFiyatVersiyon_isProgress) {
         await Proje.updateOne({ _id: projeId },
           {
-            $set: { paraBirimleri },
-            $addToSet: { birimFiyatVersiyonlar: { wasChangedForNewVersion: true } }
+            $set: {
+              paraBirimleri,
+              birimFiyatVersiyon_isProgress: true
+            }
           }
         )
       }
 
-      if (paraBirimleri && wasChangedForNewVersion) {
-        console.log("parabirimleri")
+      if (paraBirimleri && birimFiyatVersiyon_isProgress) {
         await Proje.updateOne({ _id: projeId },
           {
             $set: { paraBirimleri }
@@ -708,11 +708,10 @@ const updateBirimFiyatlar = async (req, res) => {
       }
 
 
-      if (!paraBirimleri && !wasChangedForNewVersion) {
-        console.log("waschanged")
+      if (!paraBirimleri && !birimFiyatVersiyon_isProgress) {
         await Proje.updateOne({ _id: projeId },
           {
-            $addToSet: { birimFiyatVersiyonlar: { wasChangedForNewVersion: true } }
+            $set: { birimFiyatVersiyon_isProgress: true }
           }
         )
       }

@@ -13,12 +13,14 @@ const Schema = mongoose.Schema
 //   }
 // )
 
-// const isPaketVersiyonSchema = mongoose.Schema(
-//   {
-//     versiyon: Number,
-//     isPaketler: [isPaketSchema]
-//   }
-// )
+const birimFiyatVersiyonSchema = mongoose.Schema(
+  {
+    versiyonNumber: Number,
+    aciklama: String,
+    createdAt: Date,
+    createdby: String
+  }
+)
 
 const projeSchema = new Schema(
   {
@@ -27,15 +29,16 @@ const projeSchema = new Schema(
     wbs: Array,
     lbs: Array,
     paraBirimleri: Array,
-    isPaketler:Array,
+    isPaketler: Array,
     isPaketVersiyonlar: Array,
     pozMetrajTipleri: Array,
     pozBirimleri: Array,
     yetkiliKisiler: Array,
-    aktifYetkiliKisiler:Array,
+    aktifYetkiliKisiler: Array,
     yetkiliFirmalar: Array,
     metrajVersiyonlar: Array,
-    birimFiyatVersiyonlar: Array,
+    birimFiyatVersiyonlar: [birimFiyatVersiyonSchema],
+    birimFiyatVersiyon_isProgress: Boolean,
     createdBy: String,
     createdAt: Date
   },

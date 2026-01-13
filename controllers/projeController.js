@@ -177,6 +177,9 @@ const createProje = async (req, res) => {
       _firmaId, yetkiler: { name: "owner", createdAt: currentTime, createdBy: userEmail }
     }]
 
+    let firstBirimFiyatVersiyon = {
+      versiyonNumber: 0
+    }
 
     let newProje = {
       _firmaId,
@@ -187,7 +190,7 @@ const createProje = async (req, res) => {
       isPaketler: [],
       isPaketVersiyonlar: [],
       metrajVersiyonlar: [],
-      birimFiyatVersiyonlar: [],
+      birimFiyatVersiyonlar: [firstBirimFiyatVersiyon],
       pozMetrajTipleri,
       pozBirimleri,
       yetkiliKisiler,
