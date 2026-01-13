@@ -306,14 +306,8 @@ const createVersiyon_birimFiyat = async (req, res) => {
             $set: {
               birimFiyatVersiyonlar: {
                 $concatArrays: [
-                  {
-                    $filter: {
-                      input: "$birimFiyatVersiyonlar",
-                      as: "oneVersiyon",
-                      cond: { $ne: ["$$oneVersiyon.wasChangedForNewVersion", true] }
-                    }
-                  },
-                  [{ versiyonNumber, aciklama, createdAt: currentTime }]
+                  "$birimFiyatVersiyonlar",
+                  [{ versiyonNumber, aciklama, createdAt: currentTime, createdBy: userEmail }]
                 ]
               }
             }
@@ -331,13 +325,7 @@ const createVersiyon_birimFiyat = async (req, res) => {
         await Proje.updateOne({ _id: _projeId }, [
           {
             $set: {
-              birimFiyatVersiyonlar: {
-                $filter: {
-                  input: "$birimFiyatVersiyonlar",
-                  as: "oneVersiyon",
-                  cond: { $ne: ["$$oneVersiyon.wasChangedForNewVersion", true] }
-                }
-              }
+              birimFiyatVersiyon_isProgress: false
             }
           }
         ])
