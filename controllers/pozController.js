@@ -568,10 +568,15 @@ const getPozlar = async (req, res) => {
     }
 
     let anySelectable
+    let anyVersiyonZero
     try {
 
-      anySelectable
       pozlar.map(onePoz => {
+
+        if (onePoz.hasVersiyonZero) {
+          anyVersiyonZero = true
+        }
+
         onePoz?.hazirlananMetrajlar?.map(oneHazirlanan => {
           if (oneHazirlanan) {
             if (oneHazirlanan.hasUnSelected) {
@@ -587,7 +592,7 @@ const getPozlar = async (req, res) => {
 
     let { paraBirimleri, birimFiyatVersiyonlar, birimFiyatVersiyon_isProgress } = proje
 
-    return res.status(200).json({ pozlar, anySelectable, selectedBirimFiyatVersiyon, paraBirimleri, birimFiyatVersiyonlar, birimFiyatVersiyon_isProgress })
+    return res.status(200).json({ pozlar, anySelectable, selectedBirimFiyatVersiyon, paraBirimleri, birimFiyatVersiyonlar, birimFiyatVersiyon_isProgress, anyVersiyonZero })
 
   } catch (error) {
     return res.status(400).json({ hatayeri: hataBase, error: hataBase + error })
