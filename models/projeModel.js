@@ -22,6 +22,15 @@ const birimFiyatVersiyonSchema = mongoose.Schema(
   }
 )
 
+const metrajVersiyonSchema = mongoose.Schema(
+  {
+    versiyonNumber: Number,
+    aciklama: String,
+    createdAt: Date,
+    createdby: String
+  }
+)
+
 const projeSchema = new Schema(
   {
     _firmaId: mongoose.ObjectId,
@@ -36,7 +45,7 @@ const projeSchema = new Schema(
     yetkiliKisiler: Array,
     aktifYetkiliKisiler: Array,
     yetkiliFirmalar: Array,
-    metrajVersiyonlar: Array,
+    metrajVersiyonlar: [metrajVersiyonSchema],
     birimFiyatVersiyonlar: [birimFiyatVersiyonSchema],
     birimFiyatVersiyon_isProgress: Boolean,
     createdBy: String,

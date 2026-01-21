@@ -176,7 +176,7 @@ const getPozlar = async (req, res) => {
       soyisim: userSoyisim
     } = JSON.parse(req.user)
 
-    const { projeid, selectedbirimfiyatversiyonnumber } = req.headers
+    const { projeid, selectedbirimfiyatversiyonnumber, selectedmetrajversiyonnumber } = req.headers
 
 
     if (!projeid) {
@@ -200,6 +200,12 @@ const getPozlar = async (req, res) => {
     let selectedBirimFiyatVersiyon = proje.birimFiyatVersiyonlar.find(x => x.versiyonNumber === Number(selectedbirimfiyatversiyonnumber))
     if (!selectedBirimFiyatVersiyon) {
       selectedBirimFiyatVersiyon = proje.birimFiyatVersiyonlar.reduce((acc, cur) => cur.versiyonNumber > acc.versiyonNumber ? cur : acc, { versiyonNumber: 0 })
+    }
+
+    // sorguya gelen bir metraj versiyon varsa o aranıyor, yoksa en yükseği seçiliyor ve aranıyor
+    let selectedMetrajVersiyon = proje.metrajVersiyonlar.find(x => x.versiyonNumber === Number(selectedmetrajversiyonnumber))
+    if (!selectedMetrajVersiyon) {
+      selectedMetrajVersiyon = proje.metrajVersiyonlar.reduce((acc, cur) => cur.versiyonNumber > acc.versiyonNumber ? cur : acc, { versiyonNumber: 0 })
     }
 
 
@@ -232,6 +238,24 @@ const getPozlar = async (req, res) => {
                       $eq: [
                         "$$this.versiyonNumber",
                         selectedBirimFiyatVersiyon?.versiyonNumber
+                      ]
+                    },
+                    "then": "$$this",
+                    "else": "$$value"
+                  }
+                }
+              }
+            },
+            metrajVersiyonlar: {
+              $reduce: {
+                "input": "$metrajVersiyonlar",
+                "initialValue": { "versiyonNumber": 0, metraj: 2 },
+                "in": {
+                  "$cond": {
+                    "if": {
+                      $eq: [
+                        "$$this.versiyonNumber",
+                        selectedMetrajVersiyon?.versiyonNumber
                       ]
                     },
                     "then": "$$this",
@@ -529,6 +553,7 @@ const getPozlar = async (req, res) => {
             let hasUnSelected = hasUnSelected_Array.find(x => x === true)
             let hasVersiyonZero = hasVersiyonZero_Array.find(x => x === true)
 
+            // hasVersiyonZero için aşağıya da bakılıyor
             if (hasVersiyonZero) {
               onePoz.hasVersiyonZero = true
             }
@@ -590,9 +615,9 @@ const getPozlar = async (req, res) => {
       throw new Error("tryCatch -2- " + error);
     }
 
-    let { paraBirimleri, birimFiyatVersiyonlar, birimFiyatVersiyon_isProgress } = proje
+    let { paraBirimleri, metrajVersiyonlar, birimFiyatVersiyonlar, birimFiyatVersiyon_isProgress } = proje
 
-    return res.status(200).json({ pozlar, anySelectable, selectedBirimFiyatVersiyon, paraBirimleri, birimFiyatVersiyonlar, birimFiyatVersiyon_isProgress, anyVersiyonZero })
+    return res.status(200).json({ pozlar, anySelectable, selectedBirimFiyatVersiyon, selectedMetrajVersiyon, paraBirimleri, metrajVersiyonlar, birimFiyatVersiyonlar, birimFiyatVersiyon_isProgress, anyVersiyonZero })
 
   } catch (error) {
     return res.status(400).json({ hatayeri: hataBase, error: hataBase + error })

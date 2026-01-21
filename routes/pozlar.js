@@ -1,3 +1,4 @@
+
 const express = require('express')
 const {
   createPoz,
@@ -13,7 +14,6 @@ const router = express.Router()
 
 
 router.use(requireAuthAndNecessary)
-
 
 
 // GET all pozlar

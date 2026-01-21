@@ -24,11 +24,9 @@ const createVersiyon_metraj = async (req, res) => {
       userCode
     } = JSON.parse(req.user)
 
-    const { projeId } = req.body
 
-    if (!projeId) {
-      throw new Error("'projeId' verisi db sorgusuna gelmedi");
-    }
+    const { projeId, pozlar_metraj, versiyonNumber, aciklama } = req.body
+
 
     let _projeId
     try {
@@ -37,58 +35,47 @@ const createVersiyon_metraj = async (req, res) => {
       throw new Error("DB ye gönderilen 'projeId' verisi geçerli bir BSON ObjectId verisine dönüşemedi, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
+    if (!pozlar_metraj.length > 0) {
+      throw new Error("'pozlar_metraj' verisi db sorgusuna gelmedi")
+    }
+
+    if (!versiyonNumber) {
+      throw new Error("'versiyonNumber' verisi db sorgusuna gelmedi")
+    }
+
+
+    let theProje = await Proje.findOne({ _id: projeId })
+    if (!theProje) {
+      throw new Error("sorguya gönderilen 'collectionId' ile sistemde 'document' bulunamadı, lütfen sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+
+    // yetki kontrol
+    try {
+      let arananYetkiler = ["birimFiyatEdit", "owner"]
+
+      let hasYetki
+      arananYetkiler.map(oneAranan => {
+        theProje.yetkiliKisiler.find(x => x.email === userEmail)?.yetkiler?.map(oneYetki => {
+          if (oneYetki.name === oneAranan) {
+            hasYetki = true
+          }
+        })
+      })
+      if (!hasYetki) {
+        return res.status(200).json({ message: "Bu işlem için yetkiniz yok görünüyor, Rapor7/24 ile iletişime geçebilirsiniz." })
+      }
+
+
+    } catch (error) {
+      throw new Error("tryCatch -yetki- " + error)
+    }
 
 
 
     let proje = await Proje.findOne({ _id: _projeId })
     const { metrajVersiyonlar } = proje
 
-
-
-    // aşağıda else kısmında değişebiliyor
-    let versiyonNumber = 1
-
-    try {
-
-
-      if (!metrajVersiyonlar) {
-
-        Proje.updateOne({ _id: _projeId }, [
-          {
-            $set: {
-              metrajVersiyonlar: [{ versiyonNumber, createdAt: currentTime }]
-            }
-          }
-        ])
-
-      } else {
-
-        metrajVersiyonlar.map(oneVersiyon => {
-          if (oneVersiyon.versiyonNumber >= versiyonNumber) {
-            versiyonNumber = oneVersiyon.versiyonNumber + 1
-          }
-        })
-
-        await Proje.updateOne({ _id: _projeId }, [
-          {
-            $set: {
-              metrajVersiyonlar: {
-                $concatArrays: [
-                  "$metrajVersiyonlar",
-                  [{ versiyonNumber, createdAt: currentTime }]
-                ]
-              }
-            }
-          }
-        ])
-
-      }
-
-
-
-    } catch (error) {
-      throw new Error("tryCatch -1- " + error);
-    }
 
 
 
@@ -178,6 +165,52 @@ const createVersiyon_metraj = async (req, res) => {
   }
 
 }
+
+
+
+
+// try {
+
+
+//   if (!metrajVersiyonlar) {
+
+//     Proje.updateOne({ _id: _projeId }, [
+//       {
+//         $set: {
+//           metrajVersiyonlar: [{ versiyonNumber, createdAt: currentTime }]
+//         }
+//       }
+//     ])
+
+//   } else {
+
+//     metrajVersiyonlar.map(oneVersiyon => {
+//       if (oneVersiyon.versiyonNumber >= versiyonNumber) {
+//         versiyonNumber = oneVersiyon.versiyonNumber + 1
+//       }
+//     })
+
+//     await Proje.updateOne({ _id: _projeId }, [
+//       {
+//         $set: {
+//           metrajVersiyonlar: {
+//             $concatArrays: [
+//               "$metrajVersiyonlar",
+//               [{ versiyonNumber, createdAt: currentTime }]
+//             ]
+//           }
+//         }
+//       }
+//     ])
+
+//   }
+
+
+
+// } catch (error) {
+//   throw new Error("tryCatch -1- " + error);
+// }
+
 
 
 
