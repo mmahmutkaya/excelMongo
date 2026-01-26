@@ -249,7 +249,7 @@ const getPozlar = async (req, res) => {
             metrajVersiyonlar: {
               $reduce: {
                 "input": "$metrajVersiyonlar",
-                "initialValue": { "versiyonNumber": 0, metraj: 2 },
+                "initialValue": { "versiyonNumber": 0, metraj: null },
                 "in": {
                   "$cond": {
                     "if": {
