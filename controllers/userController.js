@@ -280,7 +280,9 @@ const saveNecessaryUserData = async (req, res) => {
         metrajonayla: {
           basliklar: [
             { id: "aciklama", baslikName: "Açıklama", visible: true, show: true },
-            { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
+            { id: "versiyon", baslikName: "Versiyon", visible: true, show: true },
+            { id: "versiyonAciklama", baslikName: "Versiyon Açıklama", visible: true, show: true },
+            { id: "versiyondakiDegisimler", baslikName: "Versiyondaki Değişimler", visible: true, show: true }
           ],
           showMetrajYapabilenler: []
         },
