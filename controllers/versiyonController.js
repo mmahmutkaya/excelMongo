@@ -267,82 +267,82 @@ const createVersiyon_metraj = async (req, res) => {
 
 
 
-    // try {
+    try {
 
-    //   await Dugum.updateMany({ _projeId }, [
-    //     {
-    //       $set: {
-    //         hazirlananMetrajlar: {
-    //           $map: {
-    //             input: "$hazirlananMetrajlar",
-    //             as: "oneHazirlanan",
-    //             in: {
-    //               $mergeObjects: [
-    //                 "$$oneHazirlanan",
-    //                 {
-    //                   satirlar: {
-    //                     $map: {
-    //                       input: "$$oneHazirlanan.satirlar",
-    //                       as: "oneSatir",
-    //                       in: {
-    //                         $cond: {
-    //                           if: { $eq: ["$$oneSatir.versiyon", 0] },
-    //                           else: "$$oneSatir",
-    //                           then: {
-    //                             $mergeObjects: [
-    //                               "$$oneSatir",
-    //                               { versiyon: versiyonNumber }
-    //                             ]
-    //                           }
-    //                         }
-    //                       }
-    //                     }
-    //                   }
-    //                 }
-    //               ]
-    //             }
-    //           }
-    //         },
-    //         revizeMetrajlar: {
-    //           $map: {
-    //             input: "$revizeMetrajlar",
-    //             as: "oneMetraj",
-    //             in: {
-    //               $mergeObjects: [
-    //                 "$$oneMetraj",
-    //                 {
-    //                   satirlar: {
-    //                     $map: {
-    //                       input: "$$oneMetraj.satirlar",
-    //                       as: "oneSatir",
-    //                       in: {
-    //                         $cond: {
-    //                           if: { $eq: ["$$oneSatir.versiyon", 0] },
-    //                           else: "$$oneSatir",
-    //                           then: {
-    //                             $mergeObjects: [
-    //                               "$$oneSatir",
-    //                               { versiyon: versiyonNumber }
-    //                             ]
-    //                           }
-    //                         }
-    //                       }
-    //                     }
-    //                   }
-    //                 }
-    //               ]
-    //             }
-    //           }
-    //         },
-    //         metrajVersiyonlar: { $concatArrays: ["$metrajVersiyonlar", [{ versiyonNumber, metrajOnaylanan: "$metrajOnaylanan" }]] }
-    //       }
-    //     }
-    //   ])
+      await Dugum.updateMany({ _projeId }, [
+        {
+          $set: {
+            hazirlananMetrajlar: {
+              $map: {
+                input: "$hazirlananMetrajlar",
+                as: "oneHazirlanan",
+                in: {
+                  $mergeObjects: [
+                    "$$oneHazirlanan",
+                    {
+                      satirlar: {
+                        $map: {
+                          input: "$$oneHazirlanan.satirlar",
+                          as: "oneSatir",
+                          in: {
+                            $cond: {
+                              if: { $eq: ["$$oneSatir.versiyon", 0] },
+                              else: "$$oneSatir",
+                              then: {
+                                $mergeObjects: [
+                                  "$$oneSatir",
+                                  { versiyon: versiyonNumber }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            revizeMetrajlar: {
+              $map: {
+                input: "$revizeMetrajlar",
+                as: "oneMetraj",
+                in: {
+                  $mergeObjects: [
+                    "$$oneMetraj",
+                    {
+                      satirlar: {
+                        $map: {
+                          input: "$$oneMetraj.satirlar",
+                          as: "oneSatir",
+                          in: {
+                            $cond: {
+                              if: { $eq: ["$$oneSatir.versiyon", 0] },
+                              else: "$$oneSatir",
+                              then: {
+                                $mergeObjects: [
+                                  "$$oneSatir",
+                                  { versiyon: versiyonNumber }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            metrajVersiyonlar: { $concatArrays: ["$metrajVersiyonlar", [{ versiyonNumber, metrajOnaylanan: "$metrajOnaylanan" }]] }
+          }
+        }
+      ])
 
 
-    // } catch (error) {
-    //   throw new Error("tryCatch -1- " + error);
-    // }
+    } catch (error) {
+      throw new Error("tryCatch -1- " + error);
+    }
 
 
 
@@ -359,7 +359,7 @@ const createVersiyon_metraj = async (req, res) => {
                 $push: {
                   metrajVersiyonlar: {
                     versiyonNumber,
-                    metrajOnaylanan: onePoz.metrajOnaylanan,
+                    metrajOnaylanan: onePoz?.metrajOnaylanan,
                     isProgress: onePoz?.hasVersiyonZero ? true : false
                   }
                 }
@@ -368,27 +368,13 @@ const createVersiyon_metraj = async (req, res) => {
           }
         )
 
-        // return (
-        //   {
-        //     updateOne: {
-        //       filter: { _id: onePoz._id },
-        //       update: {
-        //         $set: { birimFiyatlar: birimFiyatlar_noProgress },
-        //         $push: { birimFiyatVersiyonlar: { versiyonNumber, birimFiyatlar: birimFiyatlar_saveAs_versiyon } }
-        //       }
-        //     }
-        //   }
-        // )
-
       })
 
       // return res.status(200).json({ bulkArray1 })
-
       await Poz.bulkWrite(
         bulkArray1,
         { ordered: false }
       )
-
 
     } catch (error) {
       throw new Error("tryCatch -2- " + error)
@@ -524,7 +510,10 @@ const createVersiyon_birimFiyat = async (req, res) => {
             }
           }
         )
+
       })
+
+      // return res.status(200).json({ bulkArray1 })
 
       if (versiyonKaydiGereklimi) {
         await Poz.bulkWrite(

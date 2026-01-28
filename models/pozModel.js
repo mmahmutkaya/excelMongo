@@ -12,7 +12,8 @@ const pozSchema = new Schema(
     pozBirimId: String,
     pozMetrajTipId: String,
     birimFiyatlar: Array,
-    birimFiyatVersiyonlar: Array
+    birimFiyatVersiyonlar: Array,
+    metrajVersiyonlar:Array
   },
   {
     collection: 'pozlar',

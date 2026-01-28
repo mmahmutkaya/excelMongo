@@ -615,7 +615,10 @@ const getPozlar = async (req, res) => {
       throw new Error("tryCatch -2- " + error);
     }
 
-    let { paraBirimleri, metrajVersiyonlar, birimFiyatVersiyonlar, birimFiyatVersiyon_isProgress } = proje
+    let { paraBirimleri,
+      metrajVersiyonlar,
+      birimFiyatVersiyonlar,
+      birimFiyatVersiyon_isProgress } = proje
 
     return res.status(200).json({ pozlar, anySelectable, selectedBirimFiyatVersiyon, selectedMetrajVersiyon, paraBirimleri, metrajVersiyonlar, birimFiyatVersiyonlar, birimFiyatVersiyon_isProgress, anyVersiyonZero })
 
