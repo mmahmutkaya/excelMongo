@@ -369,7 +369,7 @@ const getDugumler_byPoz = async (req, res) => {
       soyisim: userSoyisim
     } = JSON.parse(req.user)
 
-    const { projeid, pozid } = req.headers
+    const { projeid, pozid, selectedmetrajversiyontext } = req.headers
 
     if (!projeid) {
       throw new Error("'_projeId' verisi db sorgusuna gelmedi");
@@ -393,6 +393,13 @@ const getDugumler_byPoz = async (req, res) => {
       _pozId = new ObjectId(pozid)
     } catch (error) {
       throw new Error("DB ye gönderilen 'pozid' verisi geçerli bir BSON ObjectId verisine dönüşemedi, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    let selectedMetrajVersiyon
+    try {
+      selectedMetrajVersiyon = Number(selectedmetrajversiyontext)
+    } catch (error) {
+      throw new Error("DB ye 'selectedmetrajversiyontext' verisi gönderilmemiş ya da hatalı gönderilmiş, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
 
