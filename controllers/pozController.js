@@ -783,7 +783,8 @@ const ispaketpozmetrajlar = async (req, res) => {
     const {
       projeid,
       ispaketversiyontext,
-      metrajversiyontext
+      metrajversiyontext,
+      birimfiyatversiyontext
     } = req.headers
 
     const selectedIsPaketVersiyon = Number(ispaketversiyontext)
@@ -799,6 +800,10 @@ const ispaketpozmetrajlar = async (req, res) => {
 
     if (!metrajversiyontext) {
       throw new Error("DB ye gönderilen sorguda 'metrajversiyontext' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!birimfiyatversiyontext) {
+      throw new Error("DB ye gönderilen sorguda 'birimfiyatversiyontext' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
     }
 
     let _projeId
