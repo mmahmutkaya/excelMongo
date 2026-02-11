@@ -2,7 +2,8 @@ const express = require('express')
 
 const {
   createVersiyon_metraj,
-  createVersiyon_birimFiyat
+  createVersiyon_birimFiyat,
+  getIsPaketler_byVersiyon
 } = require('../controllers/versiyonController')
 
 const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
@@ -18,6 +19,9 @@ router.use(requireAuthAndNecessary)
 //  VERSİYONLAR
 router.post('/metraj', createVersiyon_metraj)
 router.post('/birimfiyat', createVersiyon_birimFiyat)
+
+// GET (POST)
+router.post('/getispaketlerbyversiyon', getIsPaketler_byVersiyon)
 
 
 
