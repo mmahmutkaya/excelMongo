@@ -622,27 +622,19 @@ const getIsPaketler_byVersiyon = async (req, res) => {
 
 
 
-    try {
+    let theProje = await Proje.findOne({ _id: _projeId }, { isPaketVersiyonlar: 1 })
 
-      let theProje = await Proje.findOne({ _id: _projeId }, { isPaketVersiyonlar: 1 })
-
-      if (!theProje) {
-        throw new Error("DB'ye gelen '_projeId' ile sistemde bir proje bulunamadı")
-      }
-
-      let isPaketVersiyon = theProje.isPaketVersiyonlar.find(x => x.versiyonNumber === versiyonNumber)
-
-      if (!isPaketVersiyon) {
-        isPaketVersiyon = theProje.isPaketVersiyonlar.reduce((acc, cur) => cur.versiyonNumber > acc.versiyonnumber ? cur : acc, { versiyonNumber: 0, isPaketler: [] })
-      }
-
-      return res.status(200).json({ isPaketVersiyon })
-
-    } catch (error) {
-      throw new Error("tryCatch -getProje- " + error)
+    if (!theProje) {
+      throw new Error("DB'ye gelen '_projeId' ile sistemde bir proje bulunamadı")
     }
 
+    let isPaketVersiyon = theProje.isPaketVersiyonlar.find(x => x.versiyonNumber === versiyonNumber)
 
+    if (!isPaketVersiyon) {
+      isPaketVersiyon = theProje.isPaketVersiyonlar.reduce((acc, cur) => cur.versiyonNumber > acc.versiyonnumber ? cur : acc, { versiyonNumber: 0, isPaketler: [] })
+    }
+
+    return res.status(200).json({ isPaketVersiyon })
 
 
     // if (!pozlar_birimFiyat.length > 0) {
