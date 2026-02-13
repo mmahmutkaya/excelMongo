@@ -3482,13 +3482,16 @@ const requestProjeAktifYetkiliKisi = async (req, res) => {
 
       if (aktifYetkili.email === userEmail) {
 
-        await Proje.updateOne(
+        let theProje2 = await Proje.findOneAndUpdate(
           { _id: projeId },
           { $set: { 'aktifYetkiliKisiler.$[oneYetki].createdTime': currentTime } },
-          { arrayFilters: [{ 'oneYetki.yetki': aktifYetki }] }
+          {
+            arrayFilters: [{ 'oneYetki.yetki': aktifYetki }],
+            returnNewDocument: true
+          }
         );
 
-        return res.status(200).json({ ok: true })
+        return res.status(200).json({ ok: true, proje: theProje2 })
 
       } else {
 
@@ -3496,7 +3499,7 @@ const requestProjeAktifYetkiliKisi = async (req, res) => {
 
         if (gecenZaman > 10) {
 
-          await Proje.updateOne(
+          let theProje2 = await Proje.findOneAndUpdate(
             { _id: projeId },
             {
               $set: {
@@ -3504,10 +3507,13 @@ const requestProjeAktifYetkiliKisi = async (req, res) => {
                 'aktifYetkiliKisiler.$[oneYetki].email': userEmail
               }
             },
-            { arrayFilters: [{ 'oneYetki.yetki': aktifYetki }] }
+            {
+              arrayFilters: [{ 'oneYetki.yetki': aktifYetki }],
+              returnNewDocument: true
+            }
           );
 
-          return res.status(200).json({ ok: true, gecenZaman })
+          return res.status(200).json({ ok: true, gecenZaman, proje: theProje2 })
 
         } else {
           return res.status(200).json({ message: `'${aktifYetkili.email}' mail adresine sahip kullanıcı şu anda kayıt işlemi yapıyor, daha sonra tekrar deneyiniz.` })
@@ -3517,12 +3523,13 @@ const requestProjeAktifYetkiliKisi = async (req, res) => {
 
     } else {
 
-      await Proje.updateOne(
+      let theProje2 = await Proje.findOneAndUpdate(
         { _id: projeId },
-        { $push: { 'aktifYetkiliKisiler': { yetki: aktifYetki, email: userEmail, createdTime: currentTime } } }
+        { $push: { 'aktifYetkiliKisiler': { yetki: aktifYetki, email: userEmail, createdTime: currentTime } } },
+        { returnNewDocument: true }
       );
 
-      return res.status(200).json({ ok: true })
+      return res.status(200).json({ ok: true, proje: theProje2 })
 
     }
 
