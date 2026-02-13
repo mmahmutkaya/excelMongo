@@ -768,9 +768,9 @@ const updateBirimFiyatlar = async (req, res) => {
 
 
 
-const ispaketpozmetrajlar = async (req, res) => {
+const getPozMetrajlar_byIsPaket = async (req, res) => {
 
-  const hataBase = "BACKEND - (ispaketpozmetrajlar) - "
+  const hataBase = "BACKEND - (getPozMetrajlar_byIsPaket) - "
 
   try {
 
@@ -939,7 +939,7 @@ const ispaketpozmetrajlar = async (req, res) => {
       throw new Error("tryCatch -1- " + error);
     }
 
-    return res.status(200).json({ ispaketpozmetrajlar: pozlar })
+    // return res.status(200).json({ getPozMetrajlar_byIsPaket: pozlar })
 
 
     // let anySelectable
@@ -975,5 +975,5 @@ module.exports = {
   createPoz,
   getPozlar,
   updateBirimFiyatlar,
-  ispaketpozmetrajlar
+  getPozMetrajlar_byIsPaket
 }
