@@ -781,40 +781,43 @@ const getPozMetrajlar_byIsPaket = async (req, res) => {
     } = JSON.parse(req.user)
 
     const {
-      projeid,
-      ispaketversiyontext,
-      metrajversiyontext,
-      birimfiyatversiyontext
-    } = req.headers
+      projeId,
+      mode_isPaketEdit,
+      isPaketVersiyonNumber,
+      selectedIsPaket
+    } = req.body
 
-    const selectedIsPaketVersiyon = Number(ispaketversiyontext)
-    // const versiyonMetraj = Number(versiyonmetrajtext)
 
-    if (!projeid) {
-      throw new Error("DB ye gönderilen sorguda 'projeid' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
+    // if (!projeId) {
+    //   throw new Error("DB ye gönderilen sorguda 'projeId' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    // }
 
-    if (!ispaketversiyontext) {
-      throw new Error("DB ye gönderilen sorguda 'ispaketversiyontext' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
+    // if (!mode_isPaketEdit) {
+    //   throw new Error("DB ye gönderilen sorguda 'mode_isPaketEdit' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    // }
 
-    if (!metrajversiyontext) {
-      throw new Error("DB ye gönderilen sorguda 'metrajversiyontext' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
+    // if (!isPaketVersiyonNumber) {
+    //   throw new Error("DB ye gönderilen sorguda 'isPaketVersiyonNumber' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    // }
 
-    if (!birimfiyatversiyontext) {
-      throw new Error("DB ye gönderilen sorguda 'birimfiyatversiyontext' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
+    // if (!selectedIsPaket) {
+    //   throw new Error("DB ye gönderilen sorguda 'selectedIsPaket' verisi bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    // }
 
-    let _projeId
-    try {
-      _projeId = new ObjectId(projeid)
-    } catch (error) {
-      throw new Error("DB ye gönderilen 'projeid' verisi geçerli bir BSON ObjectId verisine dönüşemedi, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
-    }
+    // let proje = await Proje.findOne({ _id: _projeId })
+    // if (!proje) {
+    //   throw new Error("DB ye gönderilen 'projeid' ile sistemde proje bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    // }
 
-    const proje = await Proje.findOne({ _id: _projeId })
-    let maxMetrajVersiyon = proje.metrajVersiyonlar.reduce((acc, oneVersiyon) => Math.max(acc, oneVersiyon.versiyonNumber), 0)
+
+    return res.status(200).json({
+      projeId,
+      mode_isPaketEdit,
+      isPaketVersiyonNumber,
+      selectedIsPaket
+    })
+
+    let metrajVersiyon = proje.metrajVersiyonlar.reduce((acc, oneVersiyon) => Math.max(acc, oneVersiyon.versiyonNumber), 0)
 
     let pozlar
 
@@ -862,7 +865,7 @@ const getPozMetrajlar_byIsPaket = async (req, res) => {
                 initialValue: null,
                 in: {
                   $cond: {
-                    if: { $eq: ["$$this.versiyonNumber", maxMetrajVersiyon] },
+                    if: { $eq: ["$$this.versiyonNumber", metrajVersiyon] },
                     else: "$$value",
                     then: "$$this.metrajOnaylanan"
                   }
