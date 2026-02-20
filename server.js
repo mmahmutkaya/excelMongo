@@ -10,7 +10,7 @@ const projeRoutes = require('./routes/projeler')
 const mahalRoutes = require('./routes/mahaller')
 const dugumRoutes = require('./routes/dugumler')
 const versiyonRoutes = require('./routes/versiyon')
-
+const contractRoutes = require('./routes/contracts')
 
 
 
@@ -43,6 +43,7 @@ app.use('/api/projeler', projeRoutes)
 app.use('/api/mahaller', mahalRoutes)
 app.use('/api/dugumler', dugumRoutes)
 app.use('/api/versiyon', versiyonRoutes)
+app.use('/api/contracts', contractRoutes)
 
 
 
@@ -59,4 +60,4 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
   })
   .catch((err) => {
     console.log(err)
-  }) 
+  })
