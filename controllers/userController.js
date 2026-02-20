@@ -305,7 +305,8 @@ const saveNecessaryUserData = async (req, res) => {
         ispaketler: {
           basliklar: [
             { id: "aciklama", baslikName: "Açıklama", visible: true, show: true },
-            { id: "versiyon", baslikName: "Versiyon", visible: true, show: true }
+            { id: "versiyon", baslikName: "Versiyon", visible: true, show: true },
+            { id: "pasif", baslikName: "Pasifler", visible: true, show: true }
           ]
         }
       }
