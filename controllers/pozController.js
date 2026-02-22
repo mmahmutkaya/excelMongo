@@ -176,7 +176,7 @@ const getPozlar = async (req, res) => {
       soyisim: userSoyisim
     } = JSON.parse(req.user)
 
-    const { projeid, selectedbirimfiyatversiyonnumber, selectedmetrajversiyonnumber, ispaketid } = req.headers
+    const { projeid, selectedbirimfiyatversiyonnumber, selectedmetrajversiyonnumber, ispaketid, ispaketversiyonnumber } = req.headers
 
 
     if (!projeid) {
@@ -289,7 +289,21 @@ const getPozlar = async (req, res) => {
             metrajPreparing: 1,
             metrajReady: 1,
             metrajOnaylanan: 1,
-            isPaketler: 1,
+            ...(_isPaketId ? {
+              isPaketIds: {
+                $reduce: {
+                  input: "$isPaketVersiyonlar",
+                  initialValue: [],
+                  in: {
+                    $cond: {
+                      if: { $eq: ["$$this.versiyon", Number(ispaketversiyonnumber)] },
+                      else: "$$value",
+                      then: "$$this.isPaketler"
+                    }
+                  }
+                }
+              }
+            } : {}),
             hazirlananMetrajlar: {
               $map: {
                 input: "$hazirlananMetrajlar",
@@ -498,7 +512,7 @@ const getPozlar = async (req, res) => {
               secilenDugum: {
                 $sum: {
                   $cond: {
-                    if: { $in: [_isPaketId, { $ifNull: ["$isPaketler._id", []] }] },
+                    if: { $in: [_isPaketId, { $ifNull: ["$isPaketIds", []] }] },
                     then: 1,
                     else: 0
                   }
