@@ -486,7 +486,8 @@ const getPozlar = async (req, res) => {
             revizeMetrajlar: { $push: "$revizeMetrajlar" },
             metrajPreparing: { $sum: "$metrajPreparing" },
             metrajReady: { $sum: "$metrajReady" },
-            metrajOnaylanan: { $sum: "$metrajOnaylanan" }
+            metrajOnaylanan: { $sum: "$metrajOnaylanan" },
+            toplamDugum: { $sum: 1 }
           }
         }
       ])
@@ -509,6 +510,7 @@ const getPozlar = async (req, res) => {
           onePoz.hasVersiyonZero = false
 
           onePoz.metrajOnaylanan = onePoz2.metrajOnaylanan
+          onePoz.toplamDugum = onePoz2.toplamDugum
           // return onePoz2.hazirlanan
           onePoz.hazirlananMetrajlar = metrajYapabilenler.map(oneYapabilen => {
 
