@@ -1010,12 +1010,13 @@ const getIsPaketlerDugumler = async (req, res) => {
 
     const dugumler = await Dugum.find(
       { _projeId: new ObjectId(projeid), openMetraj: true },
-      { isPaketler: 1 }
+      { isPaketler: 1, _pozId: 1 }
     )
 
     const toplamDugum = dugumler.length
 
     const isPaketCounts = {}
+    const isPaketPozSets = {}
     dugumler.forEach(dugum => {
       if (dugum.isPaketler && dugum.isPaketler.length > 0) {
         dugum.isPaketler.forEach(paket => {
@@ -1023,12 +1024,21 @@ const getIsPaketlerDugumler = async (req, res) => {
             const id = paket._id.toString()
             if (!isPaketCounts[id]) isPaketCounts[id] = 0
             isPaketCounts[id]++
+            if (dugum._pozId) {
+              if (!isPaketPozSets[id]) isPaketPozSets[id] = new Set()
+              isPaketPozSets[id].add(dugum._pozId.toString())
+            }
           }
         })
       }
     })
 
-    res.json({ toplamDugum, isPaketCounts })
+    const isPaketPozSayisi = {}
+    Object.keys(isPaketPozSets).forEach(id => {
+      isPaketPozSayisi[id] = isPaketPozSets[id].size
+    })
+
+    res.json({ toplamDugum, isPaketCounts, isPaketPozSayisi })
 
   } catch (err) {
     console.log(err)
