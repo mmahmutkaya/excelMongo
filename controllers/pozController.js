@@ -290,19 +290,7 @@ const getPozlar = async (req, res) => {
             metrajReady: 1,
             metrajOnaylanan: 1,
             ...(_isPaketId ? {
-              isPaketIds: {
-                $reduce: {
-                  input: "$isPaketVersiyonlar",
-                  initialValue: [],
-                  in: {
-                    $cond: {
-                      if: { $eq: ["$$this.versiyon", Number(ispaketversiyonnumber)] },
-                      else: "$$value",
-                      then: "$$this.isPaketler"
-                    }
-                  }
-                }
-              }
+              isPaketler: 1
             } : {}),
             hazirlananMetrajlar: {
               $map: {
@@ -509,7 +497,15 @@ const getPozlar = async (req, res) => {
             metrajOnaylanan: { $sum: "$metrajOnaylanan" },
             toplamDugum: { $sum: 1 },
             ...(_isPaketId ? {
-              allIsPaketIds: { $push: "$isPaketIds" }
+              secilenDugum: {
+                $sum: {
+                  $cond: {
+                    if: { $in: [_isPaketId, { $ifNull: ["$isPaketler._id", []] }] },
+                    then: 1,
+                    else: 0
+                  }
+                }
+              }
             } : {})
           }
         }
@@ -535,9 +531,7 @@ const getPozlar = async (req, res) => {
           onePoz.metrajOnaylanan = onePoz2.metrajOnaylanan
           onePoz.toplamDugum = onePoz2.toplamDugum
           if (_isPaketId) {
-            onePoz.secilenDugum = (onePoz2.allIsPaketIds || []).filter(
-              ids => ids?.find(x => x?.toString() === _isPaketId.toString() || x?._id?.toString() === _isPaketId.toString())
-            ).length
+            onePoz.secilenDugum = onePoz2.secilenDugum
           }
           // return onePoz2.hazirlanan
           onePoz.hazirlananMetrajlar = metrajYapabilenler.map(oneYapabilen => {
