@@ -4,7 +4,8 @@ const {
   createPoz,
   getPozlar,
   updateBirimFiyatlar,
-  getPozMetrajlar_byIsPaket
+  getPozMetrajlar_byIsPaket,
+  getIsPaketlerDugumler
 } = require('../controllers/pozController')
 
 const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
@@ -22,6 +23,7 @@ router.post('/', createPoz)
 
 router.patch('/birimfiyatlar', updateBirimFiyatlar)
 router.post('/getpozmetrajlarbyispaket', getPozMetrajlar_byIsPaket)
+router.get('/ispaketlerdugumler', getIsPaketlerDugumler)
 
 // // DELETE a poz
 // router.delete('/:id', deletePoz)

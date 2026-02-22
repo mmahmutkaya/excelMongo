@@ -998,9 +998,50 @@ const getPozMetrajlar_byIsPaket = async (req, res) => {
 
 
 
+const getIsPaketlerDugumler = async (req, res) => {
+
+  const hataBase = "BACKEND - (getIsPaketlerDugumler) - "
+
+  try {
+
+    const { projeid } = req.headers
+
+    if (!projeid) throw new Error(hataBase + "projeid bulunamadı")
+
+    const dugumler = await Dugum.find(
+      { _projeId: new ObjectId(projeid), openMetraj: true },
+      { isPaketler: 1 }
+    )
+
+    const toplamDugum = dugumler.length
+
+    const isPaketCounts = {}
+    dugumler.forEach(dugum => {
+      if (dugum.isPaketler && dugum.isPaketler.length > 0) {
+        dugum.isPaketler.forEach(paket => {
+          if (paket._id) {
+            const id = paket._id.toString()
+            if (!isPaketCounts[id]) isPaketCounts[id] = 0
+            isPaketCounts[id]++
+          }
+        })
+      }
+    })
+
+    res.json({ toplamDugum, isPaketCounts })
+
+  } catch (err) {
+    console.log(err)
+    res.status(400).json({ error: err.message })
+  }
+
+}
+
+
 module.exports = {
   createPoz,
   getPozlar,
   updateBirimFiyatlar,
-  getPozMetrajlar_byIsPaket
+  getPozMetrajlar_byIsPaket,
+  getIsPaketlerDugumler
 }
