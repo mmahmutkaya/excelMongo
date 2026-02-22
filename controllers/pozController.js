@@ -176,7 +176,7 @@ const getPozlar = async (req, res) => {
       soyisim: userSoyisim
     } = JSON.parse(req.user)
 
-    const { projeid, selectedbirimfiyatversiyonnumber, selectedmetrajversiyonnumber } = req.headers
+    const { projeid, selectedbirimfiyatversiyonnumber, selectedmetrajversiyonnumber, ispaketid } = req.headers
 
 
     if (!projeid) {
@@ -188,6 +188,11 @@ const getPozlar = async (req, res) => {
       _projeId = new ObjectId(projeid)
     } catch (error) {
       throw new Error("DB ye gönderilen 'projeid' verisi geçerli bir BSON ObjectId verisine dönüşemedi, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    let _isPaketId = null
+    if (ispaketid) {
+      try { _isPaketId = new ObjectId(ispaketid) } catch (e) { }
     }
 
     const proje = await Proje.findOne({ _id: _projeId })
@@ -284,6 +289,7 @@ const getPozlar = async (req, res) => {
             metrajPreparing: 1,
             metrajReady: 1,
             metrajOnaylanan: 1,
+            isPaketler: 1,
             hazirlananMetrajlar: {
               $map: {
                 input: "$hazirlananMetrajlar",
@@ -487,7 +493,18 @@ const getPozlar = async (req, res) => {
             metrajPreparing: { $sum: "$metrajPreparing" },
             metrajReady: { $sum: "$metrajReady" },
             metrajOnaylanan: { $sum: "$metrajOnaylanan" },
-            toplamDugum: { $sum: 1 }
+            toplamDugum: { $sum: 1 },
+            ...(_isPaketId ? {
+              secilenDugum: {
+                $sum: {
+                  $cond: {
+                    if: { $in: [_isPaketId, { $ifNull: ["$isPaketler._id", []] }] },
+                    then: 1,
+                    else: 0
+                  }
+                }
+              }
+            } : {})
           }
         }
       ])
@@ -511,6 +528,7 @@ const getPozlar = async (req, res) => {
 
           onePoz.metrajOnaylanan = onePoz2.metrajOnaylanan
           onePoz.toplamDugum = onePoz2.toplamDugum
+          if (_isPaketId) onePoz.secilenDugum = onePoz2.secilenDugum
           // return onePoz2.hazirlanan
           onePoz.hazirlananMetrajlar = metrajYapabilenler.map(oneYapabilen => {
 
