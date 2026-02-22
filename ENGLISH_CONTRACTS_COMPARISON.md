@@ -12,11 +12,11 @@ Complete migration of Sozlesmeler (Turkish) collection to Contracts (English) co
 
 | Turkish | English | Status |
 |---------|---------|--------|
-| `models/sozlesmelerModel.js` | `models/contractModel.js` | ✅ Created new |
-| Field: `sozlesmeNo` | Field: `contractNumber` | ✅ Translated |
-| Field: `sozlesmeName` | Field: `contractName` | ✅ Translated |
-| Field: `imzacilar` | Field: `signatories` | ✅ Translated |
-| Field: `ekler` | Field: `attachments` | ✅ Translated |
+| `models/sozlesmelerModel.js` | `models/contractModel.js` | ✅Created new |
+| Field: `sozlesmeNo` | Field: `contractNumber` | ✅Translated |
+| Field: `sozlesmeName` | Field: `contractName` | ✅Translated |
+| Field: `imzacilar` | Field: `signatories` | ✅Translated |
+| Field: `ekler` | Field: `attachments` | ✅Translated |
 
 ### Controllers
 
