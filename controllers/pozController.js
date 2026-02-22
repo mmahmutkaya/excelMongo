@@ -509,15 +509,7 @@ const getPozlar = async (req, res) => {
             metrajOnaylanan: { $sum: "$metrajOnaylanan" },
             toplamDugum: { $sum: 1 },
             ...(_isPaketId ? {
-              secilenDugum: {
-                $sum: {
-                  $cond: {
-                    if: { $in: [_isPaketId, { $ifNull: ["$isPaketIds", []] }] },
-                    then: 1,
-                    else: 0
-                  }
-                }
-              }
+              allIsPaketIds: { $push: "$isPaketIds" }
             } : {})
           }
         }
@@ -542,7 +534,11 @@ const getPozlar = async (req, res) => {
 
           onePoz.metrajOnaylanan = onePoz2.metrajOnaylanan
           onePoz.toplamDugum = onePoz2.toplamDugum
-          if (_isPaketId) onePoz.secilenDugum = onePoz2.secilenDugum
+          if (_isPaketId) {
+            onePoz.secilenDugum = (onePoz2.allIsPaketIds || []).filter(
+              ids => ids?.find(x => x?.toString() === _isPaketId.toString() || x?._id?.toString() === _isPaketId.toString())
+            ).length
+          }
           // return onePoz2.hazirlanan
           onePoz.hazirlananMetrajlar = metrajYapabilenler.map(oneYapabilen => {
 
