@@ -4,7 +4,6 @@ const {
   createPoz,
   getPozlar,
   updateBirimFiyatlar,
-  getPozMetrajlar_byIsPaket,
   getIsPaketlerDugumler
 } = require('../controllers/pozController')
 
@@ -22,7 +21,6 @@ router.get('/', getPozlar)
 router.post('/', createPoz)
 
 router.patch('/birimfiyatlar', updateBirimFiyatlar)
-router.post('/getpozmetrajlarbyispaket', getPozMetrajlar_byIsPaket)
 router.get('/ispaketlerdugumler', getIsPaketlerDugumler)
 
 // // DELETE a poz
