@@ -815,9 +815,9 @@ const getIsPaketlerDugumler = async (req, res) => {
     pozlar = pozlar.map(onePoz => {
       let dugumler2 = dugumler.filter(oneDugum => oneDugum._pozId.toString() === onePoz._id.toString())
       let isPaketler = []
-      dugumler2.map(oneDugum => {
+      dugumler2.forEach(oneDugum => {
         if (oneDugum.isPaketler && oneDugum.isPaketler.length > 0) {
-          oneDugum.isPaketler.map(oneIsPaket => {
+          oneDugum.isPaketler.forEach(oneIsPaket => {
             if (oneIsPaket._id) {
               if (!isPaketler.find(x => x._id.toString() === oneIsPaket._id.toString())) {
                 isPaketler.push(oneIsPaket)
