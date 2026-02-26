@@ -792,9 +792,9 @@ const updateBirimFiyatlar = async (req, res) => {
 
 
 
-const getIsPaketler = async (req, res) => {
+const getIsPaketPozlar = async (req, res) => {
 
-  const hataBase = "BACKEND - (getIsPaketler) - "
+  const hataBase = "BACKEND - (getIsPaketPozlar) - "
 
   try {
 
@@ -802,54 +802,41 @@ const getIsPaketler = async (req, res) => {
 
     if (!projeid) throw new Error(hataBase + "projeid bulunamadı")
 
-    const dugumler = await Dugum.find(
-      { _projeId: new ObjectId(projeid), openMetraj: true },
-      { isPaketler: 1, _pozId: 1 }
-    )
-
-    let pozlar = await Poz.find(
-      { _projeId: new ObjectId(projeid) },
-      { pozNo: 1, pozName: 1, pozBirimId: 1 }
-    )
-
-    pozlar = pozlar.map(onePoz => {
-      let dugumler2 = dugumler.filter(oneDugum => oneDugum._pozId.toString() === onePoz._id.toString())
-      let isPaketler = []
-      let isPaketler_empityArrayCounts = 0
-      dugumler2.forEach(oneDugum => {
-        if (oneDugum.isPaketler && oneDugum.isPaketler.length > 0) {
-          oneDugum.isPaketler.forEach(oneIsPaket => {
-            if (oneIsPaket._id) {
-              if (!isPaketler.find(x => x._id.toString() === oneIsPaket._id.toString())) {
-                isPaketler.push(oneIsPaket)
-              }
-            }
-          })
-        } else {
-          isPaketler_empityArrayCounts++
-        }
-      })
-      return {
-        ...onePoz._doc,
-        isPaketler,
-        isPaketler_empityArrayCounts
-      }
-    })
+    const [dugumler, pozlar] = await Promise.all([
+      Dugum.find(
+        { _projeId: new ObjectId(projeid), openMetraj: true },
+        { isPaketler: 1, _pozId: 1 }
+      ).lean(),
+      Poz.find(
+        { _projeId: new ObjectId(projeid) },
+        { pozNo: 1, pozName: 1, pozBirimId: 1, _wbsId: 1 }
+      ).lean()
+    ])
 
     const toplamDugum = dugumler.length
 
+    const dugumlerByPozId = {}
     const isPaketCounts = {}
     const isPaketPozSets = {}
+
     dugumler.forEach(dugum => {
+      const pozIdStr = dugum._pozId ? dugum._pozId.toString() : null
+
+      if (pozIdStr) {
+        if (!dugumlerByPozId[pozIdStr]) {
+          dugumlerByPozId[pozIdStr] = []
+        }
+        dugumlerByPozId[pozIdStr].push(dugum)
+      }
+
       if (dugum.isPaketler && dugum.isPaketler.length > 0) {
         dugum.isPaketler.forEach(paket => {
           if (paket._id) {
             const id = paket._id.toString()
-            if (!isPaketCounts[id]) isPaketCounts[id] = 0
-            isPaketCounts[id]++
-            if (dugum._pozId) {
+            isPaketCounts[id] = (isPaketCounts[id] || 0) + 1
+            if (pozIdStr) {
               if (!isPaketPozSets[id]) isPaketPozSets[id] = new Set()
-              isPaketPozSets[id].add(dugum._pozId.toString())
+              isPaketPozSets[id].add(pozIdStr)
             }
           }
         })
@@ -861,7 +848,42 @@ const getIsPaketler = async (req, res) => {
       isPaketPozSayisi[id] = isPaketPozSets[id].size
     })
 
-    res.json({ toplamDugum, isPaketCounts, isPaketPozSayisi, pozlar })
+    const pozlarResult = pozlar.map(onePoz => {
+      const pozIdStr = onePoz._id.toString()
+      const dugumler2 = dugumlerByPozId[pozIdStr] || []
+
+      const isPaketlerMap = new Map()
+      let isPaketler_empityArrayCounts = 0
+      let isPaketler_mukerrerArrayCounts = 0
+
+      dugumler2.forEach(oneDugum => {
+        
+        if (oneDugum.isPaketler && oneDugum.isPaketler.length > 0) {
+          oneDugum.isPaketler.forEach(oneIsPaket => {
+            if (oneIsPaket._id) {
+              isPaketlerMap.set(oneIsPaket._id.toString(), oneIsPaket)
+            }
+          })
+        } else {
+          isPaketler_empityArrayCounts++
+        }
+
+        if (oneDugum.isPaketler && oneDugum.isPaketler.length > 1) {
+          isPaketler_mukerrerArrayCounts++
+        }
+
+      })
+
+
+      return {
+        ...onePoz,
+        isPaketler: Array.from(isPaketlerMap.values()),
+        isPaketler_empityArrayCounts,
+        isPaketler_mukerrerArrayCounts
+      }
+    })
+
+    res.json({ toplamDugum, isPaketCounts, isPaketPozSayisi, pozlar: pozlarResult })
 
   } catch (err) {
     console.log(err)
@@ -875,5 +897,5 @@ module.exports = {
   createPoz,
   getPozlar,
   updateBirimFiyatlar,
-  getIsPaketler
+  getIsPaketPozlar
 }
