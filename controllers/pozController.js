@@ -792,9 +792,9 @@ const updateBirimFiyatlar = async (req, res) => {
 
 
 
-const getIsPaketlerDugumler = async (req, res) => {
+const getIsPaketler = async (req, res) => {
 
-  const hataBase = "BACKEND - (getIsPaketlerDugumler) - "
+  const hataBase = "BACKEND - (getIsPaketler) - "
 
   try {
 
@@ -875,5 +875,5 @@ module.exports = {
   createPoz,
   getPozlar,
   updateBirimFiyatlar,
-  getIsPaketlerDugumler
+  getIsPaketler
 }
