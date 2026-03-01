@@ -599,7 +599,103 @@ const createVersiyon_birimFiyat = async (req, res) => {
 
 
 
+const createVersiyon_isPaket = async (req, res) => {
+
+  const hataBase = "BACKEND - (createVersiyon_isPaket) - "
+
+  try {
+
+    const currentTime = new Date()
+
+    const {
+      email: userEmail,
+    } = JSON.parse(req.user)
+
+    const { projeId, versiyonNumber, aciklama } = req.body
+
+    let _projeId
+    try {
+      _projeId = new ObjectId(projeId)
+    } catch (error) {
+      throw new Error("DB ye gönderilen 'projeId' verisi geçerli bir BSON ObjectId verisine dönüşemedi, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!versiyonNumber) {
+      throw new Error("'versiyonNumber' verisi db sorgusuna gelmedi")
+    }
+
+    let theProje = await Proje.findOne({ _id: _projeId })
+    if (!theProje) {
+      throw new Error("sorguya gönderilen projeId ile sistemde document bulunamadı, lütfen sayfayı yenileyiniz.")
+    }
+
+    // yetki kontrol
+    try {
+      if (!theProje.aktifYetkiliKisiler.find(x => x.yetki === "isPaketEdit" && x.email === userEmail)) {
+        return res.status(200).json({ message: "Gerekli süre içerisinde işlem yapmadınız ya da bu işlem için yetkiniz yok, sayfayı yenileyip tekrar deneyiniz, Rapor7/24 ile iletişime geçebilirsiniz." })
+      }
+    } catch (error) {
+      throw new Error("tryCatch -yetki- " + error)
+    }
+
+    // Tüm dugumlar için isPaketler snapshot'ını isPaketVersiyonlar'a ekle
+    try {
+      await Dugum.updateMany(
+        { _projeId },
+        [{
+          $set: {
+            isPaketVersiyonlar: {
+              $concatArrays: [
+                { $ifNull: ["$isPaketVersiyonlar", []] },
+                [{ versiyonNumber, isPaketler: { $ifNull: ["$isPaketler", []] } }]
+              ]
+            }
+          }
+        }]
+      )
+    } catch (error) {
+      throw new Error("tryCatch -1- " + error)
+    }
+
+    // Proje'nin isPaketler'ini yeni versiyona kaydet, aktifYetkiliKisiler'den isPaketEdit'i kaldır
+    let updatedProje
+    try {
+      updatedProje = await Proje.findOneAndUpdate(
+        { _id: _projeId },
+        [{
+          $set: {
+            isPaketVersiyonlar: {
+              $concatArrays: [
+                { $ifNull: ["$isPaketVersiyonlar", []] },
+                [{ versiyonNumber, isPaketler: { $ifNull: ["$isPaketler", []] }, aciklama, createdAt: currentTime, createdBy: userEmail }]
+              ]
+            },
+            aktifYetkiliKisiler: {
+              $filter: {
+                input: "$aktifYetkiliKisiler",
+                as: "oneAktif",
+                cond: { $ne: ["$$oneAktif.yetki", "isPaketEdit"] }
+              }
+            }
+          }
+        }],
+        { new: true }
+      )
+    } catch (error) {
+      throw new Error("tryCatch -2- " + error)
+    }
+
+    return res.status(200).json({ ok: true, isPaketVersiyonlar: updatedProje.isPaketVersiyonlar })
+
+  } catch (error) {
+    return res.status(400).json({ error: hataBase + error })
+  }
+
+}
+
+
 module.exports = {
   createVersiyon_metraj,
-  createVersiyon_birimFiyat
+  createVersiyon_birimFiyat,
+  createVersiyon_isPaket
 }

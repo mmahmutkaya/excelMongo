@@ -34,6 +34,7 @@ const metrajVersiyonSchema = mongoose.Schema(
 const isPaketVersiyonSchema = mongoose.Schema(
   {
     versiyonNumber: Number,
+    isPaketler: Array,
     aciklama: String,
     createdAt: Date,
     createdby: String
