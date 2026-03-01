@@ -848,6 +848,8 @@ const getIsPaketPozlar = async (req, res) => {
       isPaketPozSayisi[id] = isPaketPozSets[id].size
     })
 
+    const toplamSecilenDugum = Object.values(isPaketDugumSayisi).reduce((sum, val) => sum + val, 0)
+
     const pozlarResult = pozlar.map(onePoz => {
       const pozIdStr = onePoz._id.toString()
       const dugumler2 = dugumlerByPozId[pozIdStr] || []
@@ -877,7 +879,7 @@ const getIsPaketPozlar = async (req, res) => {
       }
     })
 
-    res.json({ toplamDugum, isPaketDugumSayisi, isPaketPozSayisi, pozlar: pozlarResult })
+    res.json({ toplamDugum, toplamSecilenDugum, isPaketDugumSayisi, isPaketPozSayisi, pozlar: pozlarResult })
 
   } catch (err) {
     console.log(err)
