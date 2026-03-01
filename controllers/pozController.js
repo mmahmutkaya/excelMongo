@@ -816,7 +816,7 @@ const getIsPaketPozlar = async (req, res) => {
     const toplamDugum = dugumler.length
 
     const dugumlerByPozId = {}
-    const isPaketCounts = {}
+    const isPaketDugumSayisi = {}
     const isPaketPozSets = {}
 
     dugumler.forEach(dugum => {
@@ -833,7 +833,7 @@ const getIsPaketPozlar = async (req, res) => {
         dugum.isPaketler.forEach(paket => {
           if (paket._id) {
             const id = paket._id.toString()
-            isPaketCounts[id] = (isPaketCounts[id] || 0) + 1
+            isPaketDugumSayisi[id] = (isPaketDugumSayisi[id] || 0) + 1
             if (pozIdStr) {
               if (!isPaketPozSets[id]) isPaketPozSets[id] = new Set()
               isPaketPozSets[id].add(pozIdStr)
@@ -877,7 +877,7 @@ const getIsPaketPozlar = async (req, res) => {
       }
     })
 
-    res.json({ toplamDugum, isPaketCounts, isPaketPozSayisi, pozlar: pozlarResult })
+    res.json({ toplamDugum, isPaketDugumSayisi, isPaketPozSayisi, pozlar: pozlarResult })
 
   } catch (err) {
     console.log(err)
