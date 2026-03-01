@@ -854,10 +854,9 @@ const getIsPaketPozlar = async (req, res) => {
 
       const isPaketlerMap = new Map()
       let isPaketler_empityArrayCounts = 0
-      let isPaketler_mukerrerArrayCounts = 0
 
       dugumler2.forEach(oneDugum => {
-        
+
         if (oneDugum.isPaketler && oneDugum.isPaketler.length > 0) {
           oneDugum.isPaketler.forEach(oneIsPaket => {
             if (oneIsPaket._id) {
@@ -868,18 +867,13 @@ const getIsPaketPozlar = async (req, res) => {
           isPaketler_empityArrayCounts++
         }
 
-        if (oneDugum.isPaketler && oneDugum.isPaketler.length > 1) {
-          isPaketler_mukerrerArrayCounts++
-        }
-
       })
 
 
       return {
         ...onePoz,
         isPaketler: Array.from(isPaketlerMap.values()),
-        isPaketler_empityArrayCounts,
-        isPaketler_mukerrerArrayCounts
+        isPaketler_empityArrayCounts
       }
     })
 
