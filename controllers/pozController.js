@@ -879,7 +879,9 @@ const getIsPaketPozlar = async (req, res) => {
       }
     })
 
-    res.json({ toplamDugum, toplamSecilenDugum, isPaketDugumSayisi, isPaketPozSayisi, pozlar: pozlarResult })
+    const toplamAciktaKalanDugum = toplamDugum - toplamSecilenDugum
+
+    res.json({ toplamDugum, toplamSecilenDugum, toplamAciktaKalanDugum, isPaketDugumSayisi, isPaketPozSayisi, pozlar: pozlarResult })
 
   } catch (err) {
     console.log(err)
