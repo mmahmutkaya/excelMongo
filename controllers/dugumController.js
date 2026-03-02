@@ -369,7 +369,7 @@ const getDugumler_byPoz = async (req, res) => {
       soyisim: userSoyisim
     } = JSON.parse(req.user)
 
-    const { projeid, pozid, selectedmetrajversiyontext } = req.headers
+    const { projeid, pozid, selectedmetrajversiyontext, ispaketversiyonnumber } = req.headers
 
     if (!projeid) {
       throw new Error("'_projeId' verisi db sorgusuna gelmedi");
@@ -760,6 +760,20 @@ const getDugumler_byPoz = async (req, res) => {
 
     } catch (error) {
       throw new Error({ hatayeri: "metrajOnaylanan", error });
+    }
+
+    // isPaket versiyon dönüşümü: ispaketversiyonnumber gönderildiyse (görüntüleme modu)
+    // dugum.isPaketler yerine dugum.isPaketVersiyonlar[versiyonNumber] kullan
+    if (ispaketversiyonnumber !== undefined && ispaketversiyonnumber !== null && ispaketversiyonnumber !== '') {
+      const vNum = Number(ispaketversiyonnumber)
+      dugumler_byPoz = dugumler_byPoz.map(dugum => {
+        const versiyon = (dugum.isPaketVersiyonlar || []).find(v => v.versiyonNumber === vNum)
+        return {
+          ...dugum,
+          isPaketler: versiyon ? (versiyon.isPaketler || []) : [],
+          isPaketVersiyonlar: undefined
+        }
+      })
     }
 
     return res.status(200).json({ dugumler_byPoz, lbsMetrajlar, anySelectable, metrajOnaylanan, hazirlananMetrajlar })

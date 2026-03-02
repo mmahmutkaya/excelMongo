@@ -798,14 +798,22 @@ const getIsPaketPozlar = async (req, res) => {
 
   try {
 
-    const { projeid } = req.headers
+    const { projeid, ispaketversiyonnumber } = req.headers
 
     if (!projeid) throw new Error(hataBase + "projeid bulunamadı")
+
+    const vNum = (ispaketversiyonnumber !== undefined && ispaketversiyonnumber !== null && ispaketversiyonnumber !== '')
+      ? Number(ispaketversiyonnumber)
+      : null
+
+    const dugumProjection = vNum !== null
+      ? { isPaketler: 1, isPaketVersiyonlar: 1, _pozId: 1 }
+      : { isPaketler: 1, _pozId: 1 }
 
     const [dugumler, pozlar] = await Promise.all([
       Dugum.find(
         { _projeId: new ObjectId(projeid), openMetraj: true },
-        { isPaketler: 1, _pozId: 1 }
+        dugumProjection
       ).lean(),
       Poz.find(
         { _projeId: new ObjectId(projeid) },
@@ -822,15 +830,20 @@ const getIsPaketPozlar = async (req, res) => {
     dugumler.forEach(dugum => {
       const pozIdStr = dugum._pozId ? dugum._pozId.toString() : null
 
+      // Versiyon modunda: dugum.isPaketVersiyonlar[vNum], düzenleme modunda: dugum.isPaketler
+      const effectiveIsPaketler = vNum !== null
+        ? ((dugum.isPaketVersiyonlar || []).find(v => v.versiyonNumber === vNum)?.isPaketler || [])
+        : (dugum.isPaketler || [])
+
       if (pozIdStr) {
         if (!dugumlerByPozId[pozIdStr]) {
           dugumlerByPozId[pozIdStr] = []
         }
-        dugumlerByPozId[pozIdStr].push(dugum)
+        dugumlerByPozId[pozIdStr].push({ ...dugum, _effectiveIsPaketler: effectiveIsPaketler })
       }
 
-      if (dugum.isPaketler && dugum.isPaketler.length > 0) {
-        dugum.isPaketler.forEach(paket => {
+      if (effectiveIsPaketler.length > 0) {
+        effectiveIsPaketler.forEach(paket => {
           if (paket._id) {
             const id = paket._id.toString()
             isPaketDugumSayisi[id] = (isPaketDugumSayisi[id] || 0) + 1
@@ -859,8 +872,10 @@ const getIsPaketPozlar = async (req, res) => {
 
       dugumler2.forEach(oneDugum => {
 
-        if (oneDugum.isPaketler && oneDugum.isPaketler.length > 0) {
-          oneDugum.isPaketler.forEach(oneIsPaket => {
+        const effectiveIsPaketler = oneDugum._effectiveIsPaketler || []
+
+        if (effectiveIsPaketler.length > 0) {
+          effectiveIsPaketler.forEach(oneIsPaket => {
             if (oneIsPaket._id) {
               isPaketlerMap.set(oneIsPaket._id.toString(), oneIsPaket)
             }
