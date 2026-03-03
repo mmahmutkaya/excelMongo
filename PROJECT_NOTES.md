@@ -1,175 +1,196 @@
-# PROJECT NOTES - excelMongo (Rapor 7/24 Backend)
+# excelMongo — Proje Notları
 
-## Proje Özeti
-İnşaat proje yönetimi için **Node.js + Express + MongoDB** backend API.
-Metraj takibi, birim fiyat yönetimi, sözleşme yönetimi ve hiyerarşik proje yapısı sunar.
+## Genel Bakış
 
-**Deployment:** Vercel (serverless) | **DB:** MongoDB Atlas (`rapor724_v2`)
-**Port:** 4000 | **Frontend Origin:** `https://rapor724.vercel.app` & `localhost:3000`
-
----
-
-## Mimari Genel Bakış
-
-```
-Firma → Proje → [Poz + Mahal] → Dugum (kesişim noktası)
-```
-
-- **Poz** = Ne yapılıyor (iş kalemi)
-- **Mahal** = Nerede yapılıyor (konum/bölüm)
-- **Dugum** = Poz + Mahal kesişimi (metraj burada tutulur)
-
-**Klasör yapısı:** `controllers/` → `models/` → `routes/` → `middleware/`
+**Proje adı:** Rapor 7/24
+**Tip:** Node.js / Express REST API
+**Database:** MongoDB Atlas — `rapor724_v2`
+**Port:** 4000
+**Deploy:** Vercel
+**Frontend:** https://rapor724.vercel.app (React)
+**Dil:** Türkçe (contracts modülü İngilizce'ye migrate edildi)
 
 ---
 
-## Veri Modelleri
+## Bağlantı
 
-| Model | Amaç | Önemli Alanlar |
-|-------|------|----------------|
-| **User** | Kimlik doğrulama | email, password, mailTeyit, isim, soyisim, userCode, customSettings |
-| **Firma** | Şirket ana kaydı | name, wbs[], lbs[], paraBirimleri[], pozBirimleri[], yetkiliKisiler[] |
-| **Proje** | Proje konteyneri | _firmaId, wbs[], lbs[], metrajVersiyonlar[], birimFiyatVersiyonlar[], isPaketVersiyonlar[] |
-| **Poz** | İş kalemi/pozisyon | _firmaId, _projeId, _wbsId, pozNo, pozName, pozBirimId, birimFiyatlar[] |
-| **Mahal** | Konum/bölüm | _projeId, _lbsId, mahalNo, mahalName |
-| **Dugum** | Poz+Mahal kesişimi | _projeId, _pozId, _mahalId, hazirlananMetrajlar[], revizeMetrajlar[], isPaketler[] |
-| **Contract** | Sözleşmeler | _projectId, _companyId, contractNumber, status, signatories[], contractVersions[] |
-
----
-
-## API Endpoint Özeti
-
-### `/api/user`
 ```
-POST /signup, /login, /sendmailcode, /confirmmailcode
-POST /savenecessaryuserdata, /customsettingspagessetdata
-```
-
-### `/api/firmalar`
-```
-GET /, /:id | POST / | PATCH /parabirimleri
-```
-
-### `/api/projeler`
-```
-GET /byfirma/:id, /:id
-POST /, /createwbs, /updatewbs, /togglewbsforpoz, /deletewbs
-POST /movewbs{up|down|left|right}, /createlbs, /createispaket
-POST /request/deleteprojeaktifyetkilikisi
-```
-
-### `/api/pozlar`
-```
-GET /  (versiyon filtrelemeli)
-POST /
-PATCH /birimfiyatlar
-GET /ispaketpozlar
-```
-
-### `/api/mahaller`
-```
-GET /, POST /
-```
-
-### `/api/dugumler` (En karmaşık modül)
-```
-POST /
-GET /pozlar, /mahallerbypoz, /bypoz
-GET /hazirlananmetraj, /onaylananmetraj, /hazirlananmetrajlar
-POST /addmetrajsatiri
-POST /updatehazirlananmetrajpreparing, /updatehazirlananmetrajready
-POST /updateonaylananmetrajrevize, /updateonaylananmetrajsil
-POST /updatehazirlananmetraj{lar|seen|selected|selectedfull|unReady}
-POST /ispaketler
-```
-
-### `/api/versiyon`
-```
-POST /metraj, /birimfiyat, /ispaket
-```
-
-### `/api/contracts`
-```
-POST /
-GET /byproject/:projectId, /:id
-PATCH /:id, /:id/status
-DELETE /:id
-POST /:id/signatory
-DELETE /:id/signatory/:signatoryId
+MONGO_URI = mongodb+srv://excelUser:excel1923@serverless1.bzqa6.mongodb.net/rapor724_v2
 ```
 
 ---
 
-## Middleware (Auth Katmanları)
+## Koleksiyonlar ve Modeller
 
-1. **requireAuth** - JWT doğrulama
-2. **requireMailTeyit** - Email doğrulama kontrolü
-3. **requireAuthAndNecessary** - Tam profil (isim + soyisim + userCode) zorunlu
+### 1. `users` — `models/userModel.js`
+| Alan | Tip | Açıklama |
+|------|-----|----------|
+| email | String | unique |
+| password | String | bcrypt hash |
+| isim | String | |
+| soyisim | String | |
+| userCode | String | isim[0..1] + soyisim |
+| mailConfirmationKod | String | 6 haneli |
+| mailTeyit | Boolean | email doğrulama |
+| customSettings | Object | UI tercihleri (sayfa bazlı) |
 
-**Kullanıcı onboarding akışı:**
-`signup` → `sendmailcode` → `confirmmailcode` → `savenecessaryuserdata` → tüm route'lara erişim
-
----
-
-## Önemli Mimari Kararlar
-
-### Versiyon Sistemi
-Her projede 3 paralel versiyon dizisi:
-- `metrajVersiyonlar` - Metraj versiyonları
-- `birimFiyatVersiyonlar` - Birim fiyat versiyonları
-- `isPaketVersiyonlar` - İş paketi versiyonları
-
-### Hata Yönetimi
-- **Form hataları:** status 200 + `errorObject` (client-side validation için)
-- **Sistem hataları:** status 400+
-- Tüm hata mesajları `"BACKEND - (functionName) - " + error` formatında
-
-### customSettings Yapısı
-```javascript
-customSettings.pages.{sayfaAdi}.basliklar = [...]
-// Sayfalar: firmapozlari, metraj, diğerleri...
-```
-
-### Yetki Sistemi
-```javascript
-yetkiliKisiler: [{ email, yetkiler: [{name: "owner"}, {name: "birimFiyatEdit"}, ...] }]
-```
-
-### Dil Geçişi
-- Eski kod: **Türkçe** alan adları (wbs, lbs, poz, mahal, dugum, metraj, vb.)
-- **contracts** modülü Şubat 2025'te İngilizce'ye migrate edildi
-- Diğer modüller hâlâ Türkçe
+**Static metodlar:** `signup()`, `login()`
 
 ---
 
-## Kritik Dosyalar
-
-| Dosya | Önem |
-|-------|------|
-| `server.js` | Entry point, route bağlantıları |
-| `controllers/dugumController.js` | En karmaşık business logic |
-| `controllers/pozController.js` | Aggregation pipeline'lar |
-| `models/dugumModel.js` | En karmaşık schema |
-| `models/projeModel.js` | Versiyon sistemi çekirdeği |
-| `middleware/requireAuthAndNecessary.js` | Tüm korumalı route'lar için kapı |
-| `scripts/remove-ispaket-fields.js` | DB migration script (dry-run destekli) |
-
----
-
-## Bağımlılıklar
-```
-express, mongoose, jsonwebtoken, bcrypt, cors, dotenv, lodash, validator, nodemailer, nodemon
-```
+### 2. `firmalar` — `models/firmaModel.js`
+| Alan | Tip |
+|------|-----|
+| name | String |
+| wbs | Array |
+| lbs | Array |
+| paraBirimleri | Array |
+| pozMetrajTipleri | Array |
+| pozBirimleri | Array |
+| yetkiliKisiler | Array |
+| createdAt | Date |
+| createdBy | String |
 
 ---
 
-## .env Değişkenleri
-```
-PORT=4000
-MONGO_URI=mongodb+srv://...rapor724_v2...
-SECRET=<jwt_secret>
-```
+### 3. `projeler` — `models/projeModel.js`
+| Alan | Tip | Açıklama |
+|------|-----|----------|
+| _firmaId | ObjectId | firmalar ref |
+| name | String | |
+| wbs | Array | Work Breakdown Structure |
+| lbs | Array | Labor Breakdown Structure |
+| paraBirimleri | Array | |
+| pozMetrajTipleri | Array | |
+| pozBirimleri | Array | |
+| yetkiliKisiler | Array | |
+| aktifYetkiliKisiler | Array | |
+| yetkiliFirmalar | Array | |
+| metrajVersiyonlar | Array | `{versiyonNumber, aciklama, createdAt, createdby}` |
+| birimFiyatVersiyonlar | Array | `{versiyonNumber, aciklama, createdAt, createdby}` |
+| isPaketVersiyonlar | Array | `{versiyonNumber, isPaketler, aciklama, createdAt, createdby}` |
+| isPaketler | Array | **kaldırıldı** (bkz. migration) |
+| birimFiyatVersiyon_isProgress | Boolean | |
+| createdBy | String | |
+| createdAt | Date | |
 
 ---
 
-_Son güncelleme: 2026-03-03_
+### 4. `pozlar` — `models/pozModel.js`
+| Alan | Tip |
+|------|-----|
+| _firmaId | ObjectId |
+| _projeId | ObjectId |
+| _wbsId | ObjectId |
+| pozNo | String |
+| pozName | String |
+| pozBirimId | String |
+| pozMetrajTipId | String |
+| birimFiyatlar | Array |
+| birimFiyatVersiyonlar | Array |
+| metrajVersiyonlar | Array |
+
+---
+
+### 5. `mahaller` — `models/mahalModel.js`
+| Alan | Tip |
+|------|-----|
+| _firmaId | ObjectId (required) |
+| _projeId | ObjectId (required) |
+| _lbsId | ObjectId (required) |
+| mahalNo | String |
+| mahalName | String |
+
+---
+
+### 6. `dugumler` — `models/dugumModel.js`
+Ölçüm düğümleri — poz + mahal kesişiminde oluşur.
+
+| Alan | Tip | Açıklama |
+|------|-----|----------|
+| _projeId | ObjectId | |
+| _mahalId | ObjectId | |
+| _pozId | ObjectId | |
+| openMetraj | Boolean | |
+| isDeleted | Boolean | soft delete |
+| hazirlananMetrajlar | Array | hazırlık aşamasındaki metrajlar |
+| revizeMetrajlar | Array | revize edilmiş metrajlar |
+| isPaketler | Array | |
+| metrajVersiyonlar | Array | |
+| isPaketVersiyonlar | Array | |
+
+**satirSchema:** `{number, multipliers, measurementStatus, versioning, ...}`
+
+---
+
+### 7. `contracts` — `models/contractModel.js`
+*(İngilizce — yeni eklendi)*
+
+| Alan | Tip |
+|------|-----|
+| _projectId | ObjectId |
+| _companyId | ObjectId |
+| contractNumber | String |
+| contractName | String |
+| contractType | String |
+| contractor / email / phone / address | String |
+| startDate / endDate / renewalDate | Date |
+| contractAmount | Number |
+| currency | String |
+| paymentSchedule | String |
+| status | `Active\|Completed\|Pending\|Terminated\|In Progress` |
+| initialApproval / finalApproval | `{date, approver}` |
+| signatories | Array `{name, position, signDate, email, notes}` |
+| contractVersions | Array |
+| documentUrl / attachments | String / Array |
+| notes / internalNotes | String |
+| createdBy / updatedBy | String |
+
+---
+
+## Route Özeti
+
+| Prefix | Dosya |
+|--------|-------|
+| `/api/user` | `routes/user.js` |
+| `/api/firmalar` | `routes/firmalar.js` |
+| `/api/projeler` | `routes/projeler.js` |
+| `/api/pozlar` | `routes/pozlar.js` |
+| `/api/mahaller` | `routes/mahaller.js` |
+| `/api/dugumler` | `routes/dugumler.js` |
+| `/api/versiyon` | `routes/versiyon.js` |
+| `/api/contracts` | `routes/contracts.js` |
+
+---
+
+## Auth Middleware
+
+| Middleware | Kontrol |
+|------------|---------|
+| `requireAuth` | JWT token geçerli mi |
+| `requireMailTeyit` | mailTeyit === true |
+| `requireAuthAndNecessary` | JWT + mailTeyit + isim + soyisim + userCode |
+
+JWT header'ları: `email`, `token`
+JWT süresi: 7 gün
+
+---
+
+## Migration Geçmişi
+
+| Tarih | İşlem | Koleksiyon |
+|-------|-------|------------|
+| — | `contracts` modülü Türkçe → İngilizce | `contracts` |
+| 2026-03 | `isPaketler` + `isPaketVersiyonlar` alanları kaldırıldı | `dugumler` |
+| 2026-03 | `isPaketler` + `isPaketVersiyonlar` alanları kaldırıldı | `projeler` |
+
+**Playground dosyaları:** `mongoplayground/` klasöründe
+
+---
+
+## Önemli Notlar
+
+- `pozlar`, `mahaller`, `dugumler` üçgeni projenin çekirdeği — WBS ve LBS hiyerarşisi üzerinde çalışır
+- Versiyon yönetimi hem `projeler` hem `dugumler` içinde; `versiyonNumber` artan integer
+- `customSettings` her kullanıcı için sayfa bazlı UI konfigürasyonu tutar
+- CORS: sadece `localhost:3000` ve `rapor724.vercel.app`
