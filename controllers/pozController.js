@@ -890,7 +890,8 @@ const getIsPaketPozlar = async (req, res) => {
       return {
         ...onePoz,
         isPaketler: Array.from(isPaketlerMap.values()),
-        isPaketler_empityArrayCounts
+        isPaketler_empityArrayCounts,
+        dugumler_totalCount: dugumler2.length
       }
     })
 
