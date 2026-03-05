@@ -41,6 +41,16 @@ const isPaketVersiyonSchema = mongoose.Schema(
   }
 )
 
+const butceVersiyonSchema = mongoose.Schema(
+  {
+    versiyonNumber: Number,
+    butce: Object,
+    aciklama: String,
+    createdAt: Date,
+    createdBy: String
+  }
+)
+
 const projeSchema = new Schema(
   {
     _firmaId: mongoose.ObjectId,
@@ -58,6 +68,8 @@ const projeSchema = new Schema(
     isPaketVersiyonlar: [isPaketVersiyonSchema],
     isPaketler: Array,
     birimFiyatVersiyon_isProgress: Boolean,
+    butce: Object,
+    butceVersiyonlar: [butceVersiyonSchema],
     createdBy: String,
     createdAt: Date
   },

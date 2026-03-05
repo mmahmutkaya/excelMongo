@@ -22,7 +22,10 @@ const {
   moveLbsRight,
   createIsPaket,
   requestProjeAktifYetkiliKisi,
-  deleteProjeAktifYetkiliKisi
+  deleteProjeAktifYetkiliKisi,
+  updateProjeButce,
+  calculateButceTutar,
+  calculateIsPaketKesifTutar
 } = require('../controllers/projeController')
 
 const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
@@ -66,9 +69,14 @@ router.post('/movelbsright', moveLbsRight)
 router.post('/createispaket', createIsPaket)
 
 
-// 
+//
 router.post('/requestprojeaktifyetkilikisi', requestProjeAktifYetkiliKisi)
 router.post('/deleteprojeaktifyetkilikisi', deleteProjeAktifYetkiliKisi)
+
+// Bütçe
+router.post('/updatebutce', updateProjeButce)
+router.post('/calculatebutce', calculateButceTutar)
+router.post('/calculateispaketkesif', calculateIsPaketKesifTutar)
 
 
 module.exports = router

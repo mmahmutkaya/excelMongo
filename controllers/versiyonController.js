@@ -694,8 +694,68 @@ const createVersiyon_isPaket = async (req, res) => {
 }
 
 
+const createVersiyon_butce = async (req, res) => {
+
+  const hataBase = "BACKEND - (createVersiyon_butce) - "
+
+  try {
+
+    const currentTime = new Date()
+
+    const {
+      email: userEmail,
+    } = JSON.parse(req.user)
+
+    const { projeId, versiyonNumber, aciklama } = req.body
+
+    let _projeId
+    try {
+      _projeId = new ObjectId(projeId)
+    } catch (error) {
+      throw new Error("DB ye gönderilen 'projeId' verisi geçerli bir BSON ObjectId verisine dönüşemedi, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!versiyonNumber) {
+      throw new Error("'versiyonNumber' verisi db sorgusuna gelmedi")
+    }
+
+    let theProje = await Proje.findOne({ _id: _projeId })
+    if (!theProje) {
+      throw new Error("sorguya gönderilen projeId ile sistemde document bulunamadı, lütfen sayfayı yenileyiniz.")
+    }
+
+    let updatedProje
+    try {
+      updatedProje = await Proje.findOneAndUpdate(
+        { _id: _projeId },
+        [{
+          $set: {
+            butceVersiyonlar: {
+              $concatArrays: [
+                { $ifNull: ["$butceVersiyonlar", []] },
+                [{ versiyonNumber, butce: { $ifNull: ["$butce", {}] }, aciklama, createdAt: currentTime, createdBy: userEmail }]
+              ]
+            }
+          }
+        }],
+        { new: true }
+      )
+    } catch (error) {
+      throw new Error("tryCatch -1- " + error)
+    }
+
+    return res.status(200).json({ ok: true, butceVersiyonlar: updatedProje.butceVersiyonlar })
+
+  } catch (error) {
+    return res.status(400).json({ error: hataBase + error })
+  }
+
+}
+
+
 module.exports = {
   createVersiyon_metraj,
   createVersiyon_birimFiyat,
-  createVersiyon_isPaket
+  createVersiyon_isPaket,
+  createVersiyon_butce
 }

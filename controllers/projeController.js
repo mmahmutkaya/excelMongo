@@ -2,7 +2,7 @@ const Proje = require('../models/projeModel')
 const Poz = require('../models/pozModel')
 const Mahal = require('../models/mahalModel')
 const Firma = require('../models/firmaModel')
-// const Dugum = require('../models/dugumModel')
+const Dugum = require('../models/dugumModel')
 
 
 const mongoose = require('mongoose')
@@ -3593,6 +3593,167 @@ const deleteProjeAktifYetkiliKisi = async (req, res) => {
 
 
 
+const updateProjeButce = async (req, res) => {
+
+  const hataBase = "BACKEND - (updateProjeButce) - "
+
+  try {
+
+    const { projeId, butce } = req.body
+
+    let _projeId
+    try {
+      _projeId = new ObjectId(projeId)
+    } catch (error) {
+      throw new Error("DB ye gönderilen 'projeId' verisi geçerli bir BSON ObjectId verisine dönüşemedi, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (butce === undefined || butce === null) {
+      throw new Error("'butce' verisi db sorgusuna gelmedi")
+    }
+
+    await Proje.updateOne({ _id: _projeId }, { $set: { butce } })
+
+    return res.status(200).json({ ok: true })
+
+  } catch (error) {
+    return res.status(400).json({ error: hataBase + error })
+  }
+
+}
+
+
+const calculateButceTutar = async (req, res) => {
+
+  const hataBase = "BACKEND - (calculateButceTutar) - "
+
+  try {
+
+    const { projeId, isPaketVersiyonNumber, metrajVersiyonNumber, birimFiyatVersiyonNumber } = req.body
+
+    let _projeId
+    try {
+      _projeId = new ObjectId(projeId)
+    } catch (error) {
+      throw new Error("DB ye gönderilen 'projeId' verisi geçerli bir BSON ObjectId verisine dönüşemedi, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (isPaketVersiyonNumber === undefined || isPaketVersiyonNumber === null) throw new Error("'isPaketVersiyonNumber' verisi gelmedi")
+    if (metrajVersiyonNumber === undefined || metrajVersiyonNumber === null) throw new Error("'metrajVersiyonNumber' verisi gelmedi")
+    if (birimFiyatVersiyonNumber === undefined || birimFiyatVersiyonNumber === null) throw new Error("'birimFiyatVersiyonNumber' verisi gelmedi")
+
+    // Projeye ait tüm düğümleri çek (silinmemiş)
+    const dugumler = await Dugum.find({ _projeId, isDeleted: { $ne: true } })
+
+    // Belirtilen iş paketi versiyonuna dahil olan düğümleri filtrele
+    // (isPaketVersiyonlar[n].isPaketler.length > 0 → o versiyonda bir IS pakete atanmış)
+    const relevantDugumlar = dugumler.filter(dugum => {
+      const ipVersiyon = (dugum.isPaketVersiyonlar || []).find(v => v.versiyonNumber === isPaketVersiyonNumber)
+      if (!ipVersiyon) return false
+      return (ipVersiyon.isPaketler || []).length > 0
+    })
+
+    if (relevantDugumlar.length === 0) {
+      return res.status(200).json({ ok: true, tutar: 0 })
+    }
+
+    // Pozları çek
+    const pozlar = await Poz.find({ _projeId })
+
+    // Poz ID → birim fiyat haritası (birimFiyatVersiyonNumber'a göre)
+    const pozBirimFiyatMap = {}
+    pozlar.forEach(poz => {
+      const bf = (poz.birimFiyatVersiyonlar || []).find(v => v.versiyonNumber === birimFiyatVersiyonNumber)
+      if (bf) {
+        pozBirimFiyatMap[poz._id.toString()] = (bf.birimFiyatlar || []).reduce((sum, oneFiyat) => {
+          return sum + (Number(oneFiyat.fiyat) || 0)
+        }, 0)
+      } else {
+        pozBirimFiyatMap[poz._id.toString()] = 0
+      }
+    })
+
+    // Tutar = Σ (metrajOnaylanan × birimFiyat)
+    let tutar = 0
+    relevantDugumlar.forEach(dugum => {
+      const metrajVersiyon = (dugum.metrajVersiyonlar || []).find(v => v.versiyonNumber === metrajVersiyonNumber)
+      const metrajOnaylanan = metrajVersiyon?.metrajOnaylanan ?? 0
+      const birimFiyat = pozBirimFiyatMap[dugum._pozId.toString()] ?? 0
+      tutar += metrajOnaylanan * birimFiyat
+    })
+
+    return res.status(200).json({ ok: true, tutar: Math.round(tutar * 100) / 100 })
+
+  } catch (error) {
+    return res.status(400).json({ error: hataBase + error })
+  }
+
+}
+
+
+const calculateIsPaketKesifTutar = async (req, res) => {
+
+  const hataBase = "BACKEND - (calculateIsPaketKesifTutar) - "
+
+  try {
+
+    const { projeId, isPaketId, isPaketVersiyonNumber, metrajVersiyonNumber, birimFiyatVersiyonNumber } = req.body
+
+    let _projeId
+    try {
+      _projeId = new ObjectId(projeId)
+    } catch (error) {
+      throw new Error("DB ye gönderilen 'projeId' verisi geçerli bir BSON ObjectId verisine dönüşemedi, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
+    }
+
+    if (!isPaketId) throw new Error("'isPaketId' verisi gelmedi")
+    if (isPaketVersiyonNumber === undefined || isPaketVersiyonNumber === null) throw new Error("'isPaketVersiyonNumber' verisi gelmedi")
+    if (metrajVersiyonNumber === undefined || metrajVersiyonNumber === null) throw new Error("'metrajVersiyonNumber' verisi gelmedi")
+    if (birimFiyatVersiyonNumber === undefined || birimFiyatVersiyonNumber === null) throw new Error("'birimFiyatVersiyonNumber' verisi gelmedi")
+
+    const dugumler = await Dugum.find({ _projeId, isDeleted: { $ne: true } })
+
+    const relevantDugumlar = dugumler.filter(dugum => {
+      const ipVersiyon = (dugum.isPaketVersiyonlar || []).find(v => v.versiyonNumber === isPaketVersiyonNumber)
+      if (!ipVersiyon) return false
+      return (ipVersiyon.isPaketler || []).some(p => p._id.toString() === isPaketId)
+    })
+
+    if (relevantDugumlar.length === 0) {
+      return res.status(200).json({ ok: true, tutar: 0 })
+    }
+
+    const pozlar = await Poz.find({ _projeId })
+
+    const pozBirimFiyatMap = {}
+    pozlar.forEach(poz => {
+      const bf = (poz.birimFiyatVersiyonlar || []).find(v => v.versiyonNumber === birimFiyatVersiyonNumber)
+      if (bf) {
+        pozBirimFiyatMap[poz._id.toString()] = (bf.birimFiyatlar || []).reduce((sum, oneFiyat) => {
+          return sum + (Number(oneFiyat.fiyat) || 0)
+        }, 0)
+      } else {
+        pozBirimFiyatMap[poz._id.toString()] = 0
+      }
+    })
+
+    let tutar = 0
+    relevantDugumlar.forEach(dugum => {
+      const metrajVersiyon = (dugum.metrajVersiyonlar || []).find(v => v.versiyonNumber === metrajVersiyonNumber)
+      const metrajOnaylanan = metrajVersiyon?.metrajOnaylanan ?? 0
+      const birimFiyat = pozBirimFiyatMap[dugum._pozId.toString()] ?? 0
+      tutar += metrajOnaylanan * birimFiyat
+    })
+
+    return res.status(200).json({ ok: true, tutar: Math.round(tutar * 100) / 100 })
+
+  } catch (error) {
+    return res.status(400).json({ error: hataBase + error })
+  }
+
+}
+
+
 module.exports = {
   getProjeler_byFirma,
   getProje,
@@ -3615,5 +3776,8 @@ module.exports = {
   moveLbsRight,
   createIsPaket,
   requestProjeAktifYetkiliKisi,
-  deleteProjeAktifYetkiliKisi
+  deleteProjeAktifYetkiliKisi,
+  updateProjeButce,
+  calculateButceTutar,
+  calculateIsPaketKesifTutar
 }

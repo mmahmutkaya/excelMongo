@@ -4,6 +4,7 @@ const {
   createVersiyon_metraj,
   createVersiyon_birimFiyat,
   createVersiyon_isPaket,
+  createVersiyon_butce,
 } = require('../controllers/versiyonController')
 
 const requireAuthAndNecessary = require('../middleware/requireAuthAndNecessary')
@@ -20,6 +21,7 @@ router.use(requireAuthAndNecessary)
 router.post('/metraj', createVersiyon_metraj)
 router.post('/birimfiyat', createVersiyon_birimFiyat)
 router.post('/ispaket', createVersiyon_isPaket)
+router.post('/butce', createVersiyon_butce)
 
 
 

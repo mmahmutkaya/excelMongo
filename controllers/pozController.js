@@ -195,6 +195,8 @@ const getPozlar = async (req, res) => {
       try { _isPaketId = new ObjectId(ispaketid) } catch (e) { }
     }
 
+    const _isPaketVN = ispaketversiyonnumber ? Number(ispaketversiyonnumber) : null
+
     const proje = await Proje.findOne({ _id: _projeId })
     if (!proje) {
       throw new Error("DB ye gönderilen 'projeid' sistemde bulunamadı, sayfayı yenileyiniz, sorun devam ederse Rapor7/24 ile irtibata geçiniz.")
@@ -290,7 +292,22 @@ const getPozlar = async (req, res) => {
             metrajReady: 1,
             metrajOnaylanan: 1,
             ...(_isPaketId ? {
-              isPaketler: 1
+              isPaketler: 1,
+              ...(_isPaketVN !== null ? {
+                secilenIsPaketler: {
+                  $reduce: {
+                    input: {
+                      $filter: {
+                        input: { $ifNull: ["$isPaketVersiyonlar", []] },
+                        as: "v",
+                        cond: { $eq: ["$$v.versiyonNumber", _isPaketVN] }
+                      }
+                    },
+                    initialValue: [],
+                    in: { $concatArrays: ["$$value", { $ifNull: ["$$this.isPaketler", []] }] }
+                  }
+                }
+              } : {})
             } : {}),
             hazirlananMetrajlar: {
               $map: {
@@ -500,8 +517,47 @@ const getPozlar = async (req, res) => {
               secilenDugum: {
                 $sum: {
                   $cond: {
-                    if: { $in: [_isPaketId, { $ifNull: ["$isPaketler._id", []] }] },
+                    if: {
+                      $or: [
+                        { $in: [_isPaketId, { $ifNull: ["$isPaketler._id", []] }] },
+                        ...(_isPaketVN !== null ? [{
+                          $gt: [{
+                            $size: {
+                              $filter: {
+                                input: { $ifNull: ["$secilenIsPaketler", []] },
+                                as: "ip",
+                                cond: { $eq: ["$$ip._id", _isPaketId] }
+                              }
+                            }
+                          }, 0]
+                        }] : [])
+                      ]
+                    },
                     then: 1,
+                    else: 0
+                  }
+                }
+              },
+              metrajOnaylananSecilen: {
+                $sum: {
+                  $cond: {
+                    if: {
+                      $or: [
+                        { $in: [_isPaketId, { $ifNull: ["$isPaketler._id", []] }] },
+                        ...(_isPaketVN !== null ? [{
+                          $gt: [{
+                            $size: {
+                              $filter: {
+                                input: { $ifNull: ["$secilenIsPaketler", []] },
+                                as: "ip",
+                                cond: { $eq: ["$$ip._id", _isPaketId] }
+                              }
+                            }
+                          }, 0]
+                        }] : [])
+                      ]
+                    },
+                    then: "$metrajOnaylanan",
                     else: 0
                   }
                 }
@@ -532,6 +588,7 @@ const getPozlar = async (req, res) => {
           onePoz.toplamDugum = onePoz2.toplamDugum
           if (_isPaketId) {
             onePoz.secilenDugum = onePoz2.secilenDugum
+            onePoz.metrajOnaylananSecilen = onePoz2.metrajOnaylananSecilen
           }
           // return onePoz2.hazirlanan
           onePoz.hazirlananMetrajlar = metrajYapabilenler.map(oneYapabilen => {
