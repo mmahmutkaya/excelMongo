@@ -291,6 +291,7 @@ const getPozlar = async (req, res) => {
             metrajPreparing: 1,
             metrajReady: 1,
             metrajOnaylanan: 1,
+            metrajVersiyonlar: 1,
             ...(_isPaketId ? {
               isPaketler: 1,
               ...(_isPaketVN !== null ? {
@@ -557,7 +558,19 @@ const getPozlar = async (req, res) => {
                         }] : [])
                       ]
                     },
-                    then: "$metrajOnaylanan",
+                    then: {
+                      $reduce: {
+                        input: { $ifNull: ["$metrajVersiyonlar", []] },
+                        initialValue: 0,
+                        in: {
+                          $cond: {
+                            if: { $eq: ["$$this.versiyonNumber", selectedMetrajVersiyon?.versiyonNumber] },
+                            then: { $ifNull: ["$$this.metrajOnaylanan", 0] },
+                            else: "$$value"
+                          }
+                        }
+                      }
+                    },
                     else: 0
                   }
                 }
