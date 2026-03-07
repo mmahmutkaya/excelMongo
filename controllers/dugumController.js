@@ -419,7 +419,25 @@ const getDugumler_byPoz = async (req, res) => {
             openMetraj: 1,
             metrajPreparing: 1,
             metrajReady: 1,
-            metrajOnaylanan: 1,
+            metrajOnaylanan: {
+              $let: {
+                vars: {
+                  matched: {
+                    $arrayElemAt: [
+                      {
+                        $filter: {
+                          input: { $ifNull: ["$metrajVersiyonlar", []] },
+                          as: "v",
+                          cond: { $eq: ["$$v.versiyonNumber", selectedMetrajVersiyon] }
+                        }
+                      },
+                      0
+                    ]
+                  }
+                },
+                in: { $ifNull: ["$$matched.metrajOnaylanan", "$metrajOnaylanan"] }
+              }
+            },
             isPaketler: 1,
             isPaketVersiyonlar: 1,
             hazirlananMetrajlar: {
