@@ -419,25 +419,45 @@ const getDugumler_byPoz = async (req, res) => {
             openMetraj: 1,
             metrajPreparing: 1,
             metrajReady: 1,
-            metrajOnaylanan: {
-              $let: {
-                vars: {
-                  matched: {
-                    $arrayElemAt: [
-                      {
-                        $filter: {
-                          input: { $ifNull: ["$metrajVersiyonlar", []] },
-                          as: "v",
-                          cond: { $eq: ["$$v.versiyonNumber", selectedMetrajVersiyon] }
+            metrajOnaylanan: selectedMetrajVersiyon === 0
+              ? {
+                  $let: {
+                    vars: {
+                      v0Match: {
+                        $arrayElemAt: [
+                          { $filter: { input: { $ifNull: ["$metrajVersiyonlar", []] }, as: "v", cond: { $eq: ["$$v.versiyonNumber", 0] } } },
+                          0
+                        ]
+                      }
+                    },
+                    in: {
+                      $cond: {
+                        if: { $ne: ["$$v0Match", null] },
+                        then: "$$v0Match.metrajOnaylanan",
+                        else: {
+                          $cond: {
+                            if: { $gt: [{ $size: { $filter: { input: { $ifNull: ["$metrajVersiyonlar", []] }, as: "v", cond: { $gt: ["$$v.versiyonNumber", 0] } } } }, 0] },
+                            then: null,
+                            else: "$metrajOnaylanan"
+                          }
                         }
-                      },
-                      0
-                    ]
+                      }
+                    }
+                  }
+                }
+              : {
+                  $let: {
+                    vars: {
+                      matched: {
+                        $arrayElemAt: [
+                          { $filter: { input: { $ifNull: ["$metrajVersiyonlar", []] }, as: "v", cond: { $eq: ["$$v.versiyonNumber", selectedMetrajVersiyon] } } },
+                          0
+                        ]
+                      }
+                    },
+                    in: { $ifNull: ["$$matched.metrajOnaylanan", null] }
                   }
                 },
-                in: { $ifNull: ["$$matched.metrajOnaylanan", "$metrajOnaylanan"] }
-              }
-            },
             isPaketler: 1,
             isPaketVersiyonlar: 1,
             hazirlananMetrajlar: {
