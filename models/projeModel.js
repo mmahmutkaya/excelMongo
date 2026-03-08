@@ -36,6 +36,7 @@ const isPaketVersiyonSchema = mongoose.Schema(
     versiyonNumber: Number,
     isPaketler: Array,
     aciklama: String,
+    fingerprint: String,
     createdAt: Date,
     createdby: String
   }

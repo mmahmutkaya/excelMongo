@@ -611,7 +611,7 @@ const createVersiyon_isPaket = async (req, res) => {
       email: userEmail,
     } = JSON.parse(req.user)
 
-    const { projeId, versiyonNumber, aciklama } = req.body
+    const { projeId, versiyonNumber, aciklama, fingerprint } = req.body
 
     let _projeId
     try {
@@ -667,7 +667,7 @@ const createVersiyon_isPaket = async (req, res) => {
             isPaketVersiyonlar: {
               $concatArrays: [
                 { $ifNull: ["$isPaketVersiyonlar", []] },
-                [{ versiyonNumber, isPaketler: { $ifNull: ["$isPaketler", []] }, aciklama, createdAt: currentTime, createdBy: userEmail }]
+                [{ versiyonNumber, isPaketler: { $ifNull: ["$isPaketler", []] }, aciklama, fingerprint, createdAt: currentTime, createdBy: userEmail }]
               ]
             },
             aktifYetkiliKisiler: {
