@@ -514,6 +514,15 @@ const getPozlar = async (req, res) => {
             metrajReady: { $sum: "$metrajReady" },
             metrajOnaylanan: { $sum: "$metrajOnaylanan" },
             toplamDugum: { $sum: 1 },
+          dugumSifirCount: {
+            $sum: {
+              $cond: {
+                if: { $lte: [{ $ifNull: ["$metrajOnaylanan", 0] }, 0] },
+                then: 1,
+                else: 0
+              }
+            }
+          },
             ...(_isPaketId ? {
               secilenDugum: {
                 $sum: {
@@ -599,6 +608,7 @@ const getPozlar = async (req, res) => {
 
           onePoz.metrajOnaylanan = onePoz2.metrajOnaylanan
           onePoz.toplamDugum = onePoz2.toplamDugum
+          onePoz.dugumSifirCount = onePoz2.dugumSifirCount
           if (_isPaketId) {
             onePoz.secilenDugum = onePoz2.secilenDugum
             onePoz.metrajOnaylananSecilen = onePoz2.metrajOnaylananSecilen

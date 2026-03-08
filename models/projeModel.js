@@ -68,7 +68,6 @@ const projeSchema = new Schema(
     birimFiyatVersiyonlar: [birimFiyatVersiyonSchema],
     isPaketVersiyonlar: [isPaketVersiyonSchema],
     isPaketler: Array,
-    birimFiyatVersiyon_isProgress: Boolean,
     butce: Object,
     butceVersiyonlar: [butceVersiyonSchema],
     createdBy: String,

@@ -2,10 +2,15 @@ use('rapor724_v2')
 
 db["projeler"].updateMany(
   {},
-  { $unset: { isPaketler: "", isPaketVersiyonlar:"" } }
+  {
+    $unset: {
+      isPaketler: "",
+      isPaketVersiyonlar: "",
+      butce: "",
+      butceVersiyonlar: "",
+      metrajVersiyonlar: "",
+      birimfiyatversiyonlar: "",
+    }
+  }
 )
-
-db["dugumler"].updateMany(
-  {},
-  { $unset: { isPaketler: "", isPaketVersiyonlar:"" } }
-)
+db["dugumler"].deleteMany({})
