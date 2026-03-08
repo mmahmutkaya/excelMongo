@@ -9,7 +9,7 @@ db["projeler"].updateMany(
       butce: "",
       butceVersiyonlar: "",
       metrajVersiyonlar: "",
-      birimfiyatversiyonlar: "",
+      birimFiyatVersiyonlar: ""
     }
   }
 )
